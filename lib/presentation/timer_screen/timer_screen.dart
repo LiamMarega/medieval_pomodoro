@@ -287,9 +287,8 @@ class _TimerScreenState extends State<TimerScreen> {
 
   Widget _buildMedievalHeader() {
     return PixelFrame(
-      cornerSize: 32,
-      edgeThickness: 8,
       padding: 16,
+      showBottomBorder: false,
       borderStyle: MedievalBorderStyle.stone,
       child: Container(
         width: double.infinity,

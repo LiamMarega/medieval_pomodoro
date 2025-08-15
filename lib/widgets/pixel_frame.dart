@@ -9,6 +9,11 @@ class PixelFrame extends StatelessWidget {
   final double edgeThickness; // Thickness of edge borders (e.g., 4, 6, 8)
   final double padding; // Internal padding for content
   final MedievalBorderStyle borderStyle; // Different border styles
+  final bool showTopBorder;
+  final bool showBottomBorder;
+  final bool showLeftBorder;
+  final bool showRightBorder;
+  final bool showBorder;
 
   const PixelFrame({
     super.key,
@@ -17,6 +22,11 @@ class PixelFrame extends StatelessWidget {
     this.edgeThickness = 6,
     this.padding = 12,
     this.borderStyle = MedievalBorderStyle.stone,
+    this.showTopBorder = true,
+    this.showBottomBorder = true,
+    this.showLeftBorder = true,
+    this.showRightBorder = true,
+    this.showBorder = true,
   });
 
   @override
@@ -29,120 +39,133 @@ class PixelFrame extends StatelessWidget {
           children: [
             // Content with proper padding (no background color)
             Padding(
-              padding: EdgeInsets.all(padding),
+              padding: EdgeInsets.only(
+                top: showTopBorder ? padding : 0,
+                bottom: showBottomBorder ? padding : 0,
+                left: showLeftBorder ? padding : 0,
+                right: showRightBorder ? padding : 0,
+              ),
               child: child,
             ),
 
             // --- CORNER PIECES ---
-            // Top-left corner (original)
-            Positioned(
-              left: 0,
-              top: 0,
-              width: 20,
-              height: 20,
-              child: _pixelPerfect(Image.asset(
-                assets.corner,
-                filterQuality: FilterQuality.none,
-                fit: BoxFit.fill,
-              )),
-            ),
-
-            // Top-right corner (flip X)
-            Positioned(
-              right: 0,
-              top: 0,
-              width: 20,
-              height: 20,
-              child: _pixelPerfect(Transform.flip(
-                flipX: true,
-                child: Image.asset(
+            // Top-left corner (only if top and left borders are enabled)
+            if (showTopBorder && showLeftBorder)
+              Positioned(
+                left: 0,
+                top: 0,
+                width: 20,
+                height: 20,
+                child: _pixelPerfect(Image.asset(
                   assets.corner,
                   filterQuality: FilterQuality.none,
                   fit: BoxFit.fill,
-                ),
-              )),
-            ),
+                )),
+              ),
 
-            // Bottom-left corner (flip Y)
-            Positioned(
-              left: 0,
-              bottom: 0,
-              width: 20,
-              height: 20,
-              child: _pixelPerfect(Transform.flip(
-                flipY: true,
-                child: Image.asset(
-                  assets.corner,
-                  filterQuality: FilterQuality.none,
-                  fit: BoxFit.fill,
-                ),
-              )),
-            ),
+            // Top-right corner (only if top and right borders are enabled)
+            if (showTopBorder && showRightBorder)
+              Positioned(
+                right: 0,
+                top: 0,
+                width: 20,
+                height: 20,
+                child: _pixelPerfect(Transform.flip(
+                  flipX: true,
+                  child: Image.asset(
+                    assets.corner,
+                    filterQuality: FilterQuality.none,
+                    fit: BoxFit.fill,
+                  ),
+                )),
+              ),
 
-            // Bottom-right corner (flip X and Y)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              width: 20,
-              height: 20,
-              child: _pixelPerfect(Transform.flip(
-                flipX: true,
-                flipY: true,
-                child: Image.asset(
-                  assets.corner,
-                  filterQuality: FilterQuality.none,
-                  fit: BoxFit.fill,
-                ),
-              )),
-            ),
+            // Bottom-left corner (only if bottom and left borders are enabled)
+            if (showBottomBorder && showLeftBorder)
+              Positioned(
+                left: 0,
+                bottom: 0,
+                width: 20,
+                height: 20,
+                child: _pixelPerfect(Transform.flip(
+                  flipY: true,
+                  child: Image.asset(
+                    assets.corner,
+                    filterQuality: FilterQuality.none,
+                    fit: BoxFit.fill,
+                  ),
+                )),
+              ),
+
+            // Bottom-right corner (only if bottom and right borders are enabled)
+            if (showBottomBorder && showRightBorder)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                width: 20,
+                height: 20,
+                child: _pixelPerfect(Transform.flip(
+                  flipX: true,
+                  flipY: true,
+                  child: Image.asset(
+                    assets.corner,
+                    filterQuality: FilterQuality.none,
+                    fit: BoxFit.fill,
+                  ),
+                )),
+              ),
 
             // --- HORIZONTAL EDGES ---
             // Top horizontal edge
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 20, // Fixed brick height
-              child: _buildRepeatingEdge(
-                  assets.horizontalEdge, ImageRepeat.repeatX),
-            ),
-
-            // Bottom horizontal edge
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 20, // Fixed brick height
-              child: Transform.flip(
-                flipY: true,
+            if (showTopBorder)
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 20, // Fixed brick height
                 child: _buildRepeatingEdge(
                     assets.horizontalEdge, ImageRepeat.repeatX),
               ),
-            ),
+
+            // Bottom horizontal edge
+            if (showBottomBorder)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 20, // Fixed brick height
+                child: Transform.flip(
+                  flipY: true,
+                  child: _buildRepeatingEdge(
+                      assets.horizontalEdge, ImageRepeat.repeatX),
+                ),
+              ),
 
             // --- VERTICAL EDGES ---
             // Left vertical edge
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: 20, // Fixed brick width
-              child:
-                  _buildRepeatingEdge(assets.verticalEdge, ImageRepeat.repeatY),
-            ),
-
-            // Right vertical edge
-            Positioned(
-              top: 0,
-              bottom: 0,
-              right: 0,
-              width: 20, // Fixed brick width
-              child: Transform.flip(
-                flipX: true,
+            if (showLeftBorder)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                left: 0,
+                width: 20, // Fixed brick width
                 child: _buildRepeatingEdge(
                     assets.verticalEdge, ImageRepeat.repeatY),
               ),
-            ),
+
+            // Right vertical edge
+            if (showRightBorder)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 0,
+                width: 20, // Fixed brick width
+                child: Transform.flip(
+                  flipX: true,
+                  child: _buildRepeatingEdge(
+                      assets.verticalEdge, ImageRepeat.repeatY),
+                ),
+              ),
           ],
         );
       },
