@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/pixel_frame.dart';
@@ -18,6 +19,16 @@ class TimerScreen extends StatefulWidget {
 
 class _TimerScreenState extends State<TimerScreen> {
   Timer? _timer;
+  Timer? _volumeTimer;
+
+  // Audio player
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isMusicPlaying = false;
+  bool _isAudioLoading = false;
+  double _currentVolume = 0.0;
+  static const double _maxVolume = 0.7; // Volumen máximo para no ser muy fuerte
+  static const double _volumeStep = 0.05; // Incremento gradual del volumen
+  static const int _volumeStepDuration = 500; // Milisegundos entre incrementos
 
   // Timer state
   bool _isActive = false;
@@ -54,6 +65,9 @@ class _TimerScreenState extends State<TimerScreen> {
     _currentSeconds = _workDurationMinutes * 60;
     _totalSeconds = _workDurationMinutes * 60;
 
+    // Initialize audio player
+    _initializeAudio();
+
     // Keep screen awake during active sessions
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
@@ -61,15 +75,92 @@ class _TimerScreenState extends State<TimerScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _volumeTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
+  void _initializeAudio() async {
+    try {
+      await _audioPlayer.setAsset('assets/songs/medieval_lofi.mp3');
+      await _audioPlayer.setLoopMode(LoopMode.all);
+      await _audioPlayer.setVolume(0.0);
+    } catch (e) {
+      print('Error initializing audio: $e');
+    }
+  }
+
+  void _startMusicWithFadeIn() async {
+    if (!_isMusicEnabled) return;
+
+    try {
+      setState(() {
+        _isAudioLoading = true;
+      });
+
+      _volumeTimer?.cancel();
+      _currentVolume = 0.0;
+      await _audioPlayer.setVolume(0.0);
+      await _audioPlayer.play();
+
+      setState(() {
+        _isMusicPlaying = true;
+        _isAudioLoading = false;
+      });
+
+      // Incrementar volumen gradualmente
+      _volumeTimer =
+          Timer.periodic(Duration(milliseconds: _volumeStepDuration), (timer) {
+        if (_currentVolume < _maxVolume) {
+          _currentVolume += _volumeStep;
+          _audioPlayer.setVolume(_currentVolume);
+        } else {
+          timer.cancel();
+        }
+      });
+    } catch (e) {
+      print('Error starting music: $e');
+      setState(() {
+        _isAudioLoading = false;
+      });
+    }
+  }
+
+  void _stopMusicWithFadeOut() async {
+    try {
+      _volumeTimer?.cancel();
+
+      // Decrementar volumen gradualmente
+      _volumeTimer = Timer.periodic(Duration(milliseconds: _volumeStepDuration),
+          (timer) async {
+        if (_currentVolume > 0.0) {
+          _currentVolume -= _volumeStep;
+          await _audioPlayer.setVolume(_currentVolume);
+        } else {
+          timer.cancel();
+          await _audioPlayer.pause();
+          setState(() {
+            _isMusicPlaying = false;
+          });
+        }
+      });
+    } catch (e) {
+      print('Error stopping music: $e');
+    }
+  }
+
   void _startTimer() {
+    print('_startTimer called'); // Debug log
     if (_timer?.isActive ?? false) return;
 
     setState(() {
       _isActive = true;
     });
+
+    // Start music if enabled
+    if (_isMusicEnabled) {
+      _startMusicWithFadeIn();
+    }
 
     // Keep screen awake
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -91,10 +182,16 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   void _pauseTimer() {
+    print('_pauseTimer called'); // Debug log
     _timer?.cancel();
     setState(() {
       _isActive = false;
     });
+
+    // Stop music if playing
+    if (_isMusicPlaying) {
+      _stopMusicWithFadeOut();
+    }
 
     // Allow screen to sleep
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -106,6 +203,11 @@ class _TimerScreenState extends State<TimerScreen> {
       _isActive = false;
       _currentSeconds = _totalSeconds;
     });
+
+    // Stop music if playing
+    if (_isMusicPlaying) {
+      _stopMusicWithFadeOut();
+    }
 
     // Allow screen to sleep
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -121,10 +223,15 @@ class _TimerScreenState extends State<TimerScreen> {
       _sessionNumber++;
     });
 
+    // Stop music if playing
+    if (_isMusicPlaying) {
+      _stopMusicWithFadeOut();
+    }
+
     // Allow screen to sleep
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    // Determine next session type
+    // Determine next session type (automatically switch to break after work)
     _determineNextSession();
 
     // Show completion notification
@@ -162,9 +269,15 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   void _toggleMusic() {
+    print('_toggleMusic called'); // Debug log
     setState(() {
       _isMusicEnabled = !_isMusicEnabled;
     });
+
+    // Stop music if disabling
+    if (!_isMusicEnabled && _isMusicPlaying) {
+      _stopMusicWithFadeOut();
+    }
 
     // Enhanced feedback for music toggle
     HapticFeedback.mediumImpact();
@@ -254,6 +367,12 @@ class _TimerScreenState extends State<TimerScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
                 _updateMotivationalMessage();
+                // Automatically start the next session after a short delay
+                Future.delayed(Duration(seconds: 2), () {
+                  if (mounted) {
+                    _startTimer();
+                  }
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.successColor,
@@ -358,7 +477,6 @@ class _TimerScreenState extends State<TimerScreen> {
                 child: Column(
                   children: [
                     SizedBox(height: 1.h),
-                    _buildControlButtons(),
                     SizedBox(height: 1.h),
                     Expanded(
                       child: _buildBottomRow(),
@@ -369,6 +487,8 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
           ),
+          _buildControlButtons(),
+
           _buildMotivationalMessage(),
           // Bottom row: Knight + Side controls
         ],
@@ -443,6 +563,12 @@ class _TimerScreenState extends State<TimerScreen> {
           label: 'RESTART',
           onPressed: _restartTimer,
         ),
+        // Music toggle button
+        _buildSpriteButton(
+          spritePath: 'assets/sprites/button_stop.png', // Music icon
+          label: _isMusicEnabled ? 'MUSIC ON' : 'MUSIC OFF',
+          onPressed: _toggleMusic,
+        ),
         // Options button
         _buildSpriteButton(
           spritePath: 'assets/sprites/button_stop.png', // Settings icon
@@ -486,21 +612,42 @@ class _TimerScreenState extends State<TimerScreen> {
     required VoidCallback onPressed,
   }) {
     return Expanded(
-      child: InkWell(
-        onTap: onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          width: 12.w,
-          height: 12.w,
-          child: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(spritePath),
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.none,
+      child: GestureDetector(
+        onTap: () {
+          // Haptic feedback
+          HapticFeedback.lightImpact();
+          onPressed();
+        },
+        child: Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.transparent,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 12.w,
+                height: 12.w,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(spritePath),
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
               ),
-            ),
+              SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 6.sp,
+                  color: const Color(0xFFDAA520),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
@@ -509,7 +656,7 @@ class _TimerScreenState extends State<TimerScreen> {
 
   Widget _buildBottomRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,68 +685,99 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
           ),
+          // Music control panel
           Expanded(
             flex: 1,
             child: Column(
               children: [
-                // Music control
-                Expanded(
+                // Music status indicator
+                Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppTheme.backgroundLight,
+                      width: 3,
+                    ),
+                  ),
                   child: Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.all(1.w),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(1.w),
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 3,
+                      ),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.music_note,
-                          color: const Color(0xFFDAA520),
-                          size: 24,
+                          color: _isMusicEnabled
+                              ? const Color(0xFFDAA520)
+                              : Colors.grey,
+                          size: 20,
                         ),
-                        SizedBox(height: 1.h),
-                        Container(
-                          width: 15.w,
-                          height: 6.w,
-                          decoration: BoxDecoration(
+                        SizedBox(height: 2),
+                        Text(
+                          _isMusicEnabled ? 'ON' : 'OFF',
+                          style: GoogleFonts.pressStart2p(
+                            fontSize: 6.sp,
                             color: _isMusicEnabled
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFF757575),
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              color: const Color(0xFFDAA520),
-                              width: 2,
+                                ? const Color(0xFFDAA520)
+                                : Colors.grey,
+                          ),
+                        ),
+                        if (_isMusicEnabled && _isMusicPlaying)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4CAF50),
+                              shape: BoxShape.circle,
                             ),
                           ),
-                          child: Center(
-                            child: Text(
-                              _isMusicEnabled ? 'ON' : 'OFF',
-                              style: GoogleFonts.pressStart2p(
-                                fontSize: 6.sp,
-                                color: Colors.white,
+                        if (_isAudioLoading)
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                const Color(0xFFDAA520),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
                 ),
-                Expanded(
+                SizedBox(height: 8),
+                // Progress indicator
+                Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppTheme.backgroundLight,
+                      width: 3,
+                    ),
+                  ),
                   child: Container(
-                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 3,
+                      ),
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           'PROGRESS',
                           style: GoogleFonts.pressStart2p(
-                            fontSize: 8.sp,
+                            fontSize: 6.sp,
                             color: const Color(0xFFDAA520),
                           ),
                         ),
-                        SizedBox(height: 1.h),
+                        SizedBox(height: 2),
                         LinearProgressIndicator(
                           value: _getProgress(),
                           backgroundColor: const Color(0xFF4A3728),
@@ -607,11 +785,11 @@ class _TimerScreenState extends State<TimerScreen> {
                             Color(0xFFDAA520),
                           ),
                         ),
-                        SizedBox(height: 1.h),
+                        SizedBox(height: 2),
                         Text(
                           '${(_getProgress() * 100).toInt()}%',
                           style: GoogleFonts.pressStart2p(
-                            fontSize: 6.sp,
+                            fontSize: 5.sp,
                             color: const Color(0xFFB8860B),
                           ),
                         ),
@@ -631,7 +809,7 @@ class _TimerScreenState extends State<TimerScreen> {
     return PixelFrame(
       cornerSize: 20,
       edgeThickness: 5,
-      padding: 12,
+      padding: 4.5.h,
       borderStyle: MedievalBorderStyle.stone,
       child: Container(
         width: double.infinity,

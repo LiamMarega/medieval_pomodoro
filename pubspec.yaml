@@ -23,6 +23,7 @@ dependencies:
   dio: ^5.4.0
   fluttertoast: ^8.2.4
   fl_chart: ^0.65.0
+  just_audio: ^0.9.36
 
   universal_html: ^2.2.4
 dev_dependencies:
@@ -36,4 +37,5 @@ flutter:
     - assets/
     - assets/images/
     - assets/sprites/
+    - assets/songs/
  
