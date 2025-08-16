@@ -466,17 +466,17 @@ class _TimerScreenState extends State<TimerScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/sprites/dirt_sprite.png'),
+                    image: AssetImage('assets/sprites/dirt_sprite_2.png'),
                     fit: BoxFit.none,
                     repeat: ImageRepeat.repeat,
-                    scale: 10,
+                    scale: 8,
                     filterQuality: FilterQuality.low,
-                    opacity: 0.5, // Hace la imagen más chica y repetida
+                    opacity: 0.3, // Hace la imagen más chica y repetida
                   ),
                 ),
                 child: Column(
                   children: [
-                    SizedBox(height: 1.h),
+                    _buildControlButtons(),
                     SizedBox(height: 1.h),
                     Expanded(
                       child: _buildBottomRow(),
@@ -487,7 +487,6 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
           ),
-          _buildControlButtons(),
 
           _buildMotivationalMessage(),
           // Bottom row: Knight + Side controls
@@ -685,121 +684,121 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
           ),
-          // Music control panel
-          Expanded(
-            flex: 1,
-            child: Column(
-              children: [
-                // Music status indicator
-                Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppTheme.backgroundLight,
-                      width: 3,
-                    ),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 3,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.music_note,
-                          color: _isMusicEnabled
-                              ? const Color(0xFFDAA520)
-                              : Colors.grey,
-                          size: 20,
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          _isMusicEnabled ? 'ON' : 'OFF',
-                          style: GoogleFonts.pressStart2p(
-                            fontSize: 6.sp,
-                            color: _isMusicEnabled
-                                ? const Color(0xFFDAA520)
-                                : Colors.grey,
-                          ),
-                        ),
-                        if (_isMusicEnabled && _isMusicPlaying)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        if (_isAudioLoading)
-                          SizedBox(
-                            width: 12,
-                            height: 12,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                const Color(0xFFDAA520),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8),
-                // Progress indicator
-                Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppTheme.backgroundLight,
-                      width: 3,
-                    ),
-                  ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 3,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'PROGRESS',
-                          style: GoogleFonts.pressStart2p(
-                            fontSize: 6.sp,
-                            color: const Color(0xFFDAA520),
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        LinearProgressIndicator(
-                          value: _getProgress(),
-                          backgroundColor: const Color(0xFF4A3728),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFFDAA520),
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          '${(_getProgress() * 100).toInt()}%',
-                          style: GoogleFonts.pressStart2p(
-                            fontSize: 5.sp,
-                            color: const Color(0xFFB8860B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // // Music control panel
+          // Expanded(
+          //   flex: 1,
+          //   child: Column(
+          //     children: [
+          //       // Music status indicator
+          //       Container(
+          //         height: 60,
+          //         decoration: BoxDecoration(
+          //           border: Border.all(
+          //             color: AppTheme.backgroundLight,
+          //             width: 3,
+          //           ),
+          //         ),
+          //         child: Container(
+          //           decoration: BoxDecoration(
+          //             border: Border.all(
+          //               color: Colors.black,
+          //               width: 3,
+          //             ),
+          //           ),
+          //           child: Column(
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: [
+          //               Icon(
+          //                 Icons.music_note,
+          //                 color: _isMusicEnabled
+          //                     ? const Color(0xFFDAA520)
+          //                     : Colors.grey,
+          //                 size: 20,
+          //               ),
+          //               SizedBox(height: 2),
+          //               Text(
+          //                 _isMusicEnabled ? 'ON' : 'OFF',
+          //                 style: GoogleFonts.pressStart2p(
+          //                   fontSize: 6.sp,
+          //                   color: _isMusicEnabled
+          //                       ? const Color(0xFFDAA520)
+          //                       : Colors.grey,
+          //                 ),
+          //               ),
+          //               if (_isMusicEnabled && _isMusicPlaying)
+          //                 Container(
+          //                   width: 8,
+          //                   height: 8,
+          //                   decoration: BoxDecoration(
+          //                     color: const Color(0xFF4CAF50),
+          //                     shape: BoxShape.circle,
+          //                   ),
+          //                 ),
+          //               if (_isAudioLoading)
+          //                 SizedBox(
+          //                   width: 12,
+          //                   height: 12,
+          //                   child: CircularProgressIndicator(
+          //                     strokeWidth: 2,
+          //                     valueColor: AlwaysStoppedAnimation<Color>(
+          //                       const Color(0xFFDAA520),
+          //                     ),
+          //                   ),
+          //                 ),
+          //             ],
+          //           ),
+          //         ),
+          //       ),
+          //       SizedBox(height: 8),
+          //       // Progress indicator
+          //       Container(
+          //         height: 60,
+          //         decoration: BoxDecoration(
+          //           border: Border.all(
+          //             color: AppTheme.backgroundLight,
+          //             width: 3,
+          //           ),
+          //         ),
+          //         child: Container(
+          //           decoration: BoxDecoration(
+          //             border: Border.all(
+          //               color: Colors.black,
+          //               width: 3,
+          //             ),
+          //           ),
+          //           child: Column(
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: [
+          //               Text(
+          //                 'PROGRESS',
+          //                 style: GoogleFonts.pressStart2p(
+          //                   fontSize: 6.sp,
+          //                   color: const Color(0xFFDAA520),
+          //                 ),
+          //               ),
+          //               SizedBox(height: 2),
+          //               LinearProgressIndicator(
+          //                 value: _getProgress(),
+          //                 backgroundColor: const Color(0xFF4A3728),
+          //                 valueColor: const AlwaysStoppedAnimation<Color>(
+          //                   Color(0xFFDAA520),
+          //                 ),
+          //               ),
+          //               SizedBox(height: 2),
+          //               Text(
+          //                 '${(_getProgress() * 100).toInt()}%',
+          //                 style: GoogleFonts.pressStart2p(
+          //                   fontSize: 5.sp,
+          //                   color: const Color(0xFFB8860B),
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
@@ -831,6 +830,7 @@ class _TimerScreenState extends State<TimerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             // Medieval title header

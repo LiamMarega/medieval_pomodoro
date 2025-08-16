@@ -52,32 +52,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF2D1B0F), // Dark medieval brown background
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
-            // Settings content
-            Expanded(
-              child: _buildSettingsContent(),
-            ),
-            // Save button
-            _buildSaveButton(),
-            SizedBox(height: 2.h),
-          ],
-        ),
+      body: Column(
+        children: [
+          // Header
+          _buildHeader(),
+          // Settings content
+          Expanded(
+            child: _buildSettingsContent(),
+          ),
+          // Save button
+          _buildSaveButton(),
+          SizedBox(height: 2.h),
+        ],
       ),
     );
   }
 
   Widget _buildHeader() {
-    return PixelFrame(
-      cornerSize: 32,
-      edgeThickness: 8,
-      padding: 16,
-      borderStyle: MedievalBorderStyle.stone,
+    return SafeArea(
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 4.w),
@@ -129,7 +121,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSettingsContent() {
     return Container(
-      padding: EdgeInsets.all(2.w),
       child: PixelFrame(
         cornerSize: 24,
         edgeThickness: 6,
@@ -180,35 +171,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildMusicSetting() {
-    return PixelFrame(
-      cornerSize: 16,
-      edgeThickness: 4,
-      padding: 8,
-      borderStyle: MedievalBorderStyle.stone,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(3.w),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Background Music',
-              style: GoogleFonts.pressStart2p(
-                fontSize: 12.sp,
-                color: const Color(0xFFDAA520),
-              ),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(3.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Background Music',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 12.sp,
+              color: const Color(0xFFDAA520),
             ),
-            Switch(
-              value: _isMusicEnabled,
-              onChanged: (value) => setState(() => _isMusicEnabled = value),
-              activeColor: const Color(0xFFDAA520),
-              activeTrackColor: const Color(0xFFDAA520).withValues(alpha: 0.3),
-              inactiveThumbColor: const Color(0xFF757575),
-              inactiveTrackColor:
-                  const Color(0xFF757575).withValues(alpha: 0.3),
-            ),
-          ],
-        ),
+          ),
+          Switch(
+            value: _isMusicEnabled,
+            onChanged: (value) => setState(() => _isMusicEnabled = value),
+            activeColor: const Color(0xFFDAA520),
+            activeTrackColor: const Color(0xFFDAA520).withValues(alpha: 0.3),
+            inactiveThumbColor: const Color(0xFF757575),
+            inactiveTrackColor: const Color(0xFF757575).withValues(alpha: 0.3),
+          ),
+        ],
       ),
     );
   }
@@ -221,67 +205,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
     int increment,
     Function(int) onChanged,
   ) {
-    return PixelFrame(
-      cornerSize: 16,
-      edgeThickness: 4,
-      padding: 8,
-      borderStyle: MedievalBorderStyle.stone,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(3.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.pressStart2p(
-                fontSize: 12.sp,
-                color: const Color(0xFFDAA520),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(3.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.pressStart2p(
+              fontSize: 12.sp,
+              color: const Color(0xFFDAA520),
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Decrease button
+              _buildControlButton(
+                'assets/sprites/close_button.png',
+                '-',
+                currentValue > minValue
+                    ? () => onChanged(currentValue - increment)
+                    : null,
               ),
-            ),
-            SizedBox(height: 2.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Decrease button
-                _buildControlButton(
-                  'assets/sprites/close_button.png',
-                  '-',
-                  currentValue > minValue
-                      ? () => onChanged(currentValue - increment)
-                      : null,
-                ),
-                // Current value
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4A3728),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: const Color(0xFFDAA520),
-                      width: 2,
-                    ),
-                  ),
-                  child: Text(
-                    '$currentValue min',
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 14.sp,
-                      color: const Color(0xFFDAA520),
-                    ),
+              // Current value
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4A3728),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: const Color(0xFFDAA520),
+                    width: 2,
                   ),
                 ),
-                // Increase button
-                _buildControlButton(
-                  'assets/sprites/button_play.png',
-                  '+',
-                  currentValue < maxValue
-                      ? () => onChanged(currentValue + increment)
-                      : null,
+                child: Text(
+                  '$currentValue min',
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 14.sp,
+                    color: const Color(0xFFDAA520),
+                  ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              // Increase button
+              _buildControlButton(
+                'assets/sprites/button_play.png',
+                '+',
+                currentValue < maxValue
+                    ? () => onChanged(currentValue + increment)
+                    : null,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -343,11 +321,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSaveButton() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: PixelFrame(
-        cornerSize: 20,
-        edgeThickness: 5,
-        padding: 8,
         borderStyle: MedievalBorderStyle.stone,
         child: InkWell(
           onTap: _saveSettings,

@@ -56,11 +56,13 @@ class PixelFrame extends StatelessWidget {
                 top: 0,
                 width: 20,
                 height: 20,
-                child: _pixelPerfect(Image.asset(
-                  assets.corner,
-                  filterQuality: FilterQuality.none,
-                  fit: BoxFit.fill,
-                )),
+                child: IgnorePointer(
+                  child: _pixelPerfect(Image.asset(
+                    assets.corner,
+                    filterQuality: FilterQuality.none,
+                    fit: BoxFit.fill,
+                  )),
+                ),
               ),
 
             // Top-right corner (only if top and right borders are enabled)
@@ -70,14 +72,16 @@ class PixelFrame extends StatelessWidget {
                 top: 0,
                 width: 20,
                 height: 20,
-                child: _pixelPerfect(Transform.flip(
-                  flipX: true,
-                  child: Image.asset(
-                    assets.corner,
-                    filterQuality: FilterQuality.none,
-                    fit: BoxFit.fill,
-                  ),
-                )),
+                child: IgnorePointer(
+                  child: _pixelPerfect(Transform.flip(
+                    flipX: true,
+                    child: Image.asset(
+                      assets.corner,
+                      filterQuality: FilterQuality.none,
+                      fit: BoxFit.fill,
+                    ),
+                  )),
+                ),
               ),
 
             // Bottom-left corner (only if bottom and left borders are enabled)
@@ -87,14 +91,16 @@ class PixelFrame extends StatelessWidget {
                 bottom: 0,
                 width: 20,
                 height: 20,
-                child: _pixelPerfect(Transform.flip(
-                  flipY: true,
-                  child: Image.asset(
-                    assets.corner,
-                    filterQuality: FilterQuality.none,
-                    fit: BoxFit.fill,
-                  ),
-                )),
+                child: IgnorePointer(
+                  child: _pixelPerfect(Transform.flip(
+                    flipY: true,
+                    child: Image.asset(
+                      assets.corner,
+                      filterQuality: FilterQuality.none,
+                      fit: BoxFit.fill,
+                    ),
+                  )),
+                ),
               ),
 
             // Bottom-right corner (only if bottom and right borders are enabled)
@@ -104,15 +110,17 @@ class PixelFrame extends StatelessWidget {
                 bottom: 0,
                 width: 20,
                 height: 20,
-                child: _pixelPerfect(Transform.flip(
-                  flipX: true,
-                  flipY: true,
-                  child: Image.asset(
-                    assets.corner,
-                    filterQuality: FilterQuality.none,
-                    fit: BoxFit.fill,
-                  ),
-                )),
+                child: IgnorePointer(
+                  child: _pixelPerfect(Transform.flip(
+                    flipX: true,
+                    flipY: true,
+                    child: Image.asset(
+                      assets.corner,
+                      filterQuality: FilterQuality.none,
+                      fit: BoxFit.fill,
+                    ),
+                  )),
+                ),
               ),
 
             // --- HORIZONTAL EDGES ---
@@ -123,8 +131,10 @@ class PixelFrame extends StatelessWidget {
                 right: 0,
                 top: 0,
                 height: 20, // Fixed brick height
-                child: _buildRepeatingEdge(
-                    assets.horizontalEdge, ImageRepeat.repeatX),
+                child: IgnorePointer(
+                  child: _buildRepeatingEdge(
+                      assets.horizontalEdge, ImageRepeat.repeatX),
+                ),
               ),
 
             // Bottom horizontal edge
@@ -134,10 +144,12 @@ class PixelFrame extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 height: 20, // Fixed brick height
-                child: Transform.flip(
-                  flipY: true,
-                  child: _buildRepeatingEdge(
-                      assets.horizontalEdge, ImageRepeat.repeatX),
+                child: IgnorePointer(
+                  child: Transform.flip(
+                    flipY: true,
+                    child: _buildRepeatingEdge(
+                        assets.horizontalEdge, ImageRepeat.repeatX),
+                  ),
                 ),
               ),
 
@@ -149,8 +161,10 @@ class PixelFrame extends StatelessWidget {
                 bottom: 0,
                 left: 0,
                 width: 20, // Fixed brick width
-                child: _buildRepeatingEdge(
-                    assets.verticalEdge, ImageRepeat.repeatY),
+                child: IgnorePointer(
+                  child: _buildRepeatingEdge(
+                      assets.verticalEdge, ImageRepeat.repeatY),
+                ),
               ),
 
             // Right vertical edge
@@ -160,10 +174,12 @@ class PixelFrame extends StatelessWidget {
                 bottom: 0,
                 right: 0,
                 width: 20, // Fixed brick width
-                child: Transform.flip(
-                  flipX: true,
-                  child: _buildRepeatingEdge(
-                      assets.verticalEdge, ImageRepeat.repeatY),
+                child: IgnorePointer(
+                  child: Transform.flip(
+                    flipX: true,
+                    child: _buildRepeatingEdge(
+                        assets.verticalEdge, ImageRepeat.repeatY),
+                  ),
                 ),
               ),
 
@@ -174,11 +190,29 @@ class PixelFrame extends StatelessWidget {
                 bottom: showBottomBorder ? 20 : 0,
                 left: showLeftBorder ? 20 : 0,
                 right: showRightBorder ? 20 : 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      width: 5.0,
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: showTopBorder
+                            ? BorderSide(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                width: 5.0)
+                            : BorderSide.none,
+                        bottom: BorderSide(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            width: 5.0),
+                        left: showLeftBorder
+                            ? BorderSide(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                width: 5.0)
+                            : BorderSide.none,
+                        right: showRightBorder
+                            ? BorderSide(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                width: 5.0)
+                            : BorderSide.none,
+                      ),
                     ),
                   ),
                 ),
@@ -191,12 +225,29 @@ class PixelFrame extends StatelessWidget {
                 bottom: showBottomBorder ? 25 : 5,
                 left: showLeftBorder ? 25 : 5,
                 right: showRightBorder ? 25 : 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      width: 5.0,
-                    ),
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border(
+                      top: showTopBorder
+                          ? BorderSide(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              width: 5.0)
+                          : BorderSide.none,
+                      bottom: BorderSide(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          width: 5.0),
+                      left: showLeftBorder
+                          ? BorderSide(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              width: 5.0)
+                          : BorderSide.none,
+                      right: showRightBorder
+                          ? BorderSide(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              width: 5.0)
+                          : BorderSide.none,
+                    )),
                   ),
                 ),
               ),
