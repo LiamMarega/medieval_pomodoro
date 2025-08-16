@@ -166,6 +166,40 @@ class PixelFrame extends StatelessWidget {
                       assets.verticalEdge, ImageRepeat.repeatY),
                 ),
               ),
+
+            // Black border (on top of everything)
+            if (showBorder)
+              Positioned(
+                top: showTopBorder ? 20 : 0,
+                bottom: showBottomBorder ? 20 : 0,
+                left: showLeftBorder ? 20 : 0,
+                right: showRightBorder ? 20 : 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      width: 5.0,
+                    ),
+                  ),
+                ),
+              ),
+
+            // Second black border with opacity (more inward)
+            if (showBorder)
+              Positioned(
+                top: showTopBorder ? 25 : 5,
+                bottom: showBottomBorder ? 25 : 5,
+                left: showLeftBorder ? 25 : 5,
+                right: showRightBorder ? 25 : 5,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      width: 5.0,
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },

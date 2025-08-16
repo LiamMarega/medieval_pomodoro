@@ -27,7 +27,7 @@ class AppTheme {
       Color(0xFF3A2318); // Darker brown variant
   static const Color secondaryDark = Color(0xFFD4A017); // Warm gold
   static const Color secondaryVariantDark = Color(0xFFB8860B); // Dark goldenrod
-  static const Color backgroundDark = Color(0xFF2D1B12); // Deep brown base
+  static const Color backgroundDark = Color(0xFF250D06); // Deep brown base
   static const Color surfaceDark = Color(0xFF3A2318); // Darker brown variant
   static const Color errorDark = Color(0xFFA83232); // Deep red
   static const Color onPrimaryDark = Color(0xFFF5E6D3); // Warm off-white

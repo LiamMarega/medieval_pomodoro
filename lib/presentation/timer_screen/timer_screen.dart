@@ -7,8 +7,6 @@ import 'package:sizer/sizer.dart';
 
 import '../../core/app_export.dart';
 import '../../widgets/pixel_frame.dart';
-import './widgets/medieval_music_toggle.dart';
-import './widgets/medieval_session_banner.dart';
 import '../settings_screen/settings_screen.dart';
 
 class TimerScreen extends StatefulWidget {
@@ -341,13 +339,38 @@ class _TimerScreenState extends State<TimerScreen> {
         children: [
           _buildUnifiedTimerDisplay(),
           // Control buttons row
-          _buildControlButtons(),
-          // Bottom row: Knight + Side controls
+
           Expanded(
-            child: _buildBottomRow(),
+            child: PixelFrame(
+              showTopBorder: false,
+              showBottomBorder: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/sprites/dirt_sprite.png'),
+                    fit: BoxFit.none,
+                    repeat: ImageRepeat.repeat,
+                    scale: 10,
+                    filterQuality: FilterQuality.low,
+                    opacity: 0.5, // Hace la imagen más chica y repetida
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 1.h),
+                    _buildControlButtons(),
+                    SizedBox(height: 1.h),
+                    Expanded(
+                      child: _buildBottomRow(),
+                    ),
+                    // Motivational message
+                  ],
+                ),
+              ),
+            ),
           ),
-          // Motivational message
           _buildMotivationalMessage(),
+          // Bottom row: Knight + Side controls
         ],
       ),
     );
@@ -359,6 +382,7 @@ class _TimerScreenState extends State<TimerScreen> {
       edgeThickness: 8,
       padding: 16,
       borderStyle: MedievalBorderStyle.stone,
+      showBottomBorder: false,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 4.w),
@@ -402,59 +426,57 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   Widget _buildControlButtons() {
-    return PixelFrame(
-      child: Row(
-        children: [
-          // Play/Stop button
-          _buildSpriteButton(
-            spritePath: _isActive
-                ? 'assets/sprites/button_stop.png'
-                : 'assets/sprites/button_play.png',
-            label: _isActive ? 'STOP' : 'PLAY',
-            onPressed: _isActive ? _pauseTimer : _startTimer,
-          ),
-          // Restart button
-          _buildSpriteButton(
-            spritePath:
-                'assets/sprites/close_button.png', // Using close as restart
-            label: 'RESTART',
-            onPressed: _restartTimer,
-          ),
-          // Options button
-          _buildSpriteButton(
-            spritePath: 'assets/sprites/minize_button.png', // Settings icon
-            label: 'OPTIONS',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SettingsScreen(
-                    workDurationMinutes: _workDurationMinutes,
-                    shortBreakMinutes: _shortBreakMinutes,
-                    longBreakMinutes: _longBreakMinutes,
-                    isMusicEnabled: _isMusicEnabled,
-                    onSettingsChanged: (workMinutes, shortBreakMinutes,
-                        longBreakMinutes, musicEnabled) {
-                      setState(() {
-                        _workDurationMinutes = workMinutes;
-                        _shortBreakMinutes = shortBreakMinutes;
-                        _longBreakMinutes = longBreakMinutes;
-                        _isMusicEnabled = musicEnabled;
+    return Row(
+      children: [
+        // Play/Stop button
+        _buildSpriteButton(
+          spritePath: _isActive
+              ? 'assets/sprites/button_stop.png'
+              : 'assets/sprites/button_play.png',
+          label: _isActive ? 'STOP' : 'PLAY',
+          onPressed: _isActive ? _pauseTimer : _startTimer,
+        ),
+        // Restart button
+        _buildSpriteButton(
+          spritePath:
+              'assets/sprites/button_stop.png', // Using close as restart
+          label: 'RESTART',
+          onPressed: _restartTimer,
+        ),
+        // Options button
+        _buildSpriteButton(
+          spritePath: 'assets/sprites/button_stop.png', // Settings icon
+          label: 'OPTIONS',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SettingsScreen(
+                  workDurationMinutes: _workDurationMinutes,
+                  shortBreakMinutes: _shortBreakMinutes,
+                  longBreakMinutes: _longBreakMinutes,
+                  isMusicEnabled: _isMusicEnabled,
+                  onSettingsChanged: (workMinutes, shortBreakMinutes,
+                      longBreakMinutes, musicEnabled) {
+                    setState(() {
+                      _workDurationMinutes = workMinutes;
+                      _shortBreakMinutes = shortBreakMinutes;
+                      _longBreakMinutes = longBreakMinutes;
+                      _isMusicEnabled = musicEnabled;
 
-                        // Update current timer if in work session
-                        if (_sessionType == 'Work') {
-                          _totalSeconds = _workDurationMinutes * 60;
-                          _currentSeconds = _totalSeconds;
-                        }
-                      });
-                    },
-                  ),
+                      // Update current timer if in work session
+                      if (_sessionType == 'Work') {
+                        _totalSeconds = _workDurationMinutes * 60;
+                        _currentSeconds = _totalSeconds;
+                      }
+                    });
+                  },
                 ),
-              );
-            },
-          ),
-        ],
-      ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -466,12 +488,12 @@ class _TimerScreenState extends State<TimerScreen> {
     return Expanded(
       child: InkWell(
         onTap: onPressed,
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(2.w),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          width: 12.w,
+          height: 12.w,
           child: Container(
-            width: 8.w,
-            height: 8.w,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(spritePath),
@@ -486,17 +508,29 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   Widget _buildBottomRow() {
-    return Row(
-      children: [
-        // Knight illustration (left side, aspect ratio 1:1)
-        Expanded(
-          flex: 1,
-          child: AspectRatio(
-            aspectRatio: 1.0,
-            child: PixelFrame(
-              borderStyle: MedievalBorderStyle.stone,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Knight illustration (left side, aspect ratio 1:1)
+          Expanded(
+            flex: 2,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: AppTheme.backgroundLight,
+                  width: 5,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.black,
+                    width: 5,
+                  ),
+                ),
                 child: Image.asset(
                   'assets/images/knight.gif',
                   fit: BoxFit.cover,
@@ -504,22 +538,18 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
           ),
-        ),
-        SizedBox(width: 2.w),
-        // Right side controls
-        Expanded(
-          flex: 1,
-          child: Column(
-            children: [
-              // Music control
-              Expanded(
-                child: PixelFrame(
-                  cornerSize: 16,
-                  edgeThickness: 4,
-                  padding: 6,
-                  borderStyle: MedievalBorderStyle.stone,
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                // Music control
+                Expanded(
                   child: Container(
                     width: double.infinity,
+                    margin: EdgeInsets.all(1.w),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(1.w),
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -556,15 +586,7 @@ class _TimerScreenState extends State<TimerScreen> {
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 2.h),
-              // Progress indicator
-              Expanded(
-                child: PixelFrame(
-                  cornerSize: 16,
-                  edgeThickness: 4,
-                  padding: 6,
-                  borderStyle: MedievalBorderStyle.stone,
+                Expanded(
                   child: Container(
                     width: double.infinity,
                     child: Column(
@@ -597,11 +619,11 @@ class _TimerScreenState extends State<TimerScreen> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
