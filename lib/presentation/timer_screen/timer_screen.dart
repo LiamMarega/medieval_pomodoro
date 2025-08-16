@@ -24,7 +24,6 @@ class _TimerScreenState extends State<TimerScreen> {
   // Audio player
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isMusicPlaying = false;
-  bool _isAudioLoading = false;
   double _currentVolume = 0.0;
   static const double _maxVolume = 0.7; // Volumen máximo para no ser muy fuerte
   static const double _volumeStep = 0.05; // Incremento gradual del volumen
@@ -94,35 +93,16 @@ class _TimerScreenState extends State<TimerScreen> {
     if (!_isMusicEnabled) return;
 
     try {
-      setState(() {
-        _isAudioLoading = true;
-      });
-
       _volumeTimer?.cancel();
-      _currentVolume = 0.0;
-      await _audioPlayer.setVolume(0.0);
+      _currentVolume = _maxVolume;
+      await _audioPlayer.setVolume(_maxVolume);
       await _audioPlayer.play();
 
       setState(() {
         _isMusicPlaying = true;
-        _isAudioLoading = false;
-      });
-
-      // Incrementar volumen gradualmente
-      _volumeTimer =
-          Timer.periodic(Duration(milliseconds: _volumeStepDuration), (timer) {
-        if (_currentVolume < _maxVolume) {
-          _currentVolume += _volumeStep;
-          _audioPlayer.setVolume(_currentVolume);
-        } else {
-          timer.cancel();
-        }
       });
     } catch (e) {
       print('Error starting music: $e');
-      setState(() {
-        _isAudioLoading = false;
-      });
     }
   }
 
@@ -397,11 +377,6 @@ class _TimerScreenState extends State<TimerScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  double _getProgress() {
-    if (_totalSeconds == 0) return 0.0;
-    return (_totalSeconds - _currentSeconds) / _totalSeconds;
-  }
-
   Widget _buildMedievalHeader() {
     return PixelFrame(
       padding: 16,
@@ -471,7 +446,11 @@ class _TimerScreenState extends State<TimerScreen> {
                     repeat: ImageRepeat.repeat,
                     scale: 8,
                     filterQuality: FilterQuality.low,
-                    opacity: 0.3, // Hace la imagen más chica y repetida
+                    colorFilter: ColorFilter.mode(
+                      Color(0x6b2f01),
+                      BlendMode.color,
+                    ),
+                    opacity: 0.8, // Hace la imagen más chica y repetida
                   ),
                 ),
                 child: Column(
@@ -684,121 +663,6 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
           ),
-          // // Music control panel
-          // Expanded(
-          //   flex: 1,
-          //   child: Column(
-          //     children: [
-          //       // Music status indicator
-          //       Container(
-          //         height: 60,
-          //         decoration: BoxDecoration(
-          //           border: Border.all(
-          //             color: AppTheme.backgroundLight,
-          //             width: 3,
-          //           ),
-          //         ),
-          //         child: Container(
-          //           decoration: BoxDecoration(
-          //             border: Border.all(
-          //               color: Colors.black,
-          //               width: 3,
-          //             ),
-          //           ),
-          //           child: Column(
-          //             mainAxisAlignment: MainAxisAlignment.center,
-          //             children: [
-          //               Icon(
-          //                 Icons.music_note,
-          //                 color: _isMusicEnabled
-          //                     ? const Color(0xFFDAA520)
-          //                     : Colors.grey,
-          //                 size: 20,
-          //               ),
-          //               SizedBox(height: 2),
-          //               Text(
-          //                 _isMusicEnabled ? 'ON' : 'OFF',
-          //                 style: GoogleFonts.pressStart2p(
-          //                   fontSize: 6.sp,
-          //                   color: _isMusicEnabled
-          //                       ? const Color(0xFFDAA520)
-          //                       : Colors.grey,
-          //                 ),
-          //               ),
-          //               if (_isMusicEnabled && _isMusicPlaying)
-          //                 Container(
-          //                   width: 8,
-          //                   height: 8,
-          //                   decoration: BoxDecoration(
-          //                     color: const Color(0xFF4CAF50),
-          //                     shape: BoxShape.circle,
-          //                   ),
-          //                 ),
-          //               if (_isAudioLoading)
-          //                 SizedBox(
-          //                   width: 12,
-          //                   height: 12,
-          //                   child: CircularProgressIndicator(
-          //                     strokeWidth: 2,
-          //                     valueColor: AlwaysStoppedAnimation<Color>(
-          //                       const Color(0xFFDAA520),
-          //                     ),
-          //                   ),
-          //                 ),
-          //             ],
-          //           ),
-          //         ),
-          //       ),
-          //       SizedBox(height: 8),
-          //       // Progress indicator
-          //       Container(
-          //         height: 60,
-          //         decoration: BoxDecoration(
-          //           border: Border.all(
-          //             color: AppTheme.backgroundLight,
-          //             width: 3,
-          //           ),
-          //         ),
-          //         child: Container(
-          //           decoration: BoxDecoration(
-          //             border: Border.all(
-          //               color: Colors.black,
-          //               width: 3,
-          //             ),
-          //           ),
-          //           child: Column(
-          //             mainAxisAlignment: MainAxisAlignment.center,
-          //             children: [
-          //               Text(
-          //                 'PROGRESS',
-          //                 style: GoogleFonts.pressStart2p(
-          //                   fontSize: 6.sp,
-          //                   color: const Color(0xFFDAA520),
-          //                 ),
-          //               ),
-          //               SizedBox(height: 2),
-          //               LinearProgressIndicator(
-          //                 value: _getProgress(),
-          //                 backgroundColor: const Color(0xFF4A3728),
-          //                 valueColor: const AlwaysStoppedAnimation<Color>(
-          //                   Color(0xFFDAA520),
-          //                 ),
-          //               ),
-          //               SizedBox(height: 2),
-          //               Text(
-          //                 '${(_getProgress() * 100).toInt()}%',
-          //                 style: GoogleFonts.pressStart2p(
-          //                   fontSize: 5.sp,
-          //                   color: const Color(0xFFB8860B),
-          //                 ),
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
         ],
       ),
     );
