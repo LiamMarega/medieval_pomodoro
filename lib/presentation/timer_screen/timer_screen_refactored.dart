@@ -57,14 +57,50 @@ class TimerScreenRefactored extends ConsumerWidget {
                           opacity: 0.5,
                         ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 10),
-                          const TimerControlsWidget(),
-                          const KnightIllustrationWidget(),
-                        ],
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: Colors.black,
+                              width: 10,
+                            ),
+                            right: BorderSide(
+                              color: Colors.black,
+                              width: 10,
+                            ),
+                            bottom: BorderSide(
+                              color: Colors.black,
+                              width: 5,
+                            ),
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              left: BorderSide(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                width: 5,
+                              ),
+                              right: BorderSide(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                width: 5,
+                              ),
+                              bottom: BorderSide(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                width: 5,
+                              ),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 10),
+                              const TimerControlsWidget(),
+                              const KnightIllustrationWidget(),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),

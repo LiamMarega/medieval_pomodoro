@@ -30,6 +30,13 @@ class TimerControlsWidget extends ConsumerWidget {
             }
           },
         ),
+        // _buildControlButton(
+        //   spritePath: 'assets/sprites/reset_button.png',
+        //   onPressed: () {
+        //     HapticFeedback.lightImpact();
+        //     timerController.restartTimer();
+        //   },
+        // ),
         _buildControlButton(
           spritePath: 'assets/sprites/settings_button.png',
           onPressed: () {

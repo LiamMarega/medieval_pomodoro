@@ -48,7 +48,7 @@ class TimerHeaderWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const MusicToggleWidget(),
+            // const MusicToggleWidget(),
           ],
         ),
       ),
