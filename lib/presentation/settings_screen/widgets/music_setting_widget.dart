@@ -16,7 +16,7 @@ class MusicSettingWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: EdgeInsets.all(3.w),
+      padding: EdgeInsets.all(5.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -28,7 +28,7 @@ class MusicSettingWidget extends ConsumerWidget {
             ),
           ),
           Switch(
-            value: isMusicEnabled,
+            value: true,
             onChanged: onChanged,
             activeColor: const Color(0xFFDAA520),
             activeTrackColor: const Color(0xFFDAA520).withValues(alpha: 0.3),

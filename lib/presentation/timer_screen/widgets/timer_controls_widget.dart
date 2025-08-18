@@ -30,27 +30,20 @@ class TimerControlsWidget extends ConsumerWidget {
             }
           },
         ),
-        // _buildControlButton(
-        //   spritePath: 'assets/sprites/reset_button.png',
-        //   onPressed: () {
-        //     HapticFeedback.lightImpact();
-        //     timerController.restartTimer();
-        //   },
-        // ),
         _buildControlButton(
-          spritePath: 'assets/sprites/settings_button.png',
+          spritePath: 'assets/sprites/reset_button.png',
           onPressed: () {
             HapticFeedback.lightImpact();
             timerController.restartTimer();
           },
         ),
-        // _buildControlButton(
-        //   spritePath: 'assets/sprites/minize_button.png',
-        //   onPressed: () {
-        //     HapticFeedback.lightImpact();
-        //     Navigator.pushNamed(context, '/settings-screen');
-        //   },
-        // ),
+        _buildControlButton(
+          spritePath: 'assets/sprites/settings_button.png',
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pushNamed(context, '/settings-screen');
+          },
+        ),
       ],
     );
   }
@@ -64,7 +57,8 @@ class TimerControlsWidget extends ConsumerWidget {
       child: Image.asset(
         spritePath,
         height: 14.w,
-        fit: BoxFit.contain,
+        width: 25.w,
+        fit: BoxFit.cover,
         filterQuality: FilterQuality.none,
       ),
     );

@@ -18,15 +18,36 @@ class MotivationalMessageWidget extends ConsumerWidget {
       edgeThickness: 5,
       padding: 12,
       borderStyle: MedievalBorderStyle.stone,
-      child: Padding(
-        padding: EdgeInsets.all(3.h),
-        child: Text(
-          timerState.currentMotivationalMessage,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.pressStart2p(
-            fontSize: 8.sp,
-            color: const Color(0xFFB8860B),
-            letterSpacing: 1.0,
+      child: SizedBox(
+        height: 15.h,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.center,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: constraints.maxWidth,
+                    ),
+                    child: Text(
+                      timerState.currentMotivationalMessage,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 8.sp,
+                        color: const Color(0xFFB8860B),
+                        letterSpacing: 1.0,
+                      ),
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),

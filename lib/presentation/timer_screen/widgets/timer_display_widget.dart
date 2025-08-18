@@ -21,6 +21,7 @@ class TimerDisplayWidget extends ConsumerWidget {
         ),
       ),
       child: Container(
+        padding: EdgeInsets.all(2.h),
         decoration: BoxDecoration(
           border: Border.all(
             color: Colors.black.withValues(alpha: 0.5),

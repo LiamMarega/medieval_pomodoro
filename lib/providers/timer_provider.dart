@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/timer_state.dart';
-import '../services/audio_test.dart';
+// Importa el nuevo servicio de audio
+import '../services/audio_service_manager.dart';
 
 part 'timer_provider.g.dart';
 
@@ -12,10 +13,7 @@ part 'timer_provider.g.dart';
 class TimerController extends _$TimerController {
   Timer? _timer;
   Timer? _volumeTimer;
-
-  static const double _maxVolume = 1;
-  static const double _volumeStep = 0.05;
-  static const int _volumeStepDuration = 500;
+  PlaylistAudioService? _audioService;
 
   final List<String> _motivationalMessages = [
     "A knight's focus is their greatest weapon!",
@@ -39,31 +37,48 @@ class TimerController extends _$TimerController {
 
   void _initializeAudio() async {
     try {
-      // Initialize audio test
-      await AudioTest.initialize();
-      debugPrint('Audio initialized in timer provider');
+      debugPrint('🚀 Initializing audio in timer provider...');
+      _audioService = PlaylistAudioService.instance;
+      await _audioService!.initialize();
+      debugPrint('✅ Audio initialized successfully in timer provider');
+
+      // Validar playlist después de inicializar
+      final isValid = await _audioService!.validatePlaylist();
+      if (!isValid) {
+        debugPrint('⚠️ Warning: Some songs in playlist may not be available');
+      }
     } catch (e) {
-      debugPrint('Error initializing audio: $e');
+      debugPrint('❌ Error initializing audio in timer provider: $e');
     }
   }
 
   void startTimer() {
-    if (_timer?.isActive ?? false) return;
+    debugPrint('▶️ Starting timer...');
+    if (_timer?.isActive ?? false) {
+      debugPrint('⚠️ Timer is already active');
+      return;
+    }
 
     state = state.copyWith(isActive: true);
 
+    // Iniciar música si está habilitada
     if (state.isMusicEnabled) {
-      _startMusicWithFadeIn();
+      debugPrint('🎵 Starting music...');
+      _startMusic();
+    } else {
+      debugPrint('🔇 Music is disabled, not starting');
     }
 
+    // Configurar modo inmersivo
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
+    // Iniciar el timer del pomodoro
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.currentSeconds > 0) {
         final newSeconds = state.currentSeconds - 1;
-
         state = state.copyWith(currentSeconds: newSeconds);
 
+        // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
         if (newSeconds % 300 == 0) {
           _updateMotivationalMessage();
         }
@@ -71,56 +86,75 @@ class TimerController extends _$TimerController {
         _completeSession();
       }
     });
+
+    debugPrint('✅ Timer started successfully');
   }
 
   void pauseTimer() {
-    debugPrint('pauseTimer() called');
+    debugPrint('⏸️ Pausing timer...');
     debugPrint(
-        'Current music state - isPlaying: ${state.isMusicPlaying}, isEnabled: ${state.isMusicEnabled}');
+        'Current music state - isPlaying: ${_audioService?.isPlaying ?? false}, isEnabled: ${state.isMusicEnabled}');
 
+    // Cancelar el timer
     _timer?.cancel();
     state = state.copyWith(isActive: false);
 
-    if (state.isMusicPlaying) {
-      debugPrint('Calling _stopMusicWithFadeOut() from pauseTimer');
-      _stopMusicWithFadeOut();
+    // Detener música si está reproduciéndose
+    if (state.isMusicEnabled && (_audioService?.isPlaying ?? false)) {
+      debugPrint('🔇 Stopping music...');
+      _stopMusic();
     } else {
-      debugPrint('Music is not playing, skipping _stopMusicWithFadeOut');
+      debugPrint('🔇 Music is not playing or is disabled, skipping stop');
     }
 
+    // Salir del modo inmersivo
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    debugPrint('✅ Timer paused successfully');
   }
 
   void restartTimer() {
+    debugPrint('🔄 Restarting timer...');
+
     _timer?.cancel();
     state = state.copyWith(
       isActive: false,
       currentSeconds: state.totalSeconds,
     );
 
-    if (state.isMusicPlaying) {
-      _stopMusicWithFadeOut();
+    // Detener música si está reproduciéndose
+    if (_audioService?.isPlaying ?? false) {
+      debugPrint('🔇 Stopping music for restart...');
+      _stopMusic();
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _updateMotivationalMessage();
     HapticFeedback.mediumImpact();
+
+    debugPrint('✅ Timer restarted successfully');
   }
 
   void _completeSession() {
+    debugPrint('🏁 Completing session...');
+
     _timer?.cancel();
     state = state.copyWith(
       isActive: false,
       sessionNumber: state.sessionNumber + 1,
     );
 
-    if (state.isMusicPlaying) {
-      _stopMusicWithFadeOut();
+    // Detener música
+    if (_audioService?.isPlaying ?? false) {
+      debugPrint('🔇 Stopping music for session completion...');
+      _stopMusic();
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _determineNextSession();
     HapticFeedback.heavyImpact();
+
+    debugPrint('✅ Session completed successfully');
   }
 
   void _determineNextSession() {
@@ -145,6 +179,9 @@ class TimerController extends _$TimerController {
       totalSeconds: newTotalSeconds,
       currentSeconds: newTotalSeconds,
     );
+
+    debugPrint(
+        '📋 Next session determined: $newSessionType (${newTotalSeconds}s)');
   }
 
   void _updateMotivationalMessage() {
@@ -153,80 +190,65 @@ class TimerController extends _$TimerController {
     state = state.copyWith(
       currentMotivationalMessage: _motivationalMessages[random],
     );
+    debugPrint(
+        '💭 Motivational message updated: ${_motivationalMessages[random]}');
   }
 
   void toggleMusic() {
-    state = state.copyWith(isMusicEnabled: !state.isMusicEnabled);
+    debugPrint('🎵 Toggling music...');
 
-    if (!state.isMusicEnabled && state.isMusicPlaying) {
-      _stopMusicWithFadeOut();
+    final newMusicEnabled = !state.isMusicEnabled;
+    state = state.copyWith(isMusicEnabled: newMusicEnabled);
+
+    // Actualizar el servicio de audio
+    _audioService?.setMusicEnabled(newMusicEnabled);
+
+    // Si se deshabilitó la música y está reproduciéndose, detenerla
+    if (!newMusicEnabled && (_audioService?.isPlaying ?? false)) {
+      debugPrint('🔇 Music disabled, stopping playback...');
+      _stopMusic();
     }
 
-    // Update audio test music enabled state
-    debugPrint('Music enabled set to: ${state.isMusicEnabled}');
-
     HapticFeedback.mediumImpact();
+    debugPrint('✅ Music toggled: $newMusicEnabled');
   }
 
-  void _startMusicWithFadeIn() async {
-    debugPrint('_startMusicWithFadeIn() called');
+  void _startMusic() async {
+    debugPrint('🎵 _startMusic() called');
+
     if (!state.isMusicEnabled) {
-      debugPrint('Music is not enabled, skipping start');
+      debugPrint('🔇 Music is not enabled, skipping start');
+      return;
+    }
+
+    if (_audioService == null || !_audioService!.isInitialized) {
+      debugPrint('❌ Audio service not initialized in _startMusic()');
       return;
     }
 
     try {
-      _volumeTimer?.cancel();
-
-      debugPrint('Calling AudioTest.play()');
-      // Use audio test to play music
-      await AudioTest.play();
-
-      state = state.copyWith(
-        isMusicPlaying: true,
-        currentVolume: _maxVolume,
-      );
-
-      debugPrint(
-          'Music started via audio provider - isMusicPlaying set to true');
+      await _audioService!.play();
+      state = state.copyWith(isMusicPlaying: true);
+      debugPrint('✅ Music started successfully - isMusicPlaying set to true');
     } catch (e) {
-      debugPrint('Error starting music: $e');
+      debugPrint('❌ Error starting music: $e');
     }
   }
 
-  void _stopMusicWithFadeOut() async {
-    debugPrint('_stopMusicWithFadeOut() called');
+  void _stopMusic() async {
+    debugPrint('🔇 _stopMusic() called');
+
+    if (_audioService == null || !_audioService!.isInitialized) {
+      debugPrint('❌ Audio service not initialized in _stopMusic()');
+      return;
+    }
+
     try {
-      _volumeTimer?.cancel();
-
-      // For now, let's try a simple pause without fade out to test
-      debugPrint('Calling AudioTest.pause() directly');
-      await AudioTest.pause();
-      state = state.copyWith(isMusicPlaying: false, currentVolume: 0.0);
-      debugPrint(
-          'Music stopped via audio provider - isMusicPlaying set to false');
-
-      // TODO: Re-enable fade out once basic pause works
-      /*
-      _volumeTimer = Timer.periodic(
-        Duration(milliseconds: _volumeStepDuration),
-        (timer) async {
-          if (state.currentVolume > 0.0) {
-            final newVolume = state.currentVolume - _volumeStep;
-            await AudioTest.setVolume(newVolume);
-            state = state.copyWith(currentVolume: newVolume);
-            debugPrint('Fade out volume: $newVolume');
-          } else {
-            timer.cancel();
-            await AudioTest.pause();
-            state = state.copyWith(isMusicPlaying: false);
-            debugPrint('Music stopped via audio provider with fade out');
-          }
-        },
-      );
-      */
+      await _audioService!.pause();
+      state = state.copyWith(isMusicPlaying: false);
+      debugPrint('✅ Music stopped successfully - isMusicPlaying set to false');
     } catch (e) {
-      debugPrint('Error stopping music: $e');
+      debugPrint('❌ Error stopping music: $e');
     }
   }
 
@@ -236,6 +258,8 @@ class TimerController extends _$TimerController {
     required int longBreakMinutes,
     required bool isMusicEnabled,
   }) {
+    debugPrint('⚙️ Updating settings...');
+
     state = state.copyWith(
       workDurationMinutes: workDurationMinutes,
       shortBreakMinutes: shortBreakMinutes,
@@ -243,9 +267,10 @@ class TimerController extends _$TimerController {
       isMusicEnabled: isMusicEnabled,
     );
 
-    // Update audio test music enabled state
-    debugPrint('Music enabled set to: $isMusicEnabled');
+    // Actualizar el servicio de audio
+    _audioService?.setMusicEnabled(isMusicEnabled);
 
+    // Si estamos en una sesión de trabajo, actualizar el tiempo total
     if (state.sessionType == 'Work') {
       final newTotalSeconds = workDurationMinutes * 60;
       state = state.copyWith(
@@ -253,11 +278,47 @@ class TimerController extends _$TimerController {
         currentSeconds: newTotalSeconds,
       );
     }
+
+    debugPrint('✅ Settings updated successfully');
   }
 
+  // Métodos adicionales para controlar la playlist
+  void nextSong() {
+    debugPrint('⏭️ Skipping to next song...');
+    _audioService?.nextSong();
+    HapticFeedback.lightImpact();
+  }
+
+  void previousSong() {
+    debugPrint('⏮️ Skipping to previous song...');
+    _audioService?.previousSong();
+    HapticFeedback.lightImpact();
+  }
+
+  void setMusicVolume(double volume) {
+    debugPrint('🔊 Setting music volume to: ${(volume * 100).round()}%');
+    _audioService?.setVolume(volume);
+  }
+
+  // Getters para información de la playlist
+  String get currentSongTitle =>
+      _audioService?.currentSongTitle ?? 'Medieval Lofi Music';
+  List<String> get playlistInfo => _audioService?.getPlaylistInfo() ?? [];
+  int get currentSongIndex => _audioService?.currentIndex ?? 0;
+  Duration get currentPosition =>
+      _audioService?.currentPosition ?? Duration.zero;
+  Duration get totalDuration => _audioService?.totalDuration ?? Duration.zero;
+
+  @override
   void dispose() {
+    debugPrint('🗑️ Disposing TimerController...');
+
     _timer?.cancel();
     _volumeTimer?.cancel();
-    // Audio service will be disposed by the app lifecycle
+
+    // El servicio de audio se mantendrá vivo para uso global
+    // Solo se dispose cuando se cierre toda la app
+
+    debugPrint('✅ TimerController disposed successfully');
   }
 }

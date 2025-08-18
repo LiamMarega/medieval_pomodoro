@@ -30,6 +30,7 @@ class TimerScreenRefactored extends ConsumerWidget {
       cornerSize: 32,
       edgeThickness: 8,
       showBorder: false,
+      showBottomBorder: false,
       padding: 16,
       borderStyle: MedievalBorderStyle.stone,
       child: Scaffold(

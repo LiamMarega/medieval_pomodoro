@@ -1,121 +1,334 @@
-import 'package:audio_service/audio_service.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'simple_audio_handler.dart';
+import 'package:just_audio/just_audio.dart';
 
-class AudioServiceManager {
-  static AudioServiceManager? _instance;
-  static AudioHandler? _audioHandler;
-  static bool _isInitialized = false;
+class PlaylistAudioService {
+  static PlaylistAudioService? _instance;
+  static PlaylistAudioService get instance =>
+      _instance ??= PlaylistAudioService._();
 
-  AudioServiceManager._();
+  PlaylistAudioService._();
 
-  static AudioServiceManager get instance {
-    _instance ??= AudioServiceManager._();
-    return _instance!;
+  AudioPlayer? _player;
+  bool _isInitialized = false;
+  bool _isMusicEnabled = true;
+  List<AudioSource> _audioSources = [];
+  Timer? _fadeTimer;
+
+  // Lista de canciones lofi medievales (agrega más archivos según tengas)
+  final List<String> _songPaths = [
+    'assets/songs/The Last Knight.mp3',
+    'assets/songs/medieval_lofi.mp3',
+  ];
+
+  // Lista de nombres de canciones para mostrar
+  final List<String> _songNames = [
+    'Medieval Lofi - Castle Dreams',
+    'Medieval Lofi - Knight\'s Rest',
+    'Medieval Lofi - Tavern Nights',
+    'Medieval Lofi - Forest Path',
+    'Medieval Lofi - Royal Court',
+  ];
+
+  // Getters
+  bool get isInitialized => _isInitialized;
+  bool get isPlaying => _player?.playing ?? false;
+  bool get isMusicEnabled => _isMusicEnabled;
+  Duration get currentPosition => _player?.position ?? Duration.zero;
+  Duration get totalDuration => _player?.duration ?? Duration.zero;
+  int get currentIndex => _player?.currentIndex ?? 0;
+
+  String get currentSongTitle {
+    if (_player?.currentIndex != null &&
+        _player!.currentIndex! < _songNames.length) {
+      return _songNames[_player!.currentIndex!];
+    }
+    return 'Medieval Lofi Music';
   }
 
-  static AudioHandler? get audioHandler => _audioHandler;
-
   Future<void> initialize() async {
-    debugPrint('AudioServiceManager.initialize() called');
-    
-    if (_isInitialized) {
-      debugPrint('Audio service already initialized');
-      return;
-    }
+    debugPrint('🎵 Initializing PlaylistAudioService...');
 
     try {
-      debugPrint('Starting AudioService.init()...');
-      _audioHandler = await AudioService.init(
-        builder: () {
-          debugPrint('Creating SimpleMedievalAudioHandler...');
-          return SimpleMedievalAudioHandler();
-        },
-        config: AudioServiceConfig(
-          androidNotificationChannelId: 'com.medieval_pomodoro.channel.audio',
-          androidNotificationChannelName: 'Medieval Pomodoro Music',
-          androidNotificationChannelDescription: 'Background music for Medieval Pomodoro timer',
-          androidNotificationOngoing: true,
-          androidStopForegroundOnPause: false, // Keep service running when paused
-          notificationColor: const Color(0xFFDAA520), // Medieval gold color
-        ),
-      );
+      if (_player != null) {
+        await _player!.dispose();
+      }
+
+      _player = AudioPlayer();
+
+      // Crear playlist con todas las canciones disponibles
+      await _createPlaylist();
+
+      // Configurar el player para loop infinito de la playlist
+      await _player!.setLoopMode(LoopMode.all);
+
+      // Configurar el volumen inicial
+      await _player!.setVolume(0.7);
+
+      // Configurar listeners
+      _setupListeners();
 
       _isInitialized = true;
-      debugPrint('Audio service initialized successfully. Handler: $_audioHandler');
+      debugPrint(
+          '✅ PlaylistAudioService initialized successfully with ${_audioSources.length} songs');
     } catch (e) {
-      debugPrint('Error initializing audio service: $e');
-      debugPrint('Stack trace: ${StackTrace.current}');
+      debugPrint('❌ Error initializing PlaylistAudioService: $e');
       _isInitialized = false;
+      rethrow;
     }
+  }
+
+  Future<void> _createPlaylist() async {
+    try {
+      _audioSources.clear();
+
+      // Agregar todas las canciones disponibles a la playlist
+      for (int i = 0; i < _songPaths.length; i++) {
+        try {
+          final audioSource = AudioSource.asset(_songPaths[i]);
+          _audioSources.add(audioSource);
+          debugPrint('📁 Added song to playlist: ${_songPaths[i]}');
+        } catch (e) {
+          // Si una canción no existe, continuar con las demás
+          debugPrint('⚠️ Song not found, skipping: ${_songPaths[i]}');
+        }
+      }
+
+      if (_audioSources.isEmpty) {
+        // Si no hay canciones en la playlist, agregar al menos una por defecto
+        debugPrint('⚠️ No songs found, adding default song');
+        _audioSources.add(AudioSource.asset('assets/songs/medieval_lofi.mp3'));
+      }
+
+      // Establecer la playlist en el player
+      await _player!.setAudioSources(_audioSources, preload: true);
+      debugPrint(
+          '✅ Playlist created with ${_audioSources.length} songs and preloaded');
+    } catch (e) {
+      debugPrint('❌ Error creating playlist: $e');
+      throw Exception('Failed to create playlist: $e');
+    }
+  }
+
+  void _setupListeners() {
+    _player!.playerStateStream.listen((state) {
+      debugPrint(
+          '🎵 Player state changed: ${state.playing ? "Playing" : "Paused"} - ${state.processingState}');
+    });
+
+    _player!.currentIndexStream.listen((index) {
+      if (index != null && index < _songNames.length) {
+        debugPrint(
+            '🎵 Now playing: ${_songNames[index]} (${index + 1}/${_songNames.length})');
+      }
+    });
+
+    _player!.positionStream.listen((position) {
+      // Opcional: Log de posición cada 10 segundos para debug
+      if (position.inSeconds % 10 == 0 && position.inSeconds > 0) {
+        debugPrint(
+            '🕐 Position: ${position.inMinutes}:${(position.inSeconds % 60).toString().padLeft(2, '0')}');
+      }
+    });
   }
 
   Future<void> play() async {
-    if (!_isInitialized || _audioHandler == null) {
-      debugPrint('Audio service not initialized');
+    debugPrint('▶️ PlaylistAudioService.play() called');
+
+    if (!_isInitialized) {
+      debugPrint('❌ Audio service not initialized in play()');
+      throw Exception('Audio service not initialized');
+    }
+
+    if (!_isMusicEnabled) {
+      debugPrint('🔇 Music is disabled');
       return;
     }
 
     try {
-      await _audioHandler!.play();
-      debugPrint('Audio service play command sent');
+      _fadeTimer?.cancel();
+      await _startWithFadeIn();
+      debugPrint('✅ Music started successfully');
     } catch (e) {
-      debugPrint('Error playing audio: $e');
+      debugPrint('❌ Error starting music: $e');
+      throw Exception('Failed to start music: $e');
     }
   }
 
   Future<void> pause() async {
-    if (!_isInitialized || _audioHandler == null) {
-      debugPrint('Audio service not initialized');
+    debugPrint('⏸️ PlaylistAudioService.pause() called');
+
+    if (!_isInitialized) {
+      debugPrint('❌ Audio service not initialized in pause()');
       return;
     }
 
     try {
-      await _audioHandler!.pause();
-      debugPrint('Audio service pause command sent');
+      _fadeTimer?.cancel();
+      await _stopWithFadeOut();
+      debugPrint('✅ Music paused successfully');
     } catch (e) {
-      debugPrint('Error pausing audio: $e');
+      debugPrint('❌ Error pausing music: $e');
+      throw Exception('Failed to pause music: $e');
     }
   }
 
   Future<void> stop() async {
-    if (!_isInitialized || _audioHandler == null) {
-      debugPrint('Audio service not initialized');
+    debugPrint('⏹️ PlaylistAudioService.stop() called');
+
+    if (!_isInitialized) {
+      debugPrint('❌ Audio service not initialized in stop()');
       return;
     }
 
     try {
-      await _audioHandler!.stop();
-      debugPrint('Audio service stop command sent');
+      _fadeTimer?.cancel();
+      await _player!.stop();
+      debugPrint('✅ Music stopped successfully');
     } catch (e) {
-      debugPrint('Error stopping audio: $e');
+      debugPrint('❌ Error stopping music: $e');
+      throw Exception('Failed to stop music: $e');
+    }
+  }
+
+  Future<void> _startWithFadeIn() async {
+    try {
+      // Iniciar reproducción con volumen máximo (sin fade in por simplicidad)
+      await _player!.setVolume(0.7);
+      await _player!.play();
+      debugPrint('🎵 Music started with volume 0.7');
+    } catch (e) {
+      debugPrint('❌ Error in _startWithFadeIn: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> _stopWithFadeOut() async {
+    try {
+      const int fadeDuration = 1000; // 1 segundo
+      const int steps = 20;
+      const int stepDuration = fadeDuration ~/ steps;
+
+      final currentVolume = _player!.volume;
+      final volumeStep = currentVolume / steps;
+
+      _fadeTimer =
+          Timer.periodic(Duration(milliseconds: stepDuration), (timer) async {
+        try {
+          final newVolume = _player!.volume - volumeStep;
+          if (newVolume <= 0.0) {
+            timer.cancel();
+            await _player!.pause();
+            await _player!.setVolume(
+                0.7); // Restaurar volumen para la próxima reproducción
+            debugPrint('🔇 Fade out completed and music paused');
+          } else {
+            await _player!.setVolume(newVolume);
+          }
+        } catch (e) {
+          timer.cancel();
+          debugPrint('❌ Error during fade out: $e');
+          await _player!.pause();
+        }
+      });
+    } catch (e) {
+      debugPrint('❌ Error in _stopWithFadeOut: $e');
+      await _player!.pause();
+    }
+  }
+
+  Future<void> nextSong() async {
+    if (!_isInitialized) return;
+
+    try {
+      if (_player!.hasNext) {
+        await _player!.seekToNext();
+        debugPrint('⏭️ Skipped to next song');
+      }
+    } catch (e) {
+      debugPrint('❌ Error skipping to next song: $e');
+    }
+  }
+
+  Future<void> previousSong() async {
+    if (!_isInitialized) return;
+
+    try {
+      if (_player!.hasPrevious) {
+        await _player!.seekToPrevious();
+        debugPrint('⏮️ Skipped to previous song');
+      }
+    } catch (e) {
+      debugPrint('❌ Error skipping to previous song: $e');
+    }
+  }
+
+  Future<void> setVolume(double volume) async {
+    if (!_isInitialized) return;
+
+    try {
+      await _player!.setVolume(volume.clamp(0.0, 1.0));
+      debugPrint('🔊 Volume set to: ${(volume * 100).round()}%');
+    } catch (e) {
+      debugPrint('❌ Error setting volume: $e');
     }
   }
 
   void setMusicEnabled(bool enabled) {
-    debugPrint('setMusicEnabled called with: $enabled');
-    // For now, just log the call
-  }
+    _isMusicEnabled = enabled;
+    debugPrint('🎵 Music enabled: $enabled');
 
-  bool get isMusicEnabled {
-    return true; // Always enabled for testing
-  }
-
-  bool get isPlaying {
-    if (_audioHandler != null) {
-      return _audioHandler!.playbackState.value.playing;
+    if (!enabled && isPlaying) {
+      pause();
     }
-    return false;
   }
-
-  bool get isInitialized => _isInitialized;
 
   Future<void> dispose() async {
-    if (_audioHandler != null) {
-      _audioHandler = null;
+    debugPrint('🗑️ Disposing PlaylistAudioService...');
+
+    try {
+      _fadeTimer?.cancel();
+      if (_player != null) {
+        await _player!.dispose();
+        _player = null;
+      }
+      _audioSources.clear();
+      _isInitialized = false;
+      debugPrint('✅ PlaylistAudioService disposed successfully');
+    } catch (e) {
+      debugPrint('❌ Error disposing PlaylistAudioService: $e');
     }
-    _isInitialized = false;
-    debugPrint('Audio service disposed');
+  }
+
+  // Método para obtener información de la playlist
+  List<String> getPlaylistInfo() {
+    return List.from(_songNames);
+  }
+
+  // Método para verificar si hay errores de carga
+  Future<bool> validatePlaylist() async {
+    if (!_isInitialized) return false;
+
+    try {
+      // Intentar cargar cada canción para verificar que exista
+      int validSongs = 0;
+      for (String path in _songPaths) {
+        try {
+          final tempPlayer = AudioPlayer();
+          await tempPlayer.setAsset(path);
+          await tempPlayer.dispose();
+          validSongs++;
+        } catch (e) {
+          debugPrint('⚠️ Invalid song: $path');
+        }
+      }
+
+      debugPrint(
+          '✅ Playlist validation: $validSongs/${_songPaths.length} songs are valid');
+      return validSongs > 0;
+    } catch (e) {
+      debugPrint('❌ Error validating playlist: $e');
+      return false;
+    }
   }
 }

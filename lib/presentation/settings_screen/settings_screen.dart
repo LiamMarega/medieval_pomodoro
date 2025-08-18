@@ -132,7 +132,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               SizedBox(height: 2.h),
               // Music setting
-              _buildMusicSetting(),
               SizedBox(height: 3.h),
               // Work duration setting
               _buildDurationSetting(
@@ -166,33 +165,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildMusicSetting() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(3.w),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Background Music',
-            style: GoogleFonts.pressStart2p(
-              fontSize: 12.sp,
-              color: const Color(0xFFDAA520),
-            ),
-          ),
-          Switch(
-            value: _isMusicEnabled,
-            onChanged: (value) => setState(() => _isMusicEnabled = value),
-            activeColor: const Color(0xFFDAA520),
-            activeTrackColor: const Color(0xFFDAA520).withValues(alpha: 0.3),
-            inactiveThumbColor: const Color(0xFF757575),
-            inactiveTrackColor: const Color(0xFF757575).withValues(alpha: 0.3),
-          ),
-        ],
       ),
     );
   }

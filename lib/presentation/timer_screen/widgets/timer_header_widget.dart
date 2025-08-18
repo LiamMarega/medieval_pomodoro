@@ -22,7 +22,7 @@ class TimerHeaderWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSwordDecoration(),
+            _buildSwordDecoration('assets/sprites/minize_button.png'),
             Expanded(
               child: Text(
                 'POMODORO TIMER',
@@ -48,64 +48,20 @@ class TimerHeaderWidget extends StatelessWidget {
                 ),
               ),
             ),
-            // const MusicToggleWidget(),
+            _buildSwordDecoration('assets/sprites/close_button.png'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSwordDecoration() {
+  Widget _buildSwordDecoration(String spritePath) {
     return SizedBox(
       width: 15.w,
       height: 15.w,
-      child: Stack(
-        children: [
-          Positioned(
-            top: 1.w,
-            right: 4.w,
-            child: Transform.rotate(
-              angle: 0.785398,
-              child: Container(
-                width: 2.w,
-                height: 12.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC0C0C0),
-                  borderRadius: BorderRadius.circular(1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      offset: const Offset(1, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 1.w,
-            left: 4.w,
-            child: Transform.rotate(
-              angle: -0.785398,
-              child: Container(
-                width: 2.w,
-                height: 12.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC0C0C0),
-                  borderRadius: BorderRadius.circular(1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      offset: const Offset(1, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+      child: Image.asset(
+        spritePath,
+        fit: BoxFit.contain,
       ),
     );
   }

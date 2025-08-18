@@ -6,7 +6,7 @@ part 'audio_provider.g.dart';
 
 @riverpod
 class AudioController extends _$AudioController {
-  final AudioServiceManager _audioManager = AudioServiceManager.instance;
+  final PlaylistAudioService _audioManager = PlaylistAudioService.instance;
 
   @override
   AudioState build() {

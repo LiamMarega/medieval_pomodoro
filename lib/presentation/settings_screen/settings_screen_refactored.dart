@@ -14,10 +14,12 @@ class SettingsScreenRefactored extends ConsumerStatefulWidget {
   const SettingsScreenRefactored({super.key});
 
   @override
-  ConsumerState<SettingsScreenRefactored> createState() => _SettingsScreenRefactoredState();
+  ConsumerState<SettingsScreenRefactored> createState() =>
+      _SettingsScreenRefactoredState();
 }
 
-class _SettingsScreenRefactoredState extends ConsumerState<SettingsScreenRefactored> {
+class _SettingsScreenRefactoredState
+    extends ConsumerState<SettingsScreenRefactored> {
   late int _workDurationMinutes;
   late int _shortBreakMinutes;
   late int _longBreakMinutes;
@@ -65,7 +67,7 @@ class _SettingsScreenRefactoredState extends ConsumerState<SettingsScreenRefacto
               child: PixelFrame(
                 cornerSize: 24,
                 edgeThickness: 6,
-                padding: 16,
+                padding: 20,
                 borderStyle: MedievalBorderStyle.stone,
                 child: SingleChildScrollView(
                   child: Column(
@@ -74,7 +76,8 @@ class _SettingsScreenRefactoredState extends ConsumerState<SettingsScreenRefacto
                       SizedBox(height: 2.h),
                       MusicSettingWidget(
                         isMusicEnabled: _isMusicEnabled,
-                        onChanged: (value) => setState(() => _isMusicEnabled = value),
+                        onChanged: (value) =>
+                            setState(() => _isMusicEnabled = value),
                       ),
                       SizedBox(height: 3.h),
                       DurationSettingWidget(
@@ -83,7 +86,8 @@ class _SettingsScreenRefactoredState extends ConsumerState<SettingsScreenRefacto
                         minValue: 5,
                         maxValue: 60,
                         increment: 5,
-                        onChanged: (value) => setState(() => _workDurationMinutes = value),
+                        onChanged: (value) =>
+                            setState(() => _workDurationMinutes = value),
                       ),
                       SizedBox(height: 3.h),
                       DurationSettingWidget(
@@ -92,7 +96,8 @@ class _SettingsScreenRefactoredState extends ConsumerState<SettingsScreenRefacto
                         minValue: 1,
                         maxValue: 15,
                         increment: 1,
-                        onChanged: (value) => setState(() => _shortBreakMinutes = value),
+                        onChanged: (value) =>
+                            setState(() => _shortBreakMinutes = value),
                       ),
                       SizedBox(height: 3.h),
                       DurationSettingWidget(
@@ -101,7 +106,8 @@ class _SettingsScreenRefactoredState extends ConsumerState<SettingsScreenRefacto
                         minValue: 15,
                         maxValue: 60,
                         increment: 5,
-                        onChanged: (value) => setState(() => _longBreakMinutes = value),
+                        onChanged: (value) =>
+                            setState(() => _longBreakMinutes = value),
                       ),
                     ],
                   ),
