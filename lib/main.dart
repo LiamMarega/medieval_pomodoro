@@ -7,6 +7,7 @@ import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
 import 'presentation/timer_screen/timer_screen_refactored.dart';
 import 'presentation/settings_screen/settings_screen_refactored.dart';
+import 'services/audio_test.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,10 @@ void main() async {
       errorDetails: details,
     );
   };
-  
+
+  // Initialize audio test for background audio
+  await AudioTest.initialize();
+
   // 🚨 CRITICAL: Device orientation lock - DO NOT REMOVE
   Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])

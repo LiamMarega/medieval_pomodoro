@@ -48,13 +48,13 @@ class TimerScreenRefactored extends ConsumerWidget {
                           image: AssetImage('assets/sprites/dirt_sprite_2.png'),
                           fit: BoxFit.none,
                           repeat: ImageRepeat.repeat,
-                          scale: 8,
+                          scale: 2,
                           filterQuality: FilterQuality.low,
                           colorFilter: ColorFilter.mode(
                             Color(0x6b2f01),
                             BlendMode.color,
                           ),
-                          opacity: 0.8,
+                          opacity: 0.5,
                         ),
                       ),
                       child: Column(

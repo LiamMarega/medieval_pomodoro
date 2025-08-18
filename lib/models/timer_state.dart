@@ -20,7 +20,7 @@ class TimerState {
     this.totalSeconds = 1500,
     this.sessionNumber = 1,
     this.sessionType = 'Work',
-    this.isMusicEnabled = false,
+    this.isMusicEnabled = true, // Music always ON by default
     this.isMusicPlaying = false,
     this.currentMotivationalMessage = '',
     this.workDurationMinutes = 25,
@@ -55,7 +55,8 @@ class TimerState {
       sessionType: sessionType ?? this.sessionType,
       isMusicEnabled: isMusicEnabled ?? this.isMusicEnabled,
       isMusicPlaying: isMusicPlaying ?? this.isMusicPlaying,
-      currentMotivationalMessage: currentMotivationalMessage ?? this.currentMotivationalMessage,
+      currentMotivationalMessage:
+          currentMotivationalMessage ?? this.currentMotivationalMessage,
       workDurationMinutes: workDurationMinutes ?? this.workDurationMinutes,
       shortBreakMinutes: shortBreakMinutes ?? this.shortBreakMinutes,
       longBreakMinutes: longBreakMinutes ?? this.longBreakMinutes,

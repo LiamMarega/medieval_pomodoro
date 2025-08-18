@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/timer_state.dart';
-import '../services/audio_test.dart';
 
-part 'timer_provider.g.dart';
+part 'simple_timer_provider.g.dart';
 
 @riverpod
-class TimerController extends _$TimerController {
+class SimpleTimerController extends _$SimpleTimerController {
   Timer? _timer;
   Timer? _volumeTimer;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   static const double _maxVolume = 1;
   static const double _volumeStep = 0.05;
@@ -38,16 +39,29 @@ class TimerController extends _$TimerController {
   }
 
   void _initializeAudio() async {
+    debugPrint('SimpleTimerController._initializeAudio() called');
     try {
-      // Initialize audio test
-      await AudioTest.initialize();
-      debugPrint('Audio initialized in timer provider');
+      debugPrint('Setting asset: assets/songs/medieval_lofi.mp3');
+      await _audioPlayer.setAsset('assets/songs/medieval_lofi.mp3');
+      debugPrint('Asset set successfully');
+
+      debugPrint('Setting loop mode to all');
+      await _audioPlayer.setLoopMode(LoopMode.all);
+      debugPrint('Loop mode set successfully');
+
+      debugPrint('Setting volume to 0.0');
+      await _audioPlayer.setVolume(0.0);
+      debugPrint('Volume set successfully');
+
+      debugPrint('Simple audio initialized successfully');
     } catch (e) {
-      debugPrint('Error initializing audio: $e');
+      debugPrint('Error initializing simple audio: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
     }
   }
 
   void startTimer() {
+    debugPrint('SimpleTimerController.startTimer() called');
     if (_timer?.isActive ?? false) return;
 
     state = state.copyWith(isActive: true);
@@ -74,24 +88,19 @@ class TimerController extends _$TimerController {
   }
 
   void pauseTimer() {
-    debugPrint('pauseTimer() called');
-    debugPrint(
-        'Current music state - isPlaying: ${state.isMusicPlaying}, isEnabled: ${state.isMusicEnabled}');
-
+    debugPrint('SimpleTimerController.pauseTimer() called');
     _timer?.cancel();
     state = state.copyWith(isActive: false);
 
     if (state.isMusicPlaying) {
-      debugPrint('Calling _stopMusicWithFadeOut() from pauseTimer');
       _stopMusicWithFadeOut();
-    } else {
-      debugPrint('Music is not playing, skipping _stopMusicWithFadeOut');
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
   void restartTimer() {
+    debugPrint('SimpleTimerController.restartTimer() called');
     _timer?.cancel();
     state = state.copyWith(
       isActive: false,
@@ -108,6 +117,7 @@ class TimerController extends _$TimerController {
   }
 
   void _completeSession() {
+    debugPrint('SimpleTimerController._completeSession() called');
     _timer?.cancel();
     state = state.copyWith(
       isActive: false,
@@ -156,77 +166,61 @@ class TimerController extends _$TimerController {
   }
 
   void toggleMusic() {
+    debugPrint('SimpleTimerController.toggleMusic() called');
     state = state.copyWith(isMusicEnabled: !state.isMusicEnabled);
 
     if (!state.isMusicEnabled && state.isMusicPlaying) {
       _stopMusicWithFadeOut();
     }
 
-    // Update audio test music enabled state
     debugPrint('Music enabled set to: ${state.isMusicEnabled}');
-
     HapticFeedback.mediumImpact();
   }
 
   void _startMusicWithFadeIn() async {
-    debugPrint('_startMusicWithFadeIn() called');
-    if (!state.isMusicEnabled) {
-      debugPrint('Music is not enabled, skipping start');
-      return;
-    }
+    debugPrint('SimpleTimerController._startMusicWithFadeIn() called');
+    if (!state.isMusicEnabled) return;
 
     try {
       _volumeTimer?.cancel();
 
-      debugPrint('Calling AudioTest.play()');
-      // Use audio test to play music
-      await AudioTest.play();
+      debugPrint('Starting playback with just_audio...');
+      await _audioPlayer.setVolume(_maxVolume);
+      await _audioPlayer.play();
 
       state = state.copyWith(
         isMusicPlaying: true,
         currentVolume: _maxVolume,
       );
 
-      debugPrint(
-          'Music started via audio provider - isMusicPlaying set to true');
+      debugPrint('Simple music started successfully');
     } catch (e) {
-      debugPrint('Error starting music: $e');
+      debugPrint('Error starting simple music: $e');
     }
   }
 
   void _stopMusicWithFadeOut() async {
-    debugPrint('_stopMusicWithFadeOut() called');
+    debugPrint('SimpleTimerController._stopMusicWithFadeOut() called');
     try {
       _volumeTimer?.cancel();
 
-      // For now, let's try a simple pause without fade out to test
-      debugPrint('Calling AudioTest.pause() directly');
-      await AudioTest.pause();
-      state = state.copyWith(isMusicPlaying: false, currentVolume: 0.0);
-      debugPrint(
-          'Music stopped via audio provider - isMusicPlaying set to false');
-
-      // TODO: Re-enable fade out once basic pause works
-      /*
       _volumeTimer = Timer.periodic(
         Duration(milliseconds: _volumeStepDuration),
         (timer) async {
           if (state.currentVolume > 0.0) {
             final newVolume = state.currentVolume - _volumeStep;
-            await AudioTest.setVolume(newVolume);
+            await _audioPlayer.setVolume(newVolume);
             state = state.copyWith(currentVolume: newVolume);
-            debugPrint('Fade out volume: $newVolume');
           } else {
             timer.cancel();
-            await AudioTest.pause();
+            await _audioPlayer.pause();
             state = state.copyWith(isMusicPlaying: false);
-            debugPrint('Music stopped via audio provider with fade out');
+            debugPrint('Simple music stopped successfully');
           }
         },
       );
-      */
     } catch (e) {
-      debugPrint('Error stopping music: $e');
+      debugPrint('Error stopping simple music: $e');
     }
   }
 
@@ -243,7 +237,6 @@ class TimerController extends _$TimerController {
       isMusicEnabled: isMusicEnabled,
     );
 
-    // Update audio test music enabled state
     debugPrint('Music enabled set to: $isMusicEnabled');
 
     if (state.sessionType == 'Work') {
@@ -258,6 +251,6 @@ class TimerController extends _$TimerController {
   void dispose() {
     _timer?.cancel();
     _volumeTimer?.cancel();
-    // Audio service will be disposed by the app lifecycle
+    _audioPlayer.dispose();
   }
 }
