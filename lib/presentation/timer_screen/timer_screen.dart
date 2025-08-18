@@ -7,7 +7,6 @@ import 'package:sizer/sizer.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../core/app_export.dart';
-import '../../widgets/pixel_frame.dart';
 import '../settings_screen/settings_screen.dart';
 
 class TimerScreen extends StatefulWidget {
@@ -378,51 +377,46 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   Widget _buildMedievalHeader() {
-    return PixelFrame(
-      padding: 16,
-      showBottomBorder: false,
-      borderStyle: MedievalBorderStyle.stone,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 4.w),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Crossed swords decoration (left side)
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 4.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Crossed swords decoration (left side)
 
-            // Title
-            Expanded(
-              child: Text(
-                'POMODORO TIMER',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.pressStart2p(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.normal,
-                  color: const Color(0xFFDAA520), // Golden color
-                  letterSpacing: 2.0,
-                  height: 1.2,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.8),
-                      offset: const Offset(3, 3),
-                      blurRadius: 6,
-                    ),
-                    Shadow(
-                      color: const Color(0xFFDAA520).withValues(alpha: 0.5),
-                      offset: const Offset(-1, -1),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
+          // Title
+          Expanded(
+            child: Text(
+              'POMODORO TIMER',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.pressStart2p(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.normal,
+                color: const Color(0xFFDAA520), // Golden color
+                letterSpacing: 2.0,
+                height: 1.2,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    offset: const Offset(3, 3),
+                    blurRadius: 6,
+                  ),
+                  Shadow(
+                    color: const Color(0xFFDAA520).withValues(alpha: 0.5),
+                    offset: const Offset(-1, -1),
+                    blurRadius: 2,
+                  ),
+                ],
               ),
             ),
-            // // Music toggle on the right
-            // MedievalMusicToggle(
-            //   isMusicEnabled: _isMusicEnabled,
-            //   onToggle: _toggleMusic,
-            // ),
-          ],
-        ),
+          ),
+          // // Music toggle on the right
+          // MedievalMusicToggle(
+          //   isMusicEnabled: _isMusicEnabled,
+          //   onToggle: _toggleMusic,
+          // ),
+        ],
       ),
     );
   }
@@ -435,34 +429,30 @@ class _TimerScreenState extends State<TimerScreen> {
           // Control buttons row
 
           Expanded(
-            child: PixelFrame(
-              showTopBorder: false,
-              showBottomBorder: false,
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/sprites/dirt_sprite_2.png'),
-                    fit: BoxFit.none,
-                    repeat: ImageRepeat.repeat,
-                    scale: 8,
-                    filterQuality: FilterQuality.low,
-                    colorFilter: ColorFilter.mode(
-                      Color(0x6b2f01),
-                      BlendMode.color,
-                    ),
-                    opacity: 0.8, // Hace la imagen más chica y repetida
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/sprites/dirt_sprite_2.png'),
+                  fit: BoxFit.none,
+                  repeat: ImageRepeat.repeat,
+                  scale: 8,
+                  filterQuality: FilterQuality.low,
+                  colorFilter: ColorFilter.mode(
+                    Color(0x6b2f01),
+                    BlendMode.color,
                   ),
+                  opacity: 0.8, // Hace la imagen más chica y repetida
                 ),
-                child: Column(
-                  children: [
-                    _buildControlButtons(),
-                    SizedBox(height: 1.h),
-                    Expanded(
-                      child: _buildBottomRow(),
-                    ),
-                    // Motivational message
-                  ],
-                ),
+              ),
+              child: Column(
+                children: [
+                  _buildControlButtons(),
+                  SizedBox(height: 1.h),
+                  Expanded(
+                    child: _buildBottomRow(),
+                  ),
+                  // Motivational message
+                ],
               ),
             ),
           ),
@@ -475,50 +465,43 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   Widget _buildUnifiedTimerDisplay() {
-    return PixelFrame(
-      cornerSize: 32,
-      edgeThickness: 8,
-      padding: 16,
-      borderStyle: MedievalBorderStyle.stone,
-      showBottomBorder: false,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 4.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _formatTime(_currentSeconds),
-              style: GoogleFonts.pressStart2p(
-                fontSize: 36.sp,
-                fontWeight: FontWeight.normal,
-                color: const Color(0xFFDAA520),
-                letterSpacing: 4.0,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.8),
-                    offset: const Offset(4, 4),
-                    blurRadius: 8,
-                  ),
-                  Shadow(
-                    color: const Color(0xFFDAA520).withValues(alpha: 0.5),
-                    offset: const Offset(-2, -2),
-                    blurRadius: 3,
-                  ),
-                ],
-              ),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 4.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            _formatTime(_currentSeconds),
+            style: GoogleFonts.pressStart2p(
+              fontSize: 36.sp,
+              fontWeight: FontWeight.normal,
+              color: const Color(0xFFDAA520),
+              letterSpacing: 4.0,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.8),
+                  offset: const Offset(4, 4),
+                  blurRadius: 8,
+                ),
+                Shadow(
+                  color: const Color(0xFFDAA520).withValues(alpha: 0.5),
+                  offset: const Offset(-2, -2),
+                  blurRadius: 3,
+                ),
+              ],
             ),
-            SizedBox(height: 2.h),
-            Text(
-              'SESSION $_sessionNumber - ${_sessionType.toUpperCase()}',
-              style: GoogleFonts.pressStart2p(
-                fontSize: 10.sp,
-                color: const Color(0xFFB8860B),
-                letterSpacing: 1.0,
-              ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            'SESSION $_sessionNumber - ${_sessionType.toUpperCase()}',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 10.sp,
+              color: const Color(0xFFB8860B),
+              letterSpacing: 1.0,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -669,22 +652,16 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   Widget _buildMotivationalMessage() {
-    return PixelFrame(
-      cornerSize: 20,
-      edgeThickness: 5,
-      padding: 4.5.h,
-      borderStyle: MedievalBorderStyle.stone,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(2.w),
-        child: Text(
-          _currentMotivationalMessage,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.pressStart2p(
-            fontSize: 8.sp,
-            color: const Color(0xFFB8860B),
-            letterSpacing: 1.0,
-          ),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(2.w),
+      child: Text(
+        _currentMotivationalMessage,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.pressStart2p(
+          fontSize: 8.sp,
+          color: const Color(0xFFB8860B),
+          letterSpacing: 1.0,
         ),
       ),
     );

@@ -14,6 +14,8 @@ class PixelFrame extends StatelessWidget {
   final bool showLeftBorder;
   final bool showRightBorder;
   final bool showBorder;
+  final bool showLeftShadow;
+  final bool showRightShadow;
 
   const PixelFrame({
     super.key,
@@ -27,6 +29,8 @@ class PixelFrame extends StatelessWidget {
     this.showLeftBorder = true,
     this.showRightBorder = true,
     this.showBorder = true,
+    this.showLeftShadow = true,
+    this.showRightShadow = true,
   });
 
   @override
@@ -196,20 +200,20 @@ class PixelFrame extends StatelessWidget {
                       border: Border(
                         top: showTopBorder
                             ? BorderSide(
-                                color: Colors.black.withValues(alpha: 0.6),
+                                color: Colors.black.withValues(alpha: 1),
                                 width: 5.0)
                             : BorderSide.none,
                         bottom: BorderSide(
-                            color: Colors.black.withValues(alpha: 0.6),
+                            color: Colors.black.withValues(alpha: 1),
                             width: 5.0),
-                        left: showLeftBorder
+                        left: showLeftBorder || showLeftShadow
                             ? BorderSide(
-                                color: Colors.black.withValues(alpha: 0.6),
+                                color: Colors.black.withValues(alpha: 1),
                                 width: 5.0)
                             : BorderSide.none,
-                        right: showRightBorder
+                        right: showRightBorder || showRightShadow
                             ? BorderSide(
-                                color: Colors.black.withValues(alpha: 0.6),
+                                color: Colors.black.withValues(alpha: 1),
                                 width: 5.0)
                             : BorderSide.none,
                       ),
@@ -231,20 +235,20 @@ class PixelFrame extends StatelessWidget {
                         border: Border(
                       top: showTopBorder
                           ? BorderSide(
-                              color: Colors.black.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: 0.5),
                               width: 5.0)
                           : BorderSide.none,
                       bottom: BorderSide(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: Colors.black.withValues(alpha: 0.5),
                           width: 5.0),
-                      left: showLeftBorder
+                      left: showLeftBorder || showLeftShadow
                           ? BorderSide(
-                              color: Colors.black.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: 0.5),
                               width: 5.0)
                           : BorderSide.none,
-                      right: showRightBorder
+                      right: showRightBorder || showRightShadow
                           ? BorderSide(
-                              color: Colors.black.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: 0.5),
                               width: 5.0)
                           : BorderSide.none,
                     )),
