@@ -63,54 +63,52 @@ class _SettingsScreenRefactoredState
         children: [
           const SettingsHeaderWidget(),
           Expanded(
-            child: Container(
-              child: PixelFrame(
-                cornerSize: 24,
-                edgeThickness: 6,
-                padding: 20,
-                borderStyle: MedievalBorderStyle.stone,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 2.h),
-                      MusicSettingWidget(
-                        isMusicEnabled: _isMusicEnabled,
-                        onChanged: (value) =>
-                            setState(() => _isMusicEnabled = value),
-                      ),
-                      SizedBox(height: 3.h),
-                      DurationSettingWidget(
-                        title: 'Work Duration',
-                        currentValue: _workDurationMinutes,
-                        minValue: 5,
-                        maxValue: 60,
-                        increment: 5,
-                        onChanged: (value) =>
-                            setState(() => _workDurationMinutes = value),
-                      ),
-                      SizedBox(height: 3.h),
-                      DurationSettingWidget(
-                        title: 'Short Break',
-                        currentValue: _shortBreakMinutes,
-                        minValue: 1,
-                        maxValue: 15,
-                        increment: 1,
-                        onChanged: (value) =>
-                            setState(() => _shortBreakMinutes = value),
-                      ),
-                      SizedBox(height: 3.h),
-                      DurationSettingWidget(
-                        title: 'Long Break',
-                        currentValue: _longBreakMinutes,
-                        minValue: 15,
-                        maxValue: 60,
-                        increment: 5,
-                        onChanged: (value) =>
-                            setState(() => _longBreakMinutes = value),
-                      ),
-                    ],
-                  ),
+            child: PixelFrame(
+              cornerSize: 24,
+              edgeThickness: 6,
+              padding: 20,
+              borderStyle: MedievalBorderStyle.stone,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 2.h),
+                    MusicSettingWidget(
+                      isMusicEnabled: _isMusicEnabled,
+                      onChanged: (value) =>
+                          setState(() => _isMusicEnabled = value),
+                    ),
+                    SizedBox(height: 3.h),
+                    DurationSettingWidget(
+                      title: 'Work Duration',
+                      currentValue: _workDurationMinutes,
+                      minValue: 5,
+                      maxValue: 60,
+                      increment: 5,
+                      onChanged: (value) =>
+                          setState(() => _workDurationMinutes = value),
+                    ),
+                    SizedBox(height: 3.h),
+                    DurationSettingWidget(
+                      title: 'Short Break',
+                      currentValue: _shortBreakMinutes,
+                      minValue: 1,
+                      maxValue: 15,
+                      increment: 1,
+                      onChanged: (value) =>
+                          setState(() => _shortBreakMinutes = value),
+                    ),
+                    SizedBox(height: 3.h),
+                    DurationSettingWidget(
+                      title: 'Long Break',
+                      currentValue: _longBreakMinutes,
+                      minValue: 15,
+                      maxValue: 60,
+                      increment: 5,
+                      onChanged: (value) =>
+                          setState(() => _longBreakMinutes = value),
+                    ),
+                  ],
                 ),
               ),
             ),

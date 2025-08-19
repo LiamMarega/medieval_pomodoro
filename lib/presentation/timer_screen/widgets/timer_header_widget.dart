@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../widgets/pixel_frame.dart';
-import 'music_toggle_widget.dart';
 
 class TimerHeaderWidget extends StatelessWidget {
   const TimerHeaderWidget({super.key});

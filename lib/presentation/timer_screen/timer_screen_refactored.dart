@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
-import 'package:sizer/sizer.dart';
 
 import '../../providers/timer_provider.dart';
 import 'widgets/timer_header_widget.dart';
@@ -52,7 +51,7 @@ class TimerScreenRefactored extends ConsumerWidget {
                           scale: 2,
                           filterQuality: FilterQuality.low,
                           colorFilter: ColorFilter.mode(
-                            Color(0x6b2f01),
+                            Color(0x006b2f01),
                             BlendMode.color,
                           ),
                           opacity: 0.5,
@@ -93,12 +92,15 @@ class TimerScreenRefactored extends ConsumerWidget {
                             ),
                           ),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              SizedBox(height: 10),
+                              const SizedBox(height: 16),
                               const TimerControlsWidget(),
-                              const KnightIllustrationWidget(),
+                              const SizedBox(height: 16),
+                              Expanded(
+                                child: KnightIllustrationWidget(),
+                              ),
                             ],
                           ),
                         ),

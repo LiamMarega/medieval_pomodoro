@@ -6,21 +6,52 @@ part of 'timer_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$timerControllerHash() => r'ae08727d026fa528e0aa4f8ef9f2b861ed77ab13';
-
-/// See also [TimerController].
 @ProviderFor(TimerController)
-final timerControllerProvider =
-    AutoDisposeNotifierProvider<TimerController, TimerState>.internal(
-  TimerController.new,
-  name: r'timerControllerProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$timerControllerHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const timerControllerProvider = TimerControllerProvider._();
 
-typedef _$TimerController = AutoDisposeNotifier<TimerState>;
+final class TimerControllerProvider
+    extends $NotifierProvider<TimerController, TimerState> {
+  const TimerControllerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'timerControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$timerControllerHash();
+
+  @$internal
+  @override
+  TimerController create() => TimerController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TimerState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TimerState>(value),
+    );
+  }
+}
+
+String _$timerControllerHash() => r'3853329e6a1555f1d97546bcce1b829dbe1d9922';
+
+abstract class _$TimerController extends $Notifier<TimerState> {
+  TimerState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<TimerState, TimerState>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<TimerState, TimerState>, TimerState, Object?, Object?>;
+    element.handleValue(ref, created);
+  }
+}
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

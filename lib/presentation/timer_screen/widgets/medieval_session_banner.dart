@@ -38,7 +38,7 @@ class MedievalSessionBanner extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              '$sessionType'.toUpperCase(),
+              sessionType.toUpperCase(),
               style: GoogleFonts.pressStart2p(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.normal,

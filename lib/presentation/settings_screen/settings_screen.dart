@@ -120,50 +120,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsContent() {
-    return Container(
-      child: PixelFrame(
-        cornerSize: 24,
-        edgeThickness: 6,
-        padding: 16,
-        borderStyle: MedievalBorderStyle.stone,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 2.h),
-              // Music setting
-              SizedBox(height: 3.h),
-              // Work duration setting
-              _buildDurationSetting(
-                'Work Duration',
-                _workDurationMinutes,
-                5, // min value
-                60, // max value
-                5, // increment
-                (value) => setState(() => _workDurationMinutes = value),
-              ),
-              SizedBox(height: 3.h),
-              // Short break setting
-              _buildDurationSetting(
-                'Short Break',
-                _shortBreakMinutes,
-                1, // min value
-                15, // max value
-                1, // increment
-                (value) => setState(() => _shortBreakMinutes = value),
-              ),
-              SizedBox(height: 3.h),
-              // Long break setting
-              _buildDurationSetting(
-                'Long Break',
-                _longBreakMinutes,
-                15, // min value
-                60, // max value
-                5, // increment
-                (value) => setState(() => _longBreakMinutes = value),
-              ),
-            ],
-          ),
+    return PixelFrame(
+      cornerSize: 24,
+      edgeThickness: 6,
+      padding: 16,
+      borderStyle: MedievalBorderStyle.stone,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 2.h),
+            // Music setting
+            SizedBox(height: 3.h),
+            // Work duration setting
+            _buildDurationSetting(
+              'Work Duration',
+              _workDurationMinutes,
+              5, // min value
+              60, // max value
+              5, // increment
+              (value) => setState(() => _workDurationMinutes = value),
+            ),
+            SizedBox(height: 3.h),
+            // Short break setting
+            _buildDurationSetting(
+              'Short Break',
+              _shortBreakMinutes,
+              1, // min value
+              15, // max value
+              1, // increment
+              (value) => setState(() => _shortBreakMinutes = value),
+            ),
+            SizedBox(height: 3.h),
+            // Long break setting
+            _buildDurationSetting(
+              'Long Break',
+              _longBreakMinutes,
+              15, // min value
+              60, // max value
+              5, // increment
+              (value) => setState(() => _longBreakMinutes = value),
+            ),
+          ],
         ),
       ),
     );
@@ -292,37 +290,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSaveButton() {
-    return Container(
-      child: PixelFrame(
-        borderStyle: MedievalBorderStyle.stone,
-        child: InkWell(
-          onTap: _saveSettings,
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 2.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: const Color(0xFFDAA520),
-                width: 2,
-              ),
+    return PixelFrame(
+      borderStyle: MedievalBorderStyle.stone,
+      child: InkWell(
+        onTap: _saveSettings,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 2.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF4CAF50),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: const Color(0xFFDAA520),
+              width: 2,
             ),
-            child: Text(
-              'SAVE SETTINGS',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.pressStart2p(
-                fontSize: 12.sp,
-                color: Colors.white,
-                letterSpacing: 1.0,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.8),
-                    offset: const Offset(2, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
+          ),
+          child: Text(
+            'SAVE SETTINGS',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.pressStart2p(
+              fontSize: 12.sp,
+              color: Colors.white,
+              letterSpacing: 1.0,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.8),
+                  offset: const Offset(2, 2),
+                  blurRadius: 4,
+                ),
+              ],
             ),
           ),
         ),

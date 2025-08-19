@@ -12,7 +12,7 @@ class PlaylistAudioService {
   AudioPlayer? _player;
   bool _isInitialized = false;
   bool _isMusicEnabled = true;
-  List<AudioSource> _audioSources = [];
+  final List<AudioSource> _audioSources = [];
   Timer? _fadeTimer;
 
   // Lista de canciones lofi medievales (agrega más archivos según tengas)

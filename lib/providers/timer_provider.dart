@@ -12,7 +12,6 @@ part 'timer_provider.g.dart';
 @riverpod
 class TimerController extends _$TimerController {
   Timer? _timer;
-  Timer? _volumeTimer;
   PlaylistAudioService? _audioService;
 
   final List<String> _motivationalMessages = [
@@ -308,17 +307,4 @@ class TimerController extends _$TimerController {
   Duration get currentPosition =>
       _audioService?.currentPosition ?? Duration.zero;
   Duration get totalDuration => _audioService?.totalDuration ?? Duration.zero;
-
-  @override
-  void dispose() {
-    debugPrint('🗑️ Disposing TimerController...');
-
-    _timer?.cancel();
-    _volumeTimer?.cancel();
-
-    // El servicio de audio se mantendrá vivo para uso global
-    // Solo se dispose cuando se cierre toda la app
-
-    debugPrint('✅ TimerController disposed successfully');
-  }
 }

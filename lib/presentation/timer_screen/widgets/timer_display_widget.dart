@@ -34,7 +34,7 @@ class TimerDisplayWidget extends ConsumerWidget {
             Text(
               _formatTime(timerState.currentSeconds),
               style: GoogleFonts.pressStart2p(
-                fontSize: 36.sp,
+                fontSize: 30.sp,
                 fontWeight: FontWeight.normal,
                 color: const Color(0xFFDAA520),
                 letterSpacing: 4.0,
@@ -52,15 +52,15 @@ class TimerDisplayWidget extends ConsumerWidget {
                 ],
               ),
             ),
-            SizedBox(height: 2.h),
-            Text(
-              'SESSION ${timerState.sessionNumber} - ${timerState.sessionType.toUpperCase()}',
-              style: GoogleFonts.pressStart2p(
-                fontSize: 10.sp,
-                color: const Color(0xFFB8860B),
-                letterSpacing: 1.0,
-              ),
-            ),
+            // SizedBox(height: 2.h),
+            // Text(
+            //   'SESSION ${timerState.sessionNumber} - ${timerState.sessionType.toUpperCase()}',
+            //   style: GoogleFonts.pressStart2p(
+            //     fontSize: 10.sp,
+            //     color: const Color(0xFFB8860B),
+            //     letterSpacing: 1.0,
+            //   ),
+            // ),
           ],
         ),
       ),

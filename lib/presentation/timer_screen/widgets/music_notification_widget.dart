@@ -18,7 +18,6 @@ class _MusicNotificationWidgetState
     extends ConsumerState<MusicNotificationWidget> {
   bool _lastMusicEnabled =
       true; // Default to true since music is enabled by default
-  bool _lastMusicPlaying = false;
   bool _hasShownNotification = false;
 
   @override
@@ -28,7 +27,6 @@ class _MusicNotificationWidgetState
     // Show notification when music state changes, but only once
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final currentMusicEnabled = timerState.isMusicEnabled;
-      final currentMusicPlaying = timerState.isMusicPlaying;
 
       // Only show notification if music enabled state changed and we haven't shown it yet
       if (currentMusicEnabled != _lastMusicEnabled && !_hasShownNotification) {
@@ -47,9 +45,6 @@ class _MusicNotificationWidgetState
           }
         });
       }
-
-      // Update last playing state
-      _lastMusicPlaying = currentMusicPlaying;
     });
 
     return const SizedBox

@@ -6,21 +6,52 @@ part of 'audio_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$audioControllerHash() => r'c75026ed11369fe73d3460ca405ef42463ee7ad5';
-
-/// See also [AudioController].
 @ProviderFor(AudioController)
-final audioControllerProvider =
-    AutoDisposeNotifierProvider<AudioController, AudioState>.internal(
-  AudioController.new,
-  name: r'audioControllerProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$audioControllerHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const audioControllerProvider = AudioControllerProvider._();
 
-typedef _$AudioController = AutoDisposeNotifier<AudioState>;
+final class AudioControllerProvider
+    extends $NotifierProvider<AudioController, AudioState> {
+  const AudioControllerProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'audioControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$audioControllerHash();
+
+  @$internal
+  @override
+  AudioController create() => AudioController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AudioState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AudioState>(value),
+    );
+  }
+}
+
+String _$audioControllerHash() => r'a9b65619b7384be869b8fb402ccd04908dd39c63';
+
+abstract class _$AudioController extends $Notifier<AudioState> {
+  AudioState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<AudioState, AudioState>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<AudioState, AudioState>, AudioState, Object?, Object?>;
+    element.handleValue(ref, created);
+  }
+}
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
