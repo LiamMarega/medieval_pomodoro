@@ -17,17 +17,19 @@ class PlaylistAudioService {
 
   // Lista de canciones lofi medievales (agrega más archivos según tengas)
   final List<String> _songPaths = [
-    'assets/songs/The Last Knight.mp3',
+    'assets/songs/castle_dreams_2.mp3',
+    'assets/songs/the_last_knight.mp3',
     'assets/songs/medieval_lofi.mp3',
+    'assets/songs/castle_dreams.mp3',
+    'assets/songs/the_rusty_knight_tale.mp3',
   ];
 
   // Lista de nombres de canciones para mostrar
   final List<String> _songNames = [
-    'Medieval Lofi - Castle Dreams',
-    'Medieval Lofi - Knight\'s Rest',
-    'Medieval Lofi - Tavern Nights',
-    'Medieval Lofi - Forest Path',
-    'Medieval Lofi - Royal Court',
+    'The Last Knight',
+    'Castle Dreams',
+    'Castle Dreams 2',
+    'The Rusty Knight Tale',
   ];
 
   // Getters
