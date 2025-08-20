@@ -34,6 +34,9 @@ dependencies:
   audio_service: ^0.18.18
   pixelarticons: ^0.4.0
   gif: ^2.3.0
+  awesome_notifications: ^0.10.1
+  flutter_fgbg: ^0.7.1
+  live_activities: ^2.4.1
   
 dev_dependencies:
   flutter_test:   

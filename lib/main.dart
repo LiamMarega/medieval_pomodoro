@@ -8,6 +8,7 @@ import '../widgets/custom_error_widget.dart';
 import 'presentation/timer_screen/timer_screen_refactored.dart';
 import 'presentation/settings_screen/settings_screen_refactored.dart';
 import 'services/audio_test.dart';
+import 'providers/live_activity_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,9 @@ void main() async {
 
   // Initialize audio test for background audio
   await AudioTest.initialize();
+
+  // Initialize Live Activity service
+  // Note: Live Activity will be initialized when the provider is first accessed
 
   // 🚨 CRITICAL: Device orientation lock - DO NOT REMOVE
   Future.wait([

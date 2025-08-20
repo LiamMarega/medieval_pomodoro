@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/timer_state.dart';
 // Importa el nuevo servicio de audio
 import '../services/audio_service_manager.dart';
+import 'live_activity_provider.dart';
 
 part 'timer_provider.g.dart';
 
@@ -28,6 +29,7 @@ class TimerController extends _$TimerController {
   @override
   TimerState build() {
     _initializeAudio();
+
     return const TimerState(
       currentMotivationalMessage: "A knight's focus is their greatest weapon!",
       isMusicEnabled: true, // Music always ON by default
@@ -60,6 +62,9 @@ class TimerController extends _$TimerController {
 
     state = state.copyWith(isActive: true);
 
+    // Sync with Live Activity
+    _syncWithLiveActivity();
+
     // Iniciar música si está habilitada
     if (state.isMusicEnabled) {
       debugPrint('🎵 Starting music...');
@@ -76,6 +81,11 @@ class TimerController extends _$TimerController {
       if (state.currentSeconds > 0) {
         final newSeconds = state.currentSeconds - 1;
         state = state.copyWith(currentSeconds: newSeconds);
+
+        // Update Live Activity every 30 seconds to avoid too frequent updates
+        if (newSeconds % 30 == 0) {
+          _patchLiveActivity(isRunning: true);
+        }
 
         // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
         if (newSeconds % 300 == 0) {
@@ -97,6 +107,9 @@ class TimerController extends _$TimerController {
     // Cancelar el timer
     _timer?.cancel();
     state = state.copyWith(isActive: false);
+
+    // Update Live Activity
+    _patchLiveActivity(isRunning: false);
 
     // Detener música si está reproduciéndose
     if (state.isMusicEnabled && (_audioService?.isPlaying ?? false)) {
@@ -121,6 +134,9 @@ class TimerController extends _$TimerController {
       currentSeconds: state.totalSeconds,
     );
 
+    // Update Live Activity
+    _patchLiveActivity(isRunning: false);
+
     // Detener música si está reproduciéndose
     if (_audioService?.isPlaying ?? false) {
       debugPrint('🔇 Stopping music for restart...');
@@ -143,6 +159,9 @@ class TimerController extends _$TimerController {
       sessionNumber: state.sessionNumber + 1,
     );
 
+    // End Live Activity
+    _endLiveActivity();
+
     // Detener música
     if (_audioService?.isPlaying ?? false) {
       debugPrint('🔇 Stopping music for session completion...');
@@ -150,6 +169,7 @@ class TimerController extends _$TimerController {
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     _determineNextSession();
     HapticFeedback.heavyImpact();
 
@@ -307,4 +327,52 @@ class TimerController extends _$TimerController {
   Duration get currentPosition =>
       _audioService?.currentPosition ?? Duration.zero;
   Duration get totalDuration => _audioService?.totalDuration ?? Duration.zero;
+
+  // Live Activity integration methods
+  void _syncWithLiveActivity() {
+    // Get the Live Activity provider and sync the current state
+    final liveActivityProvider =
+        ref.read(liveActivityControllerProvider.notifier);
+
+    // Debug Live Activity status first
+    liveActivityProvider.debugLiveActivityStatus();
+
+    // Then sync the state
+    liveActivityProvider.syncTimerState(state);
+    liveActivityProvider.updateLastTimerState(state);
+  }
+
+  void _patchLiveActivity({bool? isRunning, DateTime? newEndAt}) {
+    // Get the Live Activity provider and patch specific fields
+    final liveActivityProvider =
+        ref.read(liveActivityControllerProvider.notifier);
+    liveActivityProvider.patchLiveActivity(
+      isRunning: isRunning,
+      newEndAt: newEndAt,
+    );
+  }
+
+  void _endLiveActivity() {
+    // Get the Live Activity provider and end the activity
+    final liveActivityProvider =
+        ref.read(liveActivityControllerProvider.notifier);
+    liveActivityProvider.endLiveActivity();
+  }
+
+  // Handle Live Activity actions from Dynamic Island
+  void handleLiveActivityAction(String action) {
+    switch (action) {
+      case 'pause':
+        pauseTimer();
+        break;
+      case 'resume':
+        startTimer();
+        break;
+      case 'stop':
+        restartTimer();
+        break;
+      default:
+        debugPrint('⚠️ Unknown Live Activity action: $action');
+    }
+  }
 }
