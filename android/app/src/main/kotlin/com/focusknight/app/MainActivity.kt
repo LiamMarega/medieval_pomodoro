@@ -1,4 +1,4 @@
-package com.fluttermart.app
+package com.focusknight.app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.plugins.GeneratedPluginRegistrant

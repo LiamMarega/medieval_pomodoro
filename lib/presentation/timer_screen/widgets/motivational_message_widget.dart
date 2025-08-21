@@ -36,7 +36,7 @@ class MotivationalMessageWidget extends ConsumerWidget {
                       timerState.currentMotivationalMessage,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.pressStart2p(
-                        fontSize: 8.sp,
+                        fontSize: 14.sp,
                         color: const Color(0xFFB8860B),
                         letterSpacing: 1.0,
                       ),

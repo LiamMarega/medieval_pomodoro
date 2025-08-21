@@ -153,6 +153,8 @@ class TimerController extends _$TimerController {
   void _completeSession() {
     debugPrint('🏁 Completing session...');
 
+    final completedSessionType = state.sessionType;
+
     _timer?.cancel();
     state = state.copyWith(
       isActive: false,
@@ -170,10 +172,35 @@ class TimerController extends _$TimerController {
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    _determineNextSession();
-    HapticFeedback.heavyImpact();
+    // Play completion sound and haptic feedback
+    _playSessionCompletionFeedback();
 
-    debugPrint('✅ Session completed successfully');
+    // Determine next session and auto-start
+    _determineNextSession();
+
+    // Auto-start next session after a short delay
+    Future.delayed(const Duration(seconds: 1), () {
+      startTimer();
+    });
+
+    debugPrint('✅ Session completed successfully: $completedSessionType');
+  }
+
+  void _playSessionCompletionFeedback() {
+    // Play completion sound
+    SystemSound.play(SystemSoundType.alert);
+
+    // Haptic feedback based on session type
+    if (state.sessionType == 'Work') {
+      // Work session completed - 2 vibrations
+      HapticFeedback.heavyImpact();
+      Future.delayed(const Duration(milliseconds: 200), () {
+        HapticFeedback.heavyImpact();
+      });
+    } else {
+      // Break session completed - 1 vibration
+      HapticFeedback.mediumImpact();
+    }
   }
 
   void _determineNextSession() {
@@ -193,6 +220,9 @@ class TimerController extends _$TimerController {
       newTotalSeconds = state.workDurationMinutes * 60;
     }
 
+    // Play session change sound and haptic feedback
+    _playSessionChangeFeedback(newSessionType);
+
     state = state.copyWith(
       sessionType: newSessionType,
       totalSeconds: newTotalSeconds,
@@ -201,6 +231,23 @@ class TimerController extends _$TimerController {
 
     debugPrint(
         '📋 Next session determined: $newSessionType (${newTotalSeconds}s)');
+  }
+
+  void _playSessionChangeFeedback(String newSessionType) {
+    // Play session change sound
+    SystemSound.play(SystemSoundType.click);
+
+    // Haptic feedback based on new session type
+    if (newSessionType == 'Work') {
+      // Changing to work - 2 vibrations
+      HapticFeedback.heavyImpact();
+      Future.delayed(const Duration(milliseconds: 200), () {
+        HapticFeedback.heavyImpact();
+      });
+    } else {
+      // Changing to break - 1 vibration
+      HapticFeedback.mediumImpact();
+    }
   }
 
   void _updateMotivationalMessage() {
@@ -286,8 +333,8 @@ class TimerController extends _$TimerController {
       isMusicEnabled: isMusicEnabled,
     );
 
-    // Actualizar el servicio de audio
-    _audioService?.setMusicEnabled(isMusicEnabled);
+    // Don't change music state when updating settings to prevent stopping music
+    // The audio provider will handle music state separately
 
     // Si estamos en una sesión de trabajo, actualizar el tiempo total
     if (state.sessionType == 'Work') {
