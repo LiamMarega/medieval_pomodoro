@@ -104,6 +104,11 @@ class PlaylistAudioService {
 
       // Establecer la playlist en el player
       await _player!.setAudioSources(_audioSources, preload: true);
+
+      // Habilitar el modo shuffle para reproducción aleatoria
+      await _player!.setShuffleModeEnabled(true);
+      debugPrint('🎲 Shuffle mode enabled for random playback');
+
       debugPrint(
           '✅ Playlist created with ${_audioSources.length} songs and preloaded');
     } catch (e) {

@@ -5,7 +5,7 @@ import 'package:sizer/sizer.dart';
 
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
-import 'presentation/timer_screen/timer_screen_refactored.dart';
+import 'presentation/timer_screen/timer_screen.dart';
 import 'presentation/settings_screen/settings_screen_refactored.dart';
 import 'services/audio_test.dart';
 import 'providers/live_activity_provider.dart';
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
         // 🚨 END CRITICAL SECTION
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => const TimerScreenRefactored(),
+          '/': (context) => const TimerScreen(),
           '/settings-screen': (context) => const SettingsScreenRefactored(),
         },
         initialRoute: '/',

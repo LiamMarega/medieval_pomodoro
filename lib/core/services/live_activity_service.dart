@@ -118,8 +118,9 @@ class LiveActivityService {
     if (_activityId == null) return;
     final patch = <String, dynamic>{};
     if (isRunning != null) patch['isRunning'] = isRunning;
-    if (newEndAt != null)
+    if (newEndAt != null) {
       patch['endTimestamp'] = newEndAt.millisecondsSinceEpoch;
+    }
     if (phase != null) patch['phase'] = describeEnum(phase);
     if (taskName != null) patch['taskName'] = taskName;
     if (patch.isEmpty) return;

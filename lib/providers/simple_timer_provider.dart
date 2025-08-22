@@ -5,10 +5,11 @@ import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/timer_state.dart';
+import '../models/timer_mode.dart';
 
 part 'simple_timer_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class SimpleTimerController extends _$SimpleTimerController {
   Timer? _timer;
   Timer? _volumeTimer;
@@ -27,6 +28,97 @@ class SimpleTimerController extends _$SimpleTimerController {
     "Your dedication today forges tomorrow's victories.",
     "Like a steadfast knight, persist through challenges.",
     "The path to mastery requires unwavering discipline.",
+    "Steel your resolve, for every minute counts.",
+    "Let your focus shine brighter than your armor.",
+    "Victory favors the diligent and the disciplined.",
+    "A true knight conquers distraction with purpose.",
+    "Forge ahead, for greatness is earned, not given.",
+    "The lance of effort pierces the shield of doubt.",
+    "Every tick of the clock is a step toward glory.",
+    "Let your actions echo through the halls of time.",
+    "A focused mind is sharper than any blade.",
+    "Rise above the noise, champion of your quest.",
+    "The bravest battles are fought within.",
+    "Let perseverance be your trusted steed.",
+    "With every task, you strengthen your legacy.",
+    "The banners of success are raised by the persistent.",
+    "A knight’s journey is measured in moments of focus.",
+    "Let your will be as unyielding as your shield.",
+    "The greatest victories are won in silence and effort.",
+    "Stay the course, for the path is yours to claim.",
+    "Discipline is the armor that guards your dreams.",
+    "Let your focus be the torch that lights your way.",
+    "Every effort is a brick in your castle of achievement.",
+    "The quest for greatness begins with a single task.",
+    "Let your mind be as steady as your sword.",
+    "A true knight finds strength in routine.",
+    "The seeds of success are sown in focused hours.",
+    "Let your ambition be as boundless as the horizon.",
+    "The strongest armor is forged in the fires of discipline.",
+    "A focused knight fears no challenge.",
+    "Let your purpose guide you through the fog of distraction.",
+    "Every moment of focus is a victory in itself.",
+    "The path to mastery is paved with small wins.",
+    "Let your determination be your guiding star.",
+    "A knight’s honor is built on daily effort.",
+    "The greatest quests are completed one step at a time.",
+    "Let your focus be unwavering, your spirit unbreakable.",
+    "A disciplined mind is a knight’s greatest ally.",
+    "The journey to greatness is a marathon, not a sprint.",
+    "Let your resolve be as firm as castle walls.",
+    "Every focused minute brings you closer to your goal.",
+    "A knight’s legacy is written in moments of effort.",
+    "Let your actions speak louder than your words.",
+    "The true test of a knight is persistence.",
+    "Let your focus carve a path through any obstacle.",
+    "A steadfast heart conquers all distractions.",
+    "The greatest treasures are found by those who persist.",
+    "Let your discipline shine brighter than your sword.",
+    "A knight’s strength lies in unwavering focus.",
+    "The road to victory is traveled by the diligent.",
+    "Let your mind be a fortress against distraction.",
+    "Every quest is won by those who never yield.",
+    "A focused knight is unstoppable.",
+    "Let your dreams be fueled by daily effort.",
+    "The banners of triumph are raised by the persistent.",
+    "Let your focus be the key to every locked door.",
+    "A knight’s courage is shown in moments of discipline.",
+    "The greatest battles are won in the mind.",
+    "Let your ambition be your compass.",
+    "Every moment of focus is a step toward greatness.",
+    "A true knight never wavers in pursuit of their quest.",
+    "Let your discipline be your shield.",
+    "The path to mastery is walked with steady steps.",
+    "Let your focus be as sharp as your blade.",
+    "A knight’s journey is defined by perseverance.",
+    "The greatest victories are earned, not given.",
+    "Let your resolve be your armor.",
+    "Every task completed is a victory for the knight within.",
+    "A focused mind is the mark of a true champion.",
+    "Let your actions build the legacy you seek.",
+    "The quest for excellence is never-ending.",
+    "Let your focus lead you to new heights.",
+    "A knight’s honor is found in daily effort.",
+    "The strongest warriors are those who persist.",
+    "Let your discipline guide you through every challenge.",
+    "Every moment of focus brings you closer to your dreams.",
+    "A true knight rises above distraction.",
+    "Let your determination be your sword and shield.",
+    "The path to greatness is paved with discipline.",
+    "Let your focus be the light in the darkness.",
+    "A knight’s strength is measured in moments of effort.",
+    "The greatest achievements begin with a single step.",
+    "Let your resolve carry you through every trial.",
+    "Every focused minute is a victory on your quest.",
+    "A disciplined mind conquers all obstacles.",
+    "Let your ambition drive you forward.",
+    "The journey to mastery is a noble quest.",
+    "Let your focus be your greatest weapon.",
+    "A knight’s legacy is built on perseverance.",
+    "The banners of success are raised by the steadfast.",
+    "Let your discipline be the foundation of your achievements.",
+    "Every quest is won by those who never give up.",
+    "A focused knight is a victorious knight.",
   ];
 
   @override
@@ -137,7 +229,7 @@ class SimpleTimerController extends _$SimpleTimerController {
     String newSessionType;
     int newTotalSeconds;
 
-    if (state.sessionType == 'Work') {
+    if (state.currentMode.isWork) {
       if (state.sessionNumber % 4 == 0) {
         newSessionType = 'Long Break';
         newTotalSeconds = state.longBreakMinutes * 60;
@@ -150,8 +242,24 @@ class SimpleTimerController extends _$SimpleTimerController {
       newTotalSeconds = state.workDurationMinutes * 60;
     }
 
+    // Convertir el string a TimerMode
+    TimerMode newMode;
+    switch (newSessionType) {
+      case 'Work':
+        newMode = TimerMode.work;
+        break;
+      case 'Short Break':
+        newMode = TimerMode.shortBreak;
+        break;
+      case 'Long Break':
+        newMode = TimerMode.longBreak;
+        break;
+      default:
+        newMode = TimerMode.work;
+    }
+
     state = state.copyWith(
-      sessionType: newSessionType,
+      currentMode: newMode,
       totalSeconds: newTotalSeconds,
       currentSeconds: newTotalSeconds,
     );
@@ -239,7 +347,7 @@ class SimpleTimerController extends _$SimpleTimerController {
 
     debugPrint('Music enabled set to: $isMusicEnabled');
 
-    if (state.sessionType == 'Work') {
+    if (state.currentMode.isWork) {
       final newTotalSeconds = workDurationMinutes * 60;
       state = state.copyWith(
         totalSeconds: newTotalSeconds,

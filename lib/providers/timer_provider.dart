@@ -4,35 +4,67 @@ import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/timer_state.dart';
+import '../models/timer_mode.dart';
 // Importa el nuevo servicio de audio
 import '../services/audio_service_manager.dart';
 import 'live_activity_provider.dart';
+import 'settings_provider.dart';
 
 part 'timer_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class TimerController extends _$TimerController {
   Timer? _timer;
   PlaylistAudioService? _audioService;
-
-  final List<String> _motivationalMessages = [
-    "A knight's focus is their greatest weapon!",
-    "Every quest begins with a single step forward.",
-    "The castle of success is built one stone at a time.",
-    "Honor your commitment to excellence, brave warrior!",
-    "In the realm of productivity, consistency reigns supreme.",
-    "Your dedication today forges tomorrow's victories.",
-    "Like a steadfast knight, persist through challenges.",
-    "The path to mastery requires unwavering discipline.",
-  ];
 
   @override
   TimerState build() {
     _initializeAudio();
 
-    return const TimerState(
-      currentMotivationalMessage: "A knight's focus is their greatest weapon!",
-      isMusicEnabled: true, // Music always ON by default
+    // Get settings from settings provider
+    final settings = ref.watch(settingsControllerProvider);
+
+    // Use settings if available, otherwise use defaults
+    final workDuration = settings.when(
+      data: (data) => data.workDurationMinutes,
+      loading: () => 25,
+      error: (_, __) => 25,
+    );
+
+    final shortBreakDuration = settings.when(
+      data: (data) => data.shortBreakMinutes,
+      loading: () => 5,
+      error: (_, __) => 5,
+    );
+
+    final longBreakDuration = settings.when(
+      data: (data) => data.longBreakMinutes,
+      loading: () => 30,
+      error: (_, __) => 30,
+    );
+
+    final isMusicEnabled = settings.when(
+      data: (data) => data.isMusicEnabled,
+      loading: () => true,
+      error: (_, __) => true,
+    );
+
+    // Crear configuración inicial del modo de trabajo
+    final initialConfig = TimerModeConfig.getWorkConfig(
+      durationMinutes: workDuration,
+      motivationalMessage: "A knight's focus is their greatest weapon!",
+    );
+
+    return TimerState(
+      currentMotivationalMessage: initialConfig.motivationalMessage,
+      isMusicEnabled: isMusicEnabled,
+      currentMode: initialConfig.mode,
+      currentAnimation: initialConfig.animationType,
+      workDurationMinutes: workDuration,
+      shortBreakMinutes: shortBreakDuration,
+      longBreakMinutes: longBreakDuration,
+      totalSeconds: workDuration * 60,
+      currentSeconds: workDuration * 60,
     );
   }
 
@@ -153,7 +185,7 @@ class TimerController extends _$TimerController {
   void _completeSession() {
     debugPrint('🏁 Completing session...');
 
-    final completedSessionType = state.sessionType;
+    final completedSessionType = state.currentMode;
 
     _timer?.cancel();
     state = state.copyWith(
@@ -191,7 +223,7 @@ class TimerController extends _$TimerController {
     SystemSound.play(SystemSoundType.alert);
 
     // Haptic feedback based on session type
-    if (state.sessionType == 'Work') {
+    if (state.currentMode.isWork) {
       // Work session completed - 2 vibrations
       HapticFeedback.heavyImpact();
       Future.delayed(const Duration(milliseconds: 200), () {
@@ -204,41 +236,45 @@ class TimerController extends _$TimerController {
   }
 
   void _determineNextSession() {
-    String newSessionType;
-    int newTotalSeconds;
+    TimerModeConfig newConfig;
 
-    if (state.sessionType == 'Work') {
+    if (state.currentMode.isWork) {
       if (state.sessionNumber % 4 == 0) {
-        newSessionType = 'Long Break';
-        newTotalSeconds = state.longBreakMinutes * 60;
+        newConfig = TimerModeConfig.getLongBreakConfig(
+          durationMinutes: state.longBreakMinutes,
+        );
       } else {
-        newSessionType = 'Short Break';
-        newTotalSeconds = state.shortBreakMinutes * 60;
+        newConfig = TimerModeConfig.getShortBreakConfig(
+          durationMinutes: state.shortBreakMinutes,
+        );
       }
     } else {
-      newSessionType = 'Work';
-      newTotalSeconds = state.workDurationMinutes * 60;
+      newConfig = TimerModeConfig.getWorkConfig(
+        durationMinutes: state.workDurationMinutes,
+      );
     }
 
     // Play session change sound and haptic feedback
-    _playSessionChangeFeedback(newSessionType);
+    _playSessionChangeFeedback(newConfig.mode);
 
     state = state.copyWith(
-      sessionType: newSessionType,
-      totalSeconds: newTotalSeconds,
-      currentSeconds: newTotalSeconds,
+      currentMode: newConfig.mode,
+      totalSeconds: newConfig.durationMinutes * 60,
+      currentSeconds: newConfig.durationMinutes * 60,
+      currentMotivationalMessage: newConfig.motivationalMessage,
+      currentAnimation: newConfig.animationType,
     );
 
     debugPrint(
-        '📋 Next session determined: $newSessionType (${newTotalSeconds}s)');
+        '📋 Next session determined: ${newConfig.mode.displayName} (${newConfig.durationMinutes * 60}s)');
   }
 
-  void _playSessionChangeFeedback(String newSessionType) {
+  void _playSessionChangeFeedback(TimerMode newMode) {
     // Play session change sound
     SystemSound.play(SystemSoundType.click);
 
     // Haptic feedback based on new session type
-    if (newSessionType == 'Work') {
+    if (newMode.isWork) {
       // Changing to work - 2 vibrations
       HapticFeedback.heavyImpact();
       Future.delayed(const Duration(milliseconds: 200), () {
@@ -251,13 +287,25 @@ class TimerController extends _$TimerController {
   }
 
   void _updateMotivationalMessage() {
-    final random =
-        DateTime.now().millisecondsSinceEpoch % _motivationalMessages.length;
+    TimerModeConfig config;
+
+    if (state.currentMode.isWork) {
+      config = TimerModeConfig.getWorkConfig(
+        durationMinutes: state.workDurationMinutes,
+      );
+    } else {
+      config = TimerModeConfig.getShortBreakConfig(
+        durationMinutes: state.shortBreakMinutes,
+      );
+    }
+
     state = state.copyWith(
-      currentMotivationalMessage: _motivationalMessages[random],
+      currentMotivationalMessage: config.motivationalMessage,
+      currentAnimation: config.animationType,
     );
+
     debugPrint(
-        '💭 Motivational message updated: ${_motivationalMessages[random]}');
+        '💭 Motivational message updated: ${config.motivationalMessage}');
   }
 
   void toggleMusic() {
@@ -326,6 +374,15 @@ class TimerController extends _$TimerController {
   }) {
     debugPrint('⚙️ Updating settings...');
 
+    // Update settings in the settings provider (this will persist to local storage)
+    ref.read(settingsControllerProvider.notifier).updateSettings(
+          workDurationMinutes: workDurationMinutes,
+          shortBreakMinutes: shortBreakMinutes,
+          longBreakMinutes: longBreakMinutes,
+          isMusicEnabled: isMusicEnabled,
+        );
+
+    // Update local state for immediate UI responsiveness
     state = state.copyWith(
       workDurationMinutes: workDurationMinutes,
       shortBreakMinutes: shortBreakMinutes,
@@ -337,7 +394,7 @@ class TimerController extends _$TimerController {
     // The audio provider will handle music state separately
 
     // Si estamos en una sesión de trabajo, actualizar el tiempo total
-    if (state.sessionType == 'Work') {
+    if (state.currentMode.isWork) {
       final newTotalSeconds = workDurationMinutes * 60;
       state = state.copyWith(
         totalSeconds: newTotalSeconds,

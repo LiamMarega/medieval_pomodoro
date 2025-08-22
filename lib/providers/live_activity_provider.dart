@@ -4,10 +4,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import '../core/services/live_activity_service.dart';
 import '../models/timer_state.dart';
+import '../models/timer_mode.dart';
 
 part 'live_activity_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class LiveActivityController extends _$LiveActivityController {
   LiveActivityService? _liveActivityService;
   StreamSubscription<FGBGType>? _fgbgSubscription;
@@ -73,18 +74,16 @@ class LiveActivityController extends _$LiveActivityController {
 
       // Convert session type to PomodoroPhase
       PomodoroPhase phase;
-      switch (timerState.sessionType) {
-        case 'Work':
+      switch (timerState.currentMode) {
+        case TimerMode.work:
           phase = PomodoroPhase.focus;
           break;
-        case 'Short Break':
+        case TimerMode.shortBreak:
           phase = PomodoroPhase.shortBreak;
           break;
-        case 'Long Break':
+        case TimerMode.longBreak:
           phase = PomodoroPhase.longBreak;
           break;
-        default:
-          phase = PomodoroPhase.focus;
       }
 
       // Calculate end time based on current seconds remaining

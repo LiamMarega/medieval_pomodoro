@@ -17,7 +17,7 @@ final class TimerControllerProvider
           argument: null,
           retry: null,
           name: r'timerControllerProvider',
-          isAutoDispose: true,
+          isAutoDispose: false,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
@@ -38,7 +38,7 @@ final class TimerControllerProvider
   }
 }
 
-String _$timerControllerHash() => r'e9cbe51a2ae703dc6676140964402043a1a4dd52';
+String _$timerControllerHash() => r'4c965654df6e0776ae8804a036091916a02ac169';
 
 abstract class _$TimerController extends $Notifier<TimerState> {
   TimerState build();

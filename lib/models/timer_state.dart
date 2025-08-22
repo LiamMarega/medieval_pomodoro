@@ -1,9 +1,11 @@
+import 'timer_mode.dart';
+
 class TimerState {
   final bool isActive;
   final int currentSeconds;
   final int totalSeconds;
   final int sessionNumber;
-  final String sessionType;
+  final TimerMode currentMode;
   final bool isMusicEnabled;
   final bool isMusicPlaying;
   final String currentMotivationalMessage;
@@ -13,13 +15,14 @@ class TimerState {
   final double currentVolume;
   final bool isLoading;
   final String? error;
+  final AnimationType currentAnimation;
 
   const TimerState({
     this.isActive = false,
     this.currentSeconds = 1500,
     this.totalSeconds = 1500,
     this.sessionNumber = 1,
-    this.sessionType = 'Work',
+    this.currentMode = TimerMode.work,
     this.isMusicEnabled = true, // Music always ON by default
     this.isMusicPlaying = false,
     this.currentMotivationalMessage = '',
@@ -29,14 +32,18 @@ class TimerState {
     this.currentVolume = 0.0,
     this.isLoading = false,
     this.error,
+    this.currentAnimation = AnimationType.work1,
   });
+
+  // Getter para mantener compatibilidad con código existente
+  String get sessionType => currentMode.displayName;
 
   TimerState copyWith({
     bool? isActive,
     int? currentSeconds,
     int? totalSeconds,
     int? sessionNumber,
-    String? sessionType,
+    TimerMode? currentMode,
     bool? isMusicEnabled,
     bool? isMusicPlaying,
     String? currentMotivationalMessage,
@@ -46,13 +53,14 @@ class TimerState {
     double? currentVolume,
     bool? isLoading,
     String? error,
+    AnimationType? currentAnimation,
   }) {
     return TimerState(
       isActive: isActive ?? this.isActive,
       currentSeconds: currentSeconds ?? this.currentSeconds,
       totalSeconds: totalSeconds ?? this.totalSeconds,
       sessionNumber: sessionNumber ?? this.sessionNumber,
-      sessionType: sessionType ?? this.sessionType,
+      currentMode: currentMode ?? this.currentMode,
       isMusicEnabled: isMusicEnabled ?? this.isMusicEnabled,
       isMusicPlaying: isMusicPlaying ?? this.isMusicPlaying,
       currentMotivationalMessage:
@@ -62,7 +70,8 @@ class TimerState {
       longBreakMinutes: longBreakMinutes ?? this.longBreakMinutes,
       currentVolume: currentVolume ?? this.currentVolume,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: error,
+      currentAnimation: currentAnimation ?? this.currentAnimation,
     );
   }
 
@@ -74,7 +83,7 @@ class TimerState {
         other.currentSeconds == currentSeconds &&
         other.totalSeconds == totalSeconds &&
         other.sessionNumber == sessionNumber &&
-        other.sessionType == sessionType &&
+        other.currentMode == currentMode &&
         other.isMusicEnabled == isMusicEnabled &&
         other.isMusicPlaying == isMusicPlaying &&
         other.currentMotivationalMessage == currentMotivationalMessage &&
@@ -83,7 +92,8 @@ class TimerState {
         other.longBreakMinutes == longBreakMinutes &&
         other.currentVolume == currentVolume &&
         other.isLoading == isLoading &&
-        other.error == error;
+        other.error == error &&
+        other.currentAnimation == currentAnimation;
   }
 
   @override
@@ -93,7 +103,7 @@ class TimerState {
       currentSeconds,
       totalSeconds,
       sessionNumber,
-      sessionType,
+      currentMode,
       isMusicEnabled,
       isMusicPlaying,
       currentMotivationalMessage,
@@ -103,11 +113,12 @@ class TimerState {
       currentVolume,
       isLoading,
       error,
+      currentAnimation,
     );
   }
 
   @override
   String toString() {
-    return 'TimerState(isActive: $isActive, currentSeconds: $currentSeconds, totalSeconds: $totalSeconds, sessionNumber: $sessionNumber, sessionType: $sessionType, isMusicEnabled: $isMusicEnabled, isMusicPlaying: $isMusicPlaying, currentMotivationalMessage: $currentMotivationalMessage, workDurationMinutes: $workDurationMinutes, shortBreakMinutes: $shortBreakMinutes, longBreakMinutes: $longBreakMinutes, currentVolume: $currentVolume, isLoading: $isLoading, error: $error)';
+    return 'TimerState(isActive: $isActive, currentSeconds: $currentSeconds, totalSeconds: $totalSeconds, sessionNumber: $sessionNumber, currentMode: $currentMode, isMusicEnabled: $isMusicEnabled, isMusicPlaying: $isMusicPlaying, currentMotivationalMessage: $currentMotivationalMessage, workDurationMinutes: $workDurationMinutes, shortBreakMinutes: $shortBreakMinutes, longBreakMinutes: $longBreakMinutes, currentVolume: $currentVolume, isLoading: $isLoading, error: $error, currentAnimation: $currentAnimation)';
   }
 }

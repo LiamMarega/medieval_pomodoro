@@ -4,7 +4,7 @@ import '../services/audio_service_manager.dart';
 
 part 'audio_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AudioController extends _$AudioController {
   final PlaylistAudioService _audioManager = PlaylistAudioService.instance;
 

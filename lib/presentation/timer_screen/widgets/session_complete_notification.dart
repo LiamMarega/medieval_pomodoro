@@ -83,7 +83,7 @@ class _SessionCompleteNotificationState
 
   @override
   Widget build(BuildContext context) {
-    final isWorkSession = widget.sessionType == 'Work';
+    final isWorkSession = widget.sessionType.toLowerCase().contains('work');
 
     return SlideTransition(
       position: _slideAnimation,

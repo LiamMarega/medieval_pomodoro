@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:medieval_pomodoro/presentation/timer_screen/timer_screen_refactored.dart';
+import 'package:medieval_pomodoro/presentation/timer_screen/timer_screen.dart';
 
 class AppRoutes {
   // TODO: Add your routes here
@@ -7,8 +7,8 @@ class AppRoutes {
   static const String timer = '/timer-screen';
 
   static Map<String, WidgetBuilder> routes = {
-    initial: (context) => const TimerScreenRefactored(),
-    timer: (context) => const TimerScreenRefactored(),
+    initial: (context) => const TimerScreen(),
+    timer: (context) => const TimerScreen(),
     // TODO: Add your other routes here
   };
 }
