@@ -24,10 +24,8 @@ class LocalStorageService {
   Future<bool> saveWorkDuration(int minutes) async {
     try {
       final result = await _preferences!.setInt(_workDurationKey, minutes);
-      debugPrint('💾 Work duration saved: $minutes minutes');
       return result;
     } catch (e) {
-      debugPrint('❌ Error saving work duration: $e');
       return false;
     }
   }
@@ -40,7 +38,8 @@ class LocalStorageService {
   // Save short break duration
   Future<bool> saveShortBreakDuration(int minutes) async {
     try {
-      final result = await _preferences!.setInt(_shortBreakDurationKey, minutes);
+      final result =
+          await _preferences!.setInt(_shortBreakDurationKey, minutes);
       debugPrint('💾 Short break duration saved: $minutes minutes');
       return result;
     } catch (e) {

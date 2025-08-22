@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
@@ -45,7 +46,7 @@ class _SettingsScreenRefactoredState
   @override
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsControllerProvider);
-    
+
     return Scaffold(
       body: Column(
         children: [
@@ -76,7 +77,7 @@ class _SettingsScreenRefactoredState
                       });
                     });
                   }
-                  
+
                   return SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,8 +95,14 @@ class _SettingsScreenRefactoredState
                           },
                           customIncrementLogic: (currentValue, isIncrement) {
                             if (isIncrement) {
-                              // When incrementing, always add 5
-                              return currentValue + 5;
+                              // When incrementing, use smart logic
+                              if (currentValue < 5) {
+                                // If below 5, add 1
+                                return currentValue + 1;
+                              } else {
+                                // If 5 or above, add 5
+                                return currentValue + 5;
+                              }
                             } else {
                               // When decrementing, use smart logic
                               if (currentValue > 5) {
@@ -163,14 +170,17 @@ class _SettingsScreenRefactoredState
       child: Column(
         children: [
           // Title
-          Text(
-            title,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
             style: GoogleFonts.pressStart2p(
               fontSize: 16.sp,
               color: const Color(0xFFDAA520),
               fontWeight: FontWeight.bold,
             ),
-            textAlign: TextAlign.center,
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+            ),
           ),
           SizedBox(height: 3.h),
           // Value display and controls
@@ -186,7 +196,8 @@ class _SettingsScreenRefactoredState
                     : null,
               ),
               // Value display
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4A3728),
@@ -195,14 +206,22 @@ class _SettingsScreenRefactoredState
                     color: const Color(0xFFDAA520),
                     width: 3,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFDAA520).withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  '${currentValue.toString().padLeft(2, '0')}:00',
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
                   style: GoogleFonts.pressStart2p(
                     fontSize: 20.sp,
                     color: const Color(0xFFDAA520),
                     fontWeight: FontWeight.bold,
                   ),
+                  child: Text('${currentValue.toString().padLeft(2, '0')}:00'),
                 ),
               ),
               // Plus button
@@ -221,45 +240,9 @@ class _SettingsScreenRefactoredState
   }
 
   Widget _buildControlButton(String label, VoidCallback? onPressed) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        width: 18.w,
-        height: 18.w,
-        decoration: BoxDecoration(
-          color: onPressed != null
-              ? const Color(0xFF4A3728)
-              : const Color(0xFF4A3728).withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: onPressed != null
-                ? const Color(0xFFDAA520)
-                : const Color(0xFFDAA520).withValues(alpha: 0.5),
-            width: 3,
-          ),
-          boxShadow: onPressed != null
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFFDAA520).withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.pressStart2p(
-              fontSize: 24.sp,
-              color: onPressed != null
-                  ? const Color(0xFFDAA520)
-                  : const Color(0xFFDAA520).withValues(alpha: 0.5),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
+    return _AnimatedControlButton(
+      label: label,
+      onPressed: onPressed,
     );
   }
 
@@ -290,5 +273,141 @@ class _SettingsScreenRefactoredState
       return customIncrementLogic(currentValue, true);
     }
     return currentValue + increment;
+  }
+}
+
+class _AnimatedControlButton extends StatefulWidget {
+  final String label;
+  final VoidCallback? onPressed;
+
+  const _AnimatedControlButton({
+    required this.label,
+    this.onPressed,
+  });
+
+  @override
+  State<_AnimatedControlButton> createState() => _AnimatedControlButtonState();
+}
+
+class _AnimatedControlButtonState extends State<_AnimatedControlButton>
+    with SingleTickerProviderStateMixin {
+  bool _isPressed = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _shadowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _shadowAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.5,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (widget.onPressed != null) {
+      setState(() => _isPressed = true);
+      _animationController.forward();
+      // Subtle haptic feedback
+      HapticFeedback.lightImpact();
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (widget.onPressed != null) {
+      setState(() => _isPressed = false);
+      _animationController.reverse();
+    }
+  }
+
+  void _handleTapCancel() {
+    if (widget.onPressed != null) {
+      setState(() => _isPressed = false);
+      _animationController.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = widget.onPressed != null;
+
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: widget.onPressed,
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              width: 18.w,
+              height: 18.w,
+              decoration: BoxDecoration(
+                color: isEnabled
+                    ? const Color(0xFF4A3728)
+                    : const Color(0xFF4A3728).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isEnabled
+                      ? const Color(0xFFDAA520)
+                      : const Color(0xFFDAA520).withValues(alpha: 0.5),
+                  width: 3,
+                ),
+                boxShadow: isEnabled
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFDAA520)
+                              .withValues(alpha: 0.3 * _shadowAnimation.value),
+                          blurRadius: 8 * _shadowAnimation.value,
+                          offset: Offset(0, 4 * _shadowAnimation.value),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Center(
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 150),
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 24.sp,
+                    color: isEnabled
+                        ? (_isPressed
+                            ? const Color(0xFFDAA520).withValues(alpha: 0.8)
+                            : const Color(0xFFDAA520))
+                        : const Color(0xFFDAA520).withValues(alpha: 0.5),
+                    fontWeight: FontWeight.bold,
+                  ),
+                  child: Text(widget.label),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

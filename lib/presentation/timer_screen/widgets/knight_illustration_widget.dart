@@ -76,33 +76,14 @@ class _KnightIllustrationWidgetState
     // Verificar si el modo o la animación han cambiado
     if (oldWidget.currentMode != widget.currentMode ||
         oldWidget.currentAnimation != widget.currentAnimation) {
-      debugPrint(
-          '🎭 KnightIllustration: Widget updated - Old mode: ${oldWidget.currentMode.displayName}, New mode: ${widget.currentMode.displayName}');
       _handleModeChange(widget.currentMode);
-    } else {
-      debugPrint(
-          '🎭 KnightIllustration: Widget updated but no mode/animation change detected');
     }
   }
 
   void _handleModeChange(TimerMode newMode) {
-    debugPrint(
-        '🎭 KnightIllustration: Mode change detected - Old: $_lastMode, New: $newMode, Transitioning: $_isTransitioning');
-
     // Solo ejecutar transición si el modo realmente cambió y no estamos ya en transición
     if (_lastMode != null && _lastMode != newMode && !_isTransitioning) {
-      debugPrint(
-          '🎭 KnightIllustration: Starting transition from ${_lastMode!.displayName} to ${newMode.displayName}');
       _startTransition();
-    } else if (_lastMode == null) {
-      // Primera vez que se inicializa
-      debugPrint(
-          '🎭 KnightIllustration: Initial mode set to ${newMode.displayName}');
-    } else if (_isTransitioning) {
-      debugPrint(
-          '🎭 KnightIllustration: Mode change ignored - already transitioning');
-    } else {
-      debugPrint('🎭 KnightIllustration: Mode unchanged');
     }
 
     _lastMode = newMode;

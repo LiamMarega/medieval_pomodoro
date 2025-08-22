@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -14,6 +15,9 @@ class PlaylistAudioService {
   bool _isMusicEnabled = true;
   final List<AudioSource> _audioSources = [];
   Timer? _fadeTimer;
+  final Random _random = Random();
+  List<String> _shuffledSongNames =
+      []; // Lista mezclada de nombres de canciones
 
   // Lista de canciones lofi medievales (agrega más archivos según tengas)
   final List<String> _songPaths = [
@@ -26,9 +30,10 @@ class PlaylistAudioService {
 
   // Lista de nombres de canciones para mostrar
   final List<String> _songNames = [
-    'The Last Knight',
-    'Castle Dreams',
     'Castle Dreams 2',
+    'The Last Knight',
+    'Medieval Lofi',
+    'Castle Dreams',
     'The Rusty Knight Tale',
   ];
 
@@ -42,8 +47,8 @@ class PlaylistAudioService {
 
   String get currentSongTitle {
     if (_player?.currentIndex != null &&
-        _player!.currentIndex! < _songNames.length) {
-      return _songNames[_player!.currentIndex!];
+        _player!.currentIndex! < _shuffledSongNames.length) {
+      return _shuffledSongNames[_player!.currentIndex!];
     }
     return 'Medieval Lofi Music';
   }
@@ -84,15 +89,34 @@ class PlaylistAudioService {
     try {
       _audioSources.clear();
 
-      // Agregar todas las canciones disponibles a la playlist
-      for (int i = 0; i < _songPaths.length; i++) {
+      // Crear una lista mezclada aleatoriamente de las canciones
+      final List<String> shuffledSongPaths = List.from(_songPaths);
+      _shuffledSongNames = List.from(_songNames);
+
+      // Mezclar las listas de manera aleatoria
+      for (int i = shuffledSongPaths.length - 1; i > 0; i--) {
+        final j = _random.nextInt(i + 1);
+        // Intercambiar paths
+        final tempPath = shuffledSongPaths[i];
+        shuffledSongPaths[i] = shuffledSongPaths[j];
+        shuffledSongPaths[j] = tempPath;
+
+        // Intercambiar nombres correspondientes
+        final tempName = _shuffledSongNames[i];
+        _shuffledSongNames[i] = _shuffledSongNames[j];
+        _shuffledSongNames[j] = tempName;
+      }
+
+      // Agregar todas las canciones disponibles a la playlist en orden mezclado
+      for (int i = 0; i < shuffledSongPaths.length; i++) {
         try {
-          final audioSource = AudioSource.asset(_songPaths[i]);
+          final audioSource = AudioSource.asset(shuffledSongPaths[i]);
           _audioSources.add(audioSource);
-          debugPrint('📁 Added song to playlist: ${_songPaths[i]}');
+          debugPrint(
+              '📁 Added song to playlist: ${shuffledSongPaths[i]} (${_shuffledSongNames[i]})');
         } catch (e) {
           // Si una canción no existe, continuar con las demás
-          debugPrint('⚠️ Song not found, skipping: ${_songPaths[i]}');
+          debugPrint('⚠️ Song not found, skipping: ${shuffledSongPaths[i]}');
         }
       }
 
@@ -100,17 +124,18 @@ class PlaylistAudioService {
         // Si no hay canciones en la playlist, agregar al menos una por defecto
         debugPrint('⚠️ No songs found, adding default song');
         _audioSources.add(AudioSource.asset('assets/songs/medieval_lofi.mp3'));
+        _shuffledSongNames = ['Medieval Lofi'];
       }
 
       // Establecer la playlist en el player
       await _player!.setAudioSources(_audioSources, preload: true);
 
-      // Habilitar el modo shuffle para reproducción aleatoria
+      // Habilitar el modo shuffle para reproducción aleatoria adicional
       await _player!.setShuffleModeEnabled(true);
-      debugPrint('🎲 Shuffle mode enabled for random playback');
+      debugPrint('🎲 Shuffle mode enabled for additional random playback');
 
       debugPrint(
-          '✅ Playlist created with ${_audioSources.length} songs and preloaded');
+          '✅ Playlist created with ${_audioSources.length} songs in random order and preloaded');
     } catch (e) {
       debugPrint('❌ Error creating playlist: $e');
       throw Exception('Failed to create playlist: $e');
@@ -124,9 +149,9 @@ class PlaylistAudioService {
     });
 
     _player!.currentIndexStream.listen((index) {
-      if (index != null && index < _songNames.length) {
+      if (index != null && index < _shuffledSongNames.length) {
         debugPrint(
-            '🎵 Now playing: ${_songNames[index]} (${index + 1}/${_songNames.length})');
+            '🎵 Now playing: ${_shuffledSongNames[index]} (${index + 1}/${_shuffledSongNames.length})');
       }
     });
 
@@ -309,7 +334,7 @@ class PlaylistAudioService {
 
   // Método para obtener información de la playlist
   List<String> getPlaylistInfo() {
-    return List.from(_songNames);
+    return List.from(_shuffledSongNames);
   }
 
   // Método para verificar si hay errores de carga

@@ -22,18 +22,12 @@ class MedievalAudioHandler extends BaseAudioHandler
   Future<void> _initializeAudio() async {
     debugPrint('_initializeAudio() called');
     try {
-      debugPrint('Setting asset: assets/songs/medieval_lofi.mp3');
       await _player.setAsset('assets/songs/medieval_lofi.mp3');
-      debugPrint('Asset set successfully');
-      
-      debugPrint('Setting loop mode to all');
+
       await _player.setLoopMode(LoopMode.all);
-      debugPrint('Loop mode set successfully');
-      
-      debugPrint('Setting volume to 0.0');
+
       await _player.setVolume(0.0);
-      debugPrint('Volume set successfully');
-      
+
       _isInitialized = true;
 
       // Set initial media item
@@ -42,8 +36,7 @@ class MedievalAudioHandler extends BaseAudioHandler
         album: 'Medieval Pomodoro',
         title: 'Medieval Lofi Music',
         artist: 'Background Music',
-        duration: const Duration(minutes: 30), // Approximate duration
-        artUri: Uri.parse('asset:///assets/images/img_app_logo.svg'),
+        duration: const Duration(minutes: 30),
       );
 
       this.mediaItem.add(mediaItem);

@@ -133,19 +133,11 @@ class SimpleTimerController extends _$SimpleTimerController {
   void _initializeAudio() async {
     debugPrint('SimpleTimerController._initializeAudio() called');
     try {
-      debugPrint('Setting asset: assets/songs/medieval_lofi.mp3');
       await _audioPlayer.setAsset('assets/songs/medieval_lofi.mp3');
-      debugPrint('Asset set successfully');
 
-      debugPrint('Setting loop mode to all');
       await _audioPlayer.setLoopMode(LoopMode.all);
-      debugPrint('Loop mode set successfully');
 
-      debugPrint('Setting volume to 0.0');
       await _audioPlayer.setVolume(0.0);
-      debugPrint('Volume set successfully');
-
-      debugPrint('Simple audio initialized successfully');
     } catch (e) {
       debugPrint('Error initializing simple audio: $e');
       debugPrint('Stack trace: ${StackTrace.current}');
