@@ -188,9 +188,16 @@ class TimerController extends _$TimerController {
     final completedSessionType = state.currentMode;
 
     _timer?.cancel();
+
+    // Solo incrementar sessionNumber si completamos una sesión de trabajo
+    int newSessionNumber = state.sessionNumber;
+    if (state.currentMode.isWork) {
+      newSessionNumber = state.sessionNumber + 1;
+    }
+
     state = state.copyWith(
       isActive: false,
-      sessionNumber: state.sessionNumber + 1,
+      sessionNumber: newSessionNumber,
     );
 
     // End Live Activity
@@ -216,6 +223,7 @@ class TimerController extends _$TimerController {
     });
 
     debugPrint('✅ Session completed successfully: $completedSessionType');
+    debugPrint('📊 Current session number: ${state.sessionNumber}');
   }
 
   void _playSessionCompletionFeedback() {
@@ -237,9 +245,12 @@ class TimerController extends _$TimerController {
 
   void _determineNextSession() {
     TimerModeConfig newConfig;
+    int newSessionNumber = state.sessionNumber;
 
     if (state.currentMode.isWork) {
-      if (state.sessionNumber % 4 == 0) {
+      // Después de cada sesión de trabajo, ir a break
+      // El long break ocurre después de 3 sesiones de trabajo completas
+      if (state.sessionNumber % 3 == 0) {
         newConfig = TimerModeConfig.getLongBreakConfig(
           durationMinutes: state.longBreakMinutes,
         );
@@ -249,9 +260,16 @@ class TimerController extends _$TimerController {
         );
       }
     } else {
+      // Después de cualquier break, volver a work
       newConfig = TimerModeConfig.getWorkConfig(
         durationMinutes: state.workDurationMinutes,
       );
+
+      // Si acabamos de completar un long break, resetear el contador de sesiones
+      if (state.currentMode.isLongBreak) {
+        newSessionNumber = 0;
+        debugPrint('🔄 Resetting session counter after long break');
+      }
     }
 
     // Play session change sound and haptic feedback
@@ -263,10 +281,13 @@ class TimerController extends _$TimerController {
       currentSeconds: newConfig.durationMinutes * 60,
       currentMotivationalMessage: newConfig.motivationalMessage,
       currentAnimation: newConfig.animationType,
+      sessionNumber: newSessionNumber,
     );
 
     debugPrint(
         '📋 Next session determined: ${newConfig.mode.displayName} (${newConfig.durationMinutes * 60}s) with animation: ${newConfig.animationType.assetPath}');
+    debugPrint(
+        '📊 Session counter: $newSessionNumber (Work sessions completed: ${newSessionNumber})');
   }
 
   void _playSessionChangeFeedback(TimerMode newMode) {
