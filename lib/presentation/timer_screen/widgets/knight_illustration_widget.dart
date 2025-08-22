@@ -55,19 +55,63 @@ class _KnightIllustrationWidgetState
 
     // Escuchar cambios en el TimerProvider
     final timerState = ref.watch(timerControllerProvider);
-    _handleModeChange(timerState.currentMode);
+
+    debugPrint(
+        '🎭 KnightIllustration: didChangeDependencies called - Mode: ${timerState.currentMode.displayName}, Animation: ${timerState.currentAnimation.assetPath}');
+
+    // Solo inicializar el modo la primera vez
+    if (_lastMode == null) {
+      _lastMode = timerState.currentMode;
+      debugPrint(
+          '🎭 KnightIllustration: Initial mode set to ${timerState.currentMode.displayName}');
+    }
+  }
+
+  @override
+  void didUpdateWidget(KnightIllustrationWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    debugPrint('🎭 KnightIllustration: didUpdateWidget called');
+
+    // Verificar si el modo o la animación han cambiado
+    if (oldWidget.currentMode != widget.currentMode ||
+        oldWidget.currentAnimation != widget.currentAnimation) {
+      debugPrint(
+          '🎭 KnightIllustration: Widget updated - Old mode: ${oldWidget.currentMode.displayName}, New mode: ${widget.currentMode.displayName}');
+      _handleModeChange(widget.currentMode);
+    } else {
+      debugPrint(
+          '🎭 KnightIllustration: Widget updated but no mode/animation change detected');
+    }
   }
 
   void _handleModeChange(TimerMode newMode) {
+    debugPrint(
+        '🎭 KnightIllustration: Mode change detected - Old: $_lastMode, New: $newMode, Transitioning: $_isTransitioning');
+
     // Solo ejecutar transición si el modo realmente cambió y no estamos ya en transición
     if (_lastMode != null && _lastMode != newMode && !_isTransitioning) {
+      debugPrint(
+          '🎭 KnightIllustration: Starting transition from ${_lastMode!.displayName} to ${newMode.displayName}');
       _startTransition();
+    } else if (_lastMode == null) {
+      // Primera vez que se inicializa
+      debugPrint(
+          '🎭 KnightIllustration: Initial mode set to ${newMode.displayName}');
+    } else if (_isTransitioning) {
+      debugPrint(
+          '🎭 KnightIllustration: Mode change ignored - already transitioning');
+    } else {
+      debugPrint('🎭 KnightIllustration: Mode unchanged');
     }
+
     _lastMode = newMode;
   }
 
   void _startTransition() {
     if (_isTransitioning || !mounted) return;
+
+    debugPrint('🎭 KnightIllustration: Transition started');
 
     setState(() {
       _isTransitioning = true;
@@ -78,6 +122,8 @@ class _KnightIllustrationWidgetState
       // Verificar que el widget aún está montado
       if (!mounted) return;
 
+      debugPrint('🎭 KnightIllustration: Transition midpoint - changing GIF');
+
       // Cambiar el GIF en el punto medio de la transición (opacidad = 0)
       _updateGifPath();
 
@@ -85,6 +131,7 @@ class _KnightIllustrationWidgetState
       _transitionController.reverse().then((_) {
         // Verificar que el widget aún está montado
         if (mounted) {
+          debugPrint('🎭 KnightIllustration: Transition completed');
           setState(() {
             _isTransitioning = false;
           });
@@ -96,23 +143,13 @@ class _KnightIllustrationWidgetState
     });
   }
 
-  @override
-  void didUpdateWidget(KnightIllustrationWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Verificar si el modo o la animación han cambiado
-    if (oldWidget.currentMode != widget.currentMode ||
-        oldWidget.currentAnimation != widget.currentAnimation) {
-      // La actualización del GIF se maneja en _handleModeChange para evitar duplicados
-    }
-  }
-
   void _updateGifPath() {
     String newGifPath;
 
+    // Verificar directamente el TimerMode para determinar el GIF
     if (widget.currentMode.isBreak) {
-      // Si está en break, mostrar breck_time.gif
-      newGifPath = 'assets/animations/breck_time.gif';
+      // Si está en break (shortBreak o longBreak), mostrar break_time.gif
+      newGifPath = 'assets/animations/break_time.gif';
     } else {
       // Si está en work, mostrar aleatoriamente knight_way_1.gif o knight_way_2.gif
       final random = DateTime.now().millisecondsSinceEpoch % 2;
@@ -121,7 +158,12 @@ class _KnightIllustrationWidgetState
           : 'assets/animations/knight_way_2.gif';
     }
 
+    debugPrint(
+        '🎭 KnightIllustration: Updating GIF path - Current: $_currentGifPath, New: $newGifPath, Mode: ${widget.currentMode.displayName}');
+
     if (_currentGifPath != newGifPath) {
+      debugPrint('🎭 KnightIllustration: GIF path changed, updating...');
+
       setState(() {
         _currentGifPath = newGifPath;
       });
@@ -142,6 +184,8 @@ class _KnightIllustrationWidgetState
           }
         });
       }
+    } else {
+      debugPrint('🎭 KnightIllustration: GIF path unchanged, skipping update');
     }
   }
 
@@ -186,28 +230,31 @@ class _KnightIllustrationWidgetState
                     opacity = (_transitionController.value - 0.5) * 2;
                   }
 
-                  return Opacity(
-                    opacity: opacity,
-                    child: Gif(
-                      image: AssetImage(_currentGifPath),
-                      controller: _controller,
-                      fit: BoxFit.cover,
-                      duration: const Duration(seconds: 7),
-                      placeholder: (context) => const Center(
-                        child: CircularProgressIndicator(),
+                  return ColoredBox(
+                    color: Colors.black,
+                    child: Opacity(
+                      opacity: opacity,
+                      child: Gif(
+                        image: AssetImage(_currentGifPath),
+                        controller: _controller,
+                        fit: BoxFit.cover,
+                        duration: const Duration(seconds: 7),
+                        placeholder: (context) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        onFetchCompleted: () {
+                          // Verificar que el widget aún está montado antes de continuar
+                          if (mounted) {
+                            // Cuando termina de cargar, arrancamos en bucle ida-vuelta
+                            _controller.repeat(
+                              min: 0,
+                              max: 1,
+                              period: const Duration(seconds: 7),
+                              reverse: true, // Esto hace el efecto ping-pong
+                            );
+                          }
+                        },
                       ),
-                      onFetchCompleted: () {
-                        // Verificar que el widget aún está montado antes de continuar
-                        if (mounted) {
-                          // Cuando termina de cargar, arrancamos en bucle ida-vuelta
-                          _controller.repeat(
-                            min: 0,
-                            max: 1,
-                            period: const Duration(seconds: 7),
-                            reverse: true, // Esto hace el efecto ping-pong
-                          );
-                        }
-                      },
                     ),
                   );
                 },

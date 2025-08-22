@@ -266,7 +266,7 @@ class TimerController extends _$TimerController {
     );
 
     debugPrint(
-        '📋 Next session determined: ${newConfig.mode.displayName} (${newConfig.durationMinutes * 60}s)');
+        '📋 Next session determined: ${newConfig.mode.displayName} (${newConfig.durationMinutes * 60}s) with animation: ${newConfig.animationType.assetPath}');
   }
 
   void _playSessionChangeFeedback(TimerMode newMode) {

@@ -17,7 +17,7 @@ enum TimerMode {
 enum AnimationType {
   work1('assets/animations/knight_way_1.gif'),
   work2('assets/animations/knight_way_2.gif'),
-  breakTime('assets/animations/breck_time.gif');
+  breakTime('assets/animations/break_time.gif');
 
   const AnimationType(this.assetPath);
 
