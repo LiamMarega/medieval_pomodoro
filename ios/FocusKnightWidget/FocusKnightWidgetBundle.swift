@@ -12,6 +12,6 @@ import SwiftUI
 struct FocusKnightWidgetBundle: WidgetBundle {
     var body: some Widget {
         FocusKnightWidget()
-        FocusKnightWidgetLiveActivity()
+        FocusKnightLiveActivity() // <— cambiar a este nombre
     }
 }

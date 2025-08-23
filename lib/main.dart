@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:live_activities/live_activities.dart';
 import 'package:sizer/sizer.dart';
 
 import '../core/app_export.dart';
@@ -17,6 +18,13 @@ void main() async {
       errorDetails: details,
     );
   };
+
+  final live = LiveActivities();
+
+  await live.init(
+    appGroupId: 'group.com.focusknight.app', // <-- MISMO que en Swift
+    urlScheme: 'focusknight', // opcional, para deeplinks desde la isla
+  );
 
   Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])

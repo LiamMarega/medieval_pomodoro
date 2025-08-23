@@ -13,6 +13,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:live_activities/live_activities.dart';
 import 'package:live_activities/models/activity_update.dart';
+import 'package:live_activities/models/live_activity_file.dart';
 import 'package:live_activities/models/url_scheme_data.dart';
 
 /// Estados básicos del Pomodoro que este servicio entiende.
@@ -39,6 +40,8 @@ class PomodoroSnapshot {
       'phase': describeEnum(phase),
       'endTimestamp': endAt.millisecondsSinceEpoch,
       'isRunning': isRunning,
+      'logo':
+          LiveActivityFileFromAsset.image('assets/images/focus_knight_logo.png')
     };
   }
 }
@@ -103,7 +106,7 @@ class LiveActivityService {
 
     // Crea una o actualiza la existente reusando un id predecible (_customId).
     _activityId = await _plugin.createOrUpdateActivity(
-      'com.example.pomodoro',
+      'focus-knight',
       payload,
     );
   }
