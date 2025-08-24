@@ -26,9 +26,9 @@ class LiveActivityController extends _$LiveActivityController {
       debugPrint('🚀 Initializing Live Activity service...');
 
       _liveActivityService = LiveActivityService(
-        appGroupId: 'group.com.medieval.pomodoro',
-        urlScheme: 'medievalpomodoro',
-        customActivityId: 'medieval-pomodoro-activity',
+        appGroupId: 'group.com.focusknight.app',
+        urlScheme: 'focusknight',
+        customActivityId: 'focus-knight-activity',
       );
 
       await _liveActivityService!.init(
@@ -87,8 +87,9 @@ class LiveActivityController extends _$LiveActivityController {
       }
 
       // Calculate end time based on current seconds remaining
-      final endAt =
-          DateTime.now().add(Duration(seconds: timerState.currentSeconds));
+      final endAt = DateTime.now().add(
+        Duration(seconds: timerState.currentSeconds),
+      );
 
       final snapshot = PomodoroSnapshot(
         taskName: timerState.sessionType,
@@ -201,7 +202,8 @@ class LiveActivityController extends _$LiveActivityController {
         _lastTimerState!.isActive &&
         _lastTimerState!.currentSeconds > 0) {
       debugPrint(
-          '⏰ Timer is active in background, ensuring Live Activity is shown');
+        '⏰ Timer is active in background, ensuring Live Activity is shown',
+      );
       syncTimerState(_lastTimerState!);
     }
   }
