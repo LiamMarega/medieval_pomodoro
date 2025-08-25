@@ -38,7 +38,7 @@ final class TimerControllerProvider
   }
 }
 
-String _$timerControllerHash() => r'4c965654df6e0776ae8804a036091916a02ac169';
+String _$timerControllerHash() => r'0751a7f3e8001f35a1dbb0f4b0263cf77dac905a';
 
 abstract class _$TimerController extends $Notifier<TimerState> {
   TimerState build();

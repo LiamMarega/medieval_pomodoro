@@ -44,6 +44,7 @@ class PlaylistAudioService {
   Duration get currentPosition => _player?.position ?? Duration.zero;
   Duration get totalDuration => _player?.duration ?? Duration.zero;
   int get currentIndex => _player?.currentIndex ?? 0;
+  double get currentVolume => _player?.volume ?? 0.7;
 
   String get currentSongTitle {
     if (_player?.currentIndex != null &&
@@ -292,6 +293,17 @@ class PlaylistAudioService {
       }
     } catch (e) {
       debugPrint('❌ Error skipping to previous song: $e');
+    }
+  }
+
+  Future<void> restartCurrentSong() async {
+    if (!_isInitialized) return;
+
+    try {
+      await _player!.seek(Duration.zero);
+      debugPrint('🔄 Restarted current song');
+    } catch (e) {
+      debugPrint('❌ Error restarting current song: $e');
     }
   }
 

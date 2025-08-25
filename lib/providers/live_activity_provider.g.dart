@@ -31,7 +31,7 @@ final class LiveActivityControllerProvider
 }
 
 String _$liveActivityControllerHash() =>
-    r'948f5bdc16be46bc6e8db74733acfab1f5d311e6';
+    r'bc54d40633671b8b22c53c56d4b7ba6945e18568';
 
 abstract class _$LiveActivityController extends $AsyncNotifier<void> {
   FutureOr<void> build();

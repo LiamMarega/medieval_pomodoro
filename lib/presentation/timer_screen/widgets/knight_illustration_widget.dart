@@ -127,17 +127,17 @@ class _KnightIllustrationWidgetState
   void _updateGifPath() {
     String newGifPath;
 
-    // Verificar directamente el TimerMode para determinar el GIF
-    if (widget.currentMode.isBreak) {
-      // Si está en break (shortBreak o longBreak), mostrar break_time.gif
-      newGifPath = 'assets/animations/break_time.gif';
-    } else {
-      // Si está en work, mostrar aleatoriamente knight_way_1.gif o knight_way_2.gif
-      final random = DateTime.now().millisecondsSinceEpoch % 2;
-      newGifPath = random == 0
-          ? 'assets/animations/knight_way_1.gif'
-          : 'assets/animations/knight_way_2.gif';
-    }
+    // Lista de todos los GIFs disponibles excepto break_time.gif
+     final List<String> availableGifs = [
+       'assets/animations/dragon_dark_room.gif',
+       'assets/animations/knight_bridge.gif',
+       'assets/animations/knight_way_1.gif',
+       'assets/animations/knight_way_2.gif',
+     ];
+ 
+     // Seleccionar aleatoriamente uno de los GIFs disponibles
+     final random = DateTime.now().millisecondsSinceEpoch % availableGifs.length;
+     newGifPath = availableGifs[random];
 
     debugPrint(
         '🎭 KnightIllustration: Updating GIF path - Current: $_currentGifPath, New: $newGifPath, Mode: ${widget.currentMode.displayName}');
