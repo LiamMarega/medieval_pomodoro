@@ -7,6 +7,7 @@ import '../models/timer_state.dart';
 import '../models/timer_mode.dart';
 // Importa el nuevo servicio de audio
 import '../services/audio_service_manager.dart';
+import '../core/services/live_activity_service.dart';
 import 'live_activity_provider.dart';
 import 'settings_provider.dart';
 
@@ -94,7 +95,7 @@ class TimerController extends _$TimerController {
 
     state = state.copyWith(isActive: true);
 
-    // Sync with Live Activity
+    // Sync with Live Activity (non-blocking)
     _syncWithLiveActivity();
 
     // Iniciar música si está habilitada
@@ -114,10 +115,36 @@ class TimerController extends _$TimerController {
         final newSeconds = state.currentSeconds - 1;
         state = state.copyWith(currentSeconds: newSeconds);
 
-        // Update Live Activity every 30 seconds to avoid too frequent updates
-        if (newSeconds % 30 == 0) {
-          _patchLiveActivity(isRunning: true);
-        }
+        // Update Live Activity with optimized frequency for better real-time experience
+        // Update every 5 seconds for the first 30 seconds, every 15 seconds for the first 5 minutes, then every 30 seconds
+        final shouldUpdateLiveActivity = newSeconds <= 30 
+            ? (newSeconds % 5 == 0) 
+            : newSeconds <= 300
+                ? (newSeconds % 15 == 0)
+                : (newSeconds % 30 == 0);
+            
+        if (shouldUpdateLiveActivity || newSeconds <= 5) {
+           // Convert current mode to PomodoroPhase for Live Activity
+           PomodoroPhase phase;
+           switch (state.currentMode) {
+             case TimerMode.work:
+               phase = PomodoroPhase.focus;
+               break;
+             case TimerMode.shortBreak:
+               phase = PomodoroPhase.shortBreak;
+               break;
+             case TimerMode.longBreak:
+               phase = PomodoroPhase.longBreak;
+               break;
+           }
+           
+           _patchLiveActivity(
+             isRunning: true,
+             newEndAt: DateTime.now().add(Duration(seconds: newSeconds)),
+             phase: phase,
+             taskName: '${state.currentMode.name} - Session ${state.sessionNumber}',
+           );
+         }
 
         // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
         if (newSeconds % 300 == 0) {
@@ -140,8 +167,27 @@ class TimerController extends _$TimerController {
     _timer?.cancel();
     state = state.copyWith(isActive: false);
 
-    // Update Live Activity
-    _patchLiveActivity(isRunning: false);
+    // Update Live Activity with pause state (non-blocking)
+    // Convert current mode to PomodoroPhase for Live Activity
+    PomodoroPhase phase;
+    switch (state.currentMode) {
+      case TimerMode.work:
+        phase = PomodoroPhase.focus;
+        break;
+      case TimerMode.shortBreak:
+        phase = PomodoroPhase.shortBreak;
+        break;
+      case TimerMode.longBreak:
+        phase = PomodoroPhase.longBreak;
+        break;
+    }
+    
+    _patchLiveActivity(
+      isRunning: false,
+      newEndAt: DateTime.now().add(Duration(seconds: state.currentSeconds)),
+      phase: phase,
+      taskName: '${state.currentMode.name} - Session ${state.sessionNumber} (Paused)',
+    );
 
     // Detener música si está reproduciéndose
     if (state.isMusicEnabled && (_audioService?.isPlaying ?? false)) {
@@ -157,6 +203,83 @@ class TimerController extends _$TimerController {
     debugPrint('✅ Timer paused successfully');
   }
 
+  void resumeTimer() {
+    debugPrint('▶️ Resuming timer...');
+    if (_timer?.isActive ?? false) {
+      debugPrint('⚠️ Timer is already active');
+      return;
+    }
+
+    if (state.currentSeconds <= 0) {
+      debugPrint('⚠️ Cannot resume timer with 0 seconds remaining');
+      return;
+    }
+
+    state = state.copyWith(isActive: true);
+
+    // Sync with Live Activity (non-blocking)
+    _patchLiveActivity(
+      isRunning: true,
+      newEndAt: DateTime.now().add(Duration(seconds: state.currentSeconds)),
+    );
+
+    // Iniciar música si está habilitada
+    if (state.isMusicEnabled) {
+      debugPrint('🎵 Resuming music...');
+      _startMusic();
+    }
+
+    // Configurar modo inmersivo
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    // Reanudar el timer del pomodoro
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.currentSeconds > 0) {
+        final newSeconds = state.currentSeconds - 1;
+        state = state.copyWith(currentSeconds: newSeconds);
+
+        // Update Live Activity with optimized frequency for better real-time experience
+         final shouldUpdateLiveActivity = newSeconds <= 30 
+             ? (newSeconds % 5 == 0) 
+             : newSeconds <= 300
+                 ? (newSeconds % 15 == 0)
+                 : (newSeconds % 30 == 0);
+             
+         if (shouldUpdateLiveActivity || newSeconds <= 5) {
+           // Convert current mode to PomodoroPhase for Live Activity
+           PomodoroPhase phase;
+           switch (state.currentMode) {
+             case TimerMode.work:
+               phase = PomodoroPhase.focus;
+               break;
+             case TimerMode.shortBreak:
+               phase = PomodoroPhase.shortBreak;
+               break;
+             case TimerMode.longBreak:
+               phase = PomodoroPhase.longBreak;
+               break;
+           }
+           
+           _patchLiveActivity(
+             isRunning: true,
+             newEndAt: DateTime.now().add(Duration(seconds: newSeconds)),
+             phase: phase,
+             taskName: '${state.currentMode.name} - Session ${state.sessionNumber}',
+           );
+         }
+
+        // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
+        if (newSeconds % 300 == 0) {
+          _updateMotivationalMessage();
+        }
+      } else {
+        _completeSession();
+      }
+    });
+
+    debugPrint('✅ Timer resumed successfully');
+  }
+
   void restartTimer() {
     debugPrint('🔄 Restarting timer...');
 
@@ -166,8 +289,27 @@ class TimerController extends _$TimerController {
       currentSeconds: state.totalSeconds,
     );
 
-    // Update Live Activity
-    _patchLiveActivity(isRunning: false);
+    // Update Live Activity with restart state (non-blocking)
+    // Convert current mode to PomodoroPhase for Live Activity
+    PomodoroPhase phase;
+    switch (state.currentMode) {
+      case TimerMode.work:
+        phase = PomodoroPhase.focus;
+        break;
+      case TimerMode.shortBreak:
+        phase = PomodoroPhase.shortBreak;
+        break;
+      case TimerMode.longBreak:
+        phase = PomodoroPhase.longBreak;
+        break;
+    }
+    
+    _patchLiveActivity(
+      isRunning: false,
+      newEndAt: DateTime.now().add(Duration(seconds: state.currentSeconds)),
+      phase: phase,
+      taskName: '${state.currentMode.name} - Session ${state.sessionNumber} (Ready)',
+    );
 
     // Detener música si está reproduciéndose
     if (_audioService?.isPlaying ?? false) {
@@ -200,7 +342,7 @@ class TimerController extends _$TimerController {
       sessionNumber: newSessionNumber,
     );
 
-    // End Live Activity
+    // End Live Activity when session completes (non-blocking)
     _endLiveActivity();
 
     // Detener música
@@ -454,34 +596,56 @@ class TimerController extends _$TimerController {
   Duration get totalDuration => _audioService?.totalDuration ?? Duration.zero;
 
   // Live Activity integration methods
+  /// Sincroniza el estado actual con Live Activity de forma no bloqueante
   void _syncWithLiveActivity() {
-    // Get the Live Activity provider and sync the current state
-    final liveActivityProvider =
-        ref.read(liveActivityControllerProvider.notifier);
-
-    // Debug Live Activity status first
-    liveActivityProvider.debugLiveActivityStatus();
-
-    // Then sync the state
-    liveActivityProvider.syncTimerState(state);
-    liveActivityProvider.updateLastTimerState(state);
+    // Ejecutar de forma asíncrona sin bloquear el timer
+    Future.microtask(() async {
+      try {
+        final liveActivityController = ref.read(liveActivityControllerProvider.notifier);
+        await liveActivityController.syncTimerState(state);
+      } catch (e) {
+        // Log error but don't affect timer functionality
+        debugPrint('⚠️ Live Activity sync error: $e');
+      }
+    });
   }
 
-  void _patchLiveActivity({bool? isRunning, DateTime? newEndAt}) {
-    // Get the Live Activity provider and patch specific fields
-    final liveActivityProvider =
-        ref.read(liveActivityControllerProvider.notifier);
-    liveActivityProvider.patchLiveActivity(
-      isRunning: isRunning,
-      newEndAt: newEndAt,
-    );
+  /// Actualiza campos específicos en Live Activity de forma no bloqueante
+  void _patchLiveActivity({
+    bool? isRunning,
+    DateTime? newEndAt,
+    PomodoroPhase? phase,
+    String? taskName,
+  }) {
+    // Ejecutar de forma asíncrona sin bloquear el timer
+    Future.microtask(() async {
+      try {
+        final liveActivityController = ref.read(liveActivityControllerProvider.notifier);
+        await liveActivityController.patchLiveActivity(
+          isRunning: isRunning,
+          newEndAt: newEndAt,
+          phase: phase,
+          taskName: taskName,
+        );
+      } catch (e) {
+        // Log error but don't affect timer functionality
+        debugPrint('⚠️ Live Activity patch error: $e');
+      }
+    });
   }
 
+  /// Finaliza la Live Activity de forma no bloqueante
   void _endLiveActivity() {
-    // Get the Live Activity provider and end the activity
-    final liveActivityProvider =
-        ref.read(liveActivityControllerProvider.notifier);
-    liveActivityProvider.endLiveActivity();
+    // Ejecutar de forma asíncrona sin bloquear el timer
+    Future.microtask(() async {
+      try {
+        final liveActivityController = ref.read(liveActivityControllerProvider.notifier);
+        await liveActivityController.endLiveActivity();
+      } catch (e) {
+        // Log error but don't affect timer functionality
+        debugPrint('⚠️ Live Activity end error: $e');
+      }
+    });
   }
 
   // Handle Live Activity actions from Dynamic Island
@@ -491,7 +655,13 @@ class TimerController extends _$TimerController {
         pauseTimer();
         break;
       case 'resume':
-        startTimer();
+      case 'play':
+        // Use resumeTimer if timer is paused, otherwise startTimer for new sessions
+        if (!state.isActive && state.currentSeconds > 0 && state.currentSeconds < state.totalSeconds) {
+          resumeTimer();
+        } else {
+          startTimer();
+        }
         break;
       case 'stop':
         restartTimer();

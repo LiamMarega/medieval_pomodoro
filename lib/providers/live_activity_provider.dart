@@ -50,14 +50,36 @@ class LiveActivityController extends _$LiveActivityController {
     }
   }
 
+  /// Handle Live Activity actions from Dynamic Island with robust error handling
   void _handleLiveActivityAction(String action) {
-    // This will be called from the timer provider to handle actions
-    // We'll need to pass this action to the timer provider
-    debugPrint('🎯 Live Activity action received: $action');
-    // The timer provider will handle this action when it's connected
+    debugPrint('🎯 Handling Live Activity action: $action');
+    
+    try {
+      // Handle different actions from the Live Activity
+      switch (action.toLowerCase()) {
+        case 'pause':
+          debugPrint('⏸️ Pause action from Live Activity');
+          // Action will be handled by timer_provider through handleLiveActivityAction
+          break;
+        case 'resume':
+        case 'play':
+          debugPrint('▶️ Resume action from Live Activity');
+          // Action will be handled by timer_provider through handleLiveActivityAction
+          break;
+        case 'stop':
+          debugPrint('⏹️ Stop action from Live Activity');
+          // Action will be handled by timer_provider through handleLiveActivityAction
+          break;
+        default:
+          debugPrint('❓ Unknown Live Activity action: $action');
+      }
+    } catch (e) {
+      debugPrint('❌ Error handling Live Activity action: $e');
+      // Silent failure - don't affect app functionality
+    }
   }
 
-  /// Sync timer state with Live Activity
+  /// Sync timer state with Live Activity with robust error handling
   Future<void> syncTimerState(TimerState timerState) async {
     if (_liveActivityService == null) {
       debugPrint('⚠️ Live Activity service not initialized');
@@ -65,8 +87,13 @@ class LiveActivityController extends _$LiveActivityController {
     }
 
     try {
-      // Check if Live Activities are available first
-      final isAvailable = await _liveActivityService!.isAvailable();
+      // Store the timer state for background sync
+      _lastTimerState = timerState;
+      
+      // Check if Live Activities are available with timeout
+      final isAvailable = await _liveActivityService!.isAvailable()
+          .timeout(const Duration(seconds: 2), onTimeout: () => false);
+      
       if (!isAvailable) {
         debugPrint('⚠️ Live Activities not available on this device');
         return;
@@ -91,22 +118,42 @@ class LiveActivityController extends _$LiveActivityController {
         Duration(seconds: timerState.currentSeconds),
       );
 
+      // Create snapshot with unique timestamp to avoid conflicts
       final snapshot = PomodoroSnapshot(
-        taskName: timerState.sessionType,
+        taskName: '${timerState.currentMode.name} - Session ${timerState.sessionNumber}',
         phase: phase,
         endAt: endAt,
         isRunning: timerState.isActive,
       );
 
-      await _liveActivityService!.sync(snapshot);
-      debugPrint('✅ Timer state synced with Live Activity');
+      // Sync with timeout to prevent blocking
+      await _liveActivityService!.sync(snapshot)
+          .timeout(const Duration(seconds: 3));
+      
+      debugPrint('✅ Timer state synced with Live Activity (${timerState.currentMode.name}, ${timerState.currentSeconds}s remaining)');
     } catch (e) {
       debugPrint('❌ Error syncing timer state: $e');
-      // Don't throw the error, just log it to avoid breaking the timer
+      // Attempt recovery by trying a simple patch instead of full sync
+      _attemptRecoverySync(timerState);
+    }
+  }
+  
+  /// Attempt to recover from sync errors with a simpler approach
+  Future<void> _attemptRecoverySync(TimerState timerState) async {
+    try {
+      debugPrint('🔄 Attempting Live Activity recovery sync...');
+      await patchLiveActivity(
+        isRunning: timerState.isActive,
+        newEndAt: DateTime.now().add(Duration(seconds: timerState.currentSeconds)),
+      );
+      debugPrint('✅ Live Activity recovery sync successful');
+    } catch (e) {
+      debugPrint('❌ Live Activity recovery sync failed: $e');
+      // Silent failure - don't affect timer functionality
     }
   }
 
-  /// Update specific Live Activity fields
+  /// Update specific Live Activity fields with robust error handling
   Future<void> patchLiveActivity({
     bool? isRunning,
     DateTime? newEndAt,
@@ -119,19 +166,28 @@ class LiveActivityController extends _$LiveActivityController {
     }
 
     try {
+      // Check if we have any meaningful updates to make
+      if (isRunning == null && newEndAt == null && phase == null && taskName == null) {
+        debugPrint('⚠️ No Live Activity updates to apply');
+        return;
+      }
+      
+      // Apply patch with timeout to prevent blocking
       await _liveActivityService!.patch(
         isRunning: isRunning,
         newEndAt: newEndAt,
         phase: phase,
         taskName: taskName,
-      );
-      debugPrint('✅ Live Activity patched successfully');
+      ).timeout(const Duration(seconds: 2));
+      
+      debugPrint('✅ Live Activity patched successfully (running: $isRunning)');
     } catch (e) {
       debugPrint('❌ Error patching Live Activity: $e');
+      // Silent failure - don't affect timer functionality
     }
   }
 
-  /// End the Live Activity
+  /// End Live Activity with robust error handling
   Future<void> endLiveActivity() async {
     if (_liveActivityService == null) {
       debugPrint('⚠️ Live Activity service not initialized');
@@ -139,10 +195,17 @@ class LiveActivityController extends _$LiveActivityController {
     }
 
     try {
-      await _liveActivityService!.end();
+      // End with timeout to prevent blocking
+      await _liveActivityService!.end()
+          .timeout(const Duration(seconds: 2));
+      
+      // Clear stored timer state
+      _lastTimerState = null;
+      
       debugPrint('✅ Live Activity ended successfully');
     } catch (e) {
       debugPrint('❌ Error ending Live Activity: $e');
+      // Silent failure - don't affect timer functionality
     }
   }
 
@@ -193,30 +256,48 @@ class LiveActivityController extends _$LiveActivityController {
     });
   }
 
-  /// Called when app goes to background
+  /// Called when app goes to background with robust error handling
   void _onAppWentToBackground() {
     debugPrint('📱 App went to background');
+    _isAppInBackground = true;
 
-    // If we have a timer state and it's active, ensure Live Activity is shown
-    if (_lastTimerState != null &&
-        _lastTimerState!.isActive &&
-        _lastTimerState!.currentSeconds > 0) {
-      debugPrint(
-        '⏰ Timer is active in background, ensuring Live Activity is shown',
-      );
-      syncTimerState(_lastTimerState!);
-    }
+    // Use microtask to avoid blocking the background transition
+    Future.microtask(() async {
+      try {
+        // If we have a timer state and it's active, ensure Live Activity is shown
+        if (_lastTimerState != null &&
+            _lastTimerState!.isActive &&
+            _lastTimerState!.currentSeconds > 0) {
+          debugPrint(
+            '⏰ Timer is active in background, ensuring Live Activity is shown',
+          );
+          await syncTimerState(_lastTimerState!);
+        }
+      } catch (e) {
+        debugPrint('❌ Error handling background transition: $e');
+        // Silent failure - don't affect app functionality
+      }
+    });
   }
 
-  /// Called when app comes to foreground
+  /// Called when app comes to foreground with robust error handling
   void _onAppWentToForeground() {
     debugPrint('📱 App came to foreground');
+    _isAppInBackground = false;
 
-    // End Live Activity when app comes to foreground
-    if (_liveActivityService != null) {
-      debugPrint('📱 App in foreground, ending Live Activity');
-      endLiveActivity();
-    }
+    // Use microtask to avoid blocking the foreground transition
+    Future.microtask(() async {
+      try {
+        // End Live Activity when app comes to foreground
+        if (_liveActivityService != null) {
+          debugPrint('📱 App in foreground, ending Live Activity');
+          await endLiveActivity();
+        }
+      } catch (e) {
+        debugPrint('❌ Error handling foreground transition: $e');
+        // Silent failure - don't affect app functionality
+      }
+    });
   }
 
   /// Store last timer state for background management
