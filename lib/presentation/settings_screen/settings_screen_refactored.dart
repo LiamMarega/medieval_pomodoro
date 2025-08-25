@@ -89,30 +89,12 @@ class _SettingsScreenRefactoredState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 2.h),
-
                         // Controles de audio en la parte superior
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: const AudioControlsWidget(),
                         ),
 
-                        SizedBox(height: 4.h),
-
-                        // Título para la sección de configuración de tiempos
-                        Center(
-                          child: Text(
-                            'CONFIGURACIÓN DE TIEMPOS',
-                            style: GoogleFonts.pressStart2p(
-                              fontSize: 14.sp,
-                              color: const Color(0xFFDAA520),
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-
-                        SizedBox(height: 3.h),
                         _buildDurationSetting(
                           title: 'WORK DURATION',
                           currentValue: _workDurationMinutes,

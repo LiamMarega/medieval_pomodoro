@@ -21,34 +21,14 @@ class TimerController extends _$TimerController {
   @override
   TimerState build() {
     _initializeAudio();
+    _setupSettingsListener();
+    _loadInitialSettings();
 
-    // Get settings from settings provider
-    final settings = ref.watch(settingsControllerProvider);
-
-    // Use settings if available, otherwise use defaults
-    final workDuration = settings.when(
-      data: (data) => data.workDurationMinutes,
-      loading: () => 25,
-      error: (_, __) => 25,
-    );
-
-    final shortBreakDuration = settings.when(
-      data: (data) => data.shortBreakMinutes,
-      loading: () => 5,
-      error: (_, __) => 5,
-    );
-
-    final longBreakDuration = settings.when(
-      data: (data) => data.longBreakMinutes,
-      loading: () => 30,
-      error: (_, __) => 30,
-    );
-
-    final isMusicEnabled = settings.when(
-      data: (data) => data.isMusicEnabled,
-      loading: () => true,
-      error: (_, __) => true,
-    );
+    // Use default settings for initial build
+    const workDuration = 25;
+    const shortBreakDuration = 5;
+    const longBreakDuration = 30;
+    const isMusicEnabled = true;
 
     // Crear configuración inicial del modo de trabajo
     final initialConfig = TimerModeConfig.getWorkConfig(
@@ -67,6 +47,74 @@ class TimerController extends _$TimerController {
       totalSeconds: workDuration * 60,
       currentSeconds: workDuration * 60,
     );
+  }
+
+  void _loadInitialSettings() {
+    // Load initial settings asynchronously without blocking the build
+    Future.microtask(() {
+      final settings = ref.read(settingsControllerProvider);
+      settings.when(
+        data: (data) {
+          // Update state with loaded settings while preserving music state
+          state = state.copyWith(
+            workDurationMinutes: data.workDurationMinutes,
+            shortBreakMinutes: data.shortBreakMinutes,
+            longBreakMinutes: data.longBreakMinutes,
+            isMusicEnabled: data.isMusicEnabled,
+          );
+
+          // Update total time if in work session
+          if (state.currentMode.isWork) {
+            final newTotalSeconds = data.workDurationMinutes * 60;
+            state = state.copyWith(
+              totalSeconds: newTotalSeconds,
+              currentSeconds: newTotalSeconds,
+            );
+          }
+
+          debugPrint('⚙️ Initial settings loaded successfully');
+        },
+        loading: () => debugPrint('⏳ Loading initial settings...'),
+        error: (error, stack) => debugPrint('❌ Error loading initial settings: $error'),
+      );
+    });
+  }
+
+  void _setupSettingsListener() {
+    // Listen to settings changes without rebuilding the entire provider
+    ref.listen(settingsControllerProvider, (previous, next) {
+      next.when(
+        data: (settings) {
+          // Preserve current music playing state
+          final currentMusicPlaying = state.isMusicPlaying;
+          
+          // Update state with new settings while preserving music state
+          state = state.copyWith(
+            workDurationMinutes: settings.workDurationMinutes,
+            shortBreakMinutes: settings.shortBreakMinutes,
+            longBreakMinutes: settings.longBreakMinutes,
+            isMusicEnabled: settings.isMusicEnabled,
+            isMusicPlaying: currentMusicPlaying, // Preserve music playing state
+          );
+
+          // Update audio service music enabled state without stopping playback
+          _audioService?.setMusicEnabled(settings.isMusicEnabled);
+
+          // If we're in a work session, update the total time
+          if (state.currentMode.isWork) {
+            final newTotalSeconds = settings.workDurationMinutes * 60;
+            state = state.copyWith(
+              totalSeconds: newTotalSeconds,
+              currentSeconds: newTotalSeconds,
+            );
+          }
+
+          debugPrint('⚙️ Settings updated via listener - Music state preserved');
+        },
+        loading: () => debugPrint('⏳ Settings loading...'),
+        error: (error, stack) => debugPrint('❌ Settings error: $error'),
+      );
+    });
   }
 
   void _initializeAudio() async {
@@ -538,6 +586,7 @@ class TimerController extends _$TimerController {
     debugPrint('⚙️ Updating settings...');
 
     // Update settings in the settings provider (this will persist to local storage)
+    // The _setupSettingsListener will handle the state updates automatically
     ref.read(settingsControllerProvider.notifier).updateSettings(
           workDurationMinutes: workDurationMinutes,
           shortBreakMinutes: shortBreakMinutes,
@@ -545,27 +594,7 @@ class TimerController extends _$TimerController {
           isMusicEnabled: isMusicEnabled,
         );
 
-    // Update local state for immediate UI responsiveness
-    state = state.copyWith(
-      workDurationMinutes: workDurationMinutes,
-      shortBreakMinutes: shortBreakMinutes,
-      longBreakMinutes: longBreakMinutes,
-      isMusicEnabled: isMusicEnabled,
-    );
-
-    // Don't change music state when updating settings to prevent stopping music
-    // The audio provider will handle music state separately
-
-    // Si estamos en una sesión de trabajo, actualizar el tiempo total
-    if (state.currentMode.isWork) {
-      final newTotalSeconds = workDurationMinutes * 60;
-      state = state.copyWith(
-        totalSeconds: newTotalSeconds,
-        currentSeconds: newTotalSeconds,
-      );
-    }
-
-    debugPrint('✅ Settings updated successfully');
+    debugPrint('✅ Settings update triggered - listener will handle state changes');
   }
 
   // Métodos adicionales para controlar la playlist

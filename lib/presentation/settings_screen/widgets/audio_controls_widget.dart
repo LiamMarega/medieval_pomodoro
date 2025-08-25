@@ -57,7 +57,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
         color: const Color(0xFF2D1B0E),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: const Color(0xFFDAA520),
           width: 3,
@@ -73,51 +73,31 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Título de la sección
-          Text(
-            'CONTROLES DE AUDIO',
-            style: GoogleFonts.pressStart2p(
-              fontSize: 14.sp,
-              color: const Color(0xFFDAA520),
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 3.h),
-
           // Información de la canción actual
           if (audioState.isInitialized) ...[
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4A3728),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFFDAA520).withValues(alpha: 0.5),
-                  width: 2,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4A3728),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFDAA520).withValues(alpha: 0.5),
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'REPRODUCIENDO AHORA',
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 10.sp,
-                      color: const Color(0xFFDAA520).withValues(alpha: 0.8),
-                    ),
+                child: Text(
+                  audioController.currentSongTitle,
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 12.sp,
+                    color: const Color(0xFFDAA520),
                   ),
-                  SizedBox(height: 1.h),
-                  Text(
-                    audioController.currentSongTitle,
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 12.sp,
-                      color: const Color(0xFFDAA520),
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
             SizedBox(height: 3.h),
