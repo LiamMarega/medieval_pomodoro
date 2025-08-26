@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
 
 import '../../providers/timer_provider.dart';
+import '../../widgets/invisible_youtube_player.dart';
 import 'widgets/timer_header_widget.dart';
 import 'widgets/timer_display_widget.dart';
 import 'widgets/timer_controls_widget.dart';
@@ -55,6 +56,8 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
         backgroundColor: const Color(0xFF2D1B0F),
         body: Stack(
           children: [
+            // Invisible YouTube player for audio-only playback
+            const InvisibleYouTubePlayer(),
             Column(
               children: [
                 const TimerHeaderWidget(),

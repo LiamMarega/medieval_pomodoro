@@ -24,6 +24,7 @@ dependencies:
   fluttertoast: ^8.2.4
   fl_chart: ^1.0.0
   just_audio: ^0.10.4
+  youtube_player_flutter: ^9.1.2
 
   universal_html: ^2.2.4
   flutter_riverpod: ^3.0.0-dev.17
@@ -32,6 +33,7 @@ dependencies:
   riverpod_annotation: ^3.0.0-dev.17
   audio_service_web: ^0.1.4
   audio_service: ^0.18.18
+  audio_session: ^0.1.21
   pixelarticons: ^0.4.0
   gif: ^2.3.0
   awesome_notifications: ^0.10.1
