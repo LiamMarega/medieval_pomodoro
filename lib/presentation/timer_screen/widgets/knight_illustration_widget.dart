@@ -30,7 +30,6 @@ class _KnightIllustrationWidgetState
 
   TimerMode? _lastMode;
   bool _isTransitioning = false;
-  bool _showNextImage = false;
 
   @override
   void initState() {
@@ -106,7 +105,6 @@ class _KnightIllustrationWidgetState
 
     setState(() {
       _isTransitioning = true;
-      _showNextImage = false;
     });
 
     // Primera fase: desvanecer imagen actual (1 → 0)
@@ -116,11 +114,6 @@ class _KnightIllustrationWidgetState
 
       debugPrint(
           '🎭 KnightIllustration: First phase completed - showing next image');
-
-      // Segunda fase: mostrar la nueva imagen
-      setState(() {
-        _showNextImage = true;
-      });
 
       // Tercera fase: hacer aparecer la nueva imagen (0 → 1)
       _transitionController.reverse().then((_) {
