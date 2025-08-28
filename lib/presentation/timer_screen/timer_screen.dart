@@ -9,7 +9,6 @@ import 'widgets/timer_controls_widget.dart';
 import 'widgets/knight_illustration_widget.dart';
 import 'widgets/motivational_message_widget.dart';
 import 'widgets/music_notification_widget.dart';
-import 'widgets/session_complete_notification.dart';
 
 class TimerScreen extends ConsumerStatefulWidget {
   const TimerScreen({super.key});
@@ -38,12 +37,20 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
           _lastSessionType =
               _lastSessionType ?? 'Work'; // Use previous session type
         });
+
+        // Hide notification after 3 seconds
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _showNotification = false;
+            });
+          }
+        });
       }
 
       _lastSessionType = timerState.currentMode.displayName;
       _lastSessionNumber = timerState.sessionNumber;
     });
-
     return PixelFrame(
       cornerSize: 32,
       edgeThickness: 8,
@@ -58,7 +65,22 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
             Column(
               children: [
                 const TimerHeaderWidget(),
-                const TimerDisplayWidget(),
+                //     if (_showNotification && _lastSessionType != null)
+                // Positioned(
+                //   top: 0,
+                //   left: 0,
+                //   right: 0,
+                //   child: SessionCompleteNotification(
+                //     sessionType: _lastSessionType!,
+                //     nextSessionType: timerState.currentMode.displayName,
+                //     onDismiss: () {
+                //       setState(() {
+                //         _showNotification = false;
+                //       });
+                //     },
+                //   ),
+                // ),
+                TimerDisplayWidget(),
                 Expanded(
                   child: Column(
                     children: [
@@ -145,22 +167,6 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
                 const MusicNotificationWidget(),
               ],
             ),
-            // Session complete notification overlay
-            if (_showNotification && _lastSessionType != null)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SessionCompleteNotification(
-                  sessionType: _lastSessionType!,
-                  nextSessionType: timerState.currentMode.displayName,
-                  onDismiss: () {
-                    setState(() {
-                      _showNotification = false;
-                    });
-                  },
-                ),
-              ),
           ],
         ),
       ),

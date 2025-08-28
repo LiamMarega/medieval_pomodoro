@@ -51,8 +51,9 @@ class NotificationService {
       [
         NotificationChannel(
           channelKey: _channelKey,
-          channelName: 'Pomodoro Timer',
-          channelDescription: 'Notifications for pomodoro timer sessions',
+          channelName: 'Focus Knight pomodoro',
+          channelDescription:
+              'Notifications for Focus Knight pomodoro timer sessions',
           defaultColor: const Color(0xFF8B4513), // Color medieval (marrón)
           ledColor: Colors.amber,
           importance: NotificationImportance.High,

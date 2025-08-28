@@ -1,7 +1,8 @@
 enum TimerMode {
   work('Work'),
   shortBreak('Short Break'),
-  longBreak('Long Break');
+  longBreak('Long Break'),
+  gapTime('Gap Time');
 
   const TimerMode(this.displayName);
 
@@ -12,12 +13,14 @@ enum TimerMode {
       this == TimerMode.shortBreak || this == TimerMode.longBreak;
   bool get isLongBreak => this == TimerMode.longBreak;
   bool get isShortBreak => this == TimerMode.shortBreak;
+  bool get isGapTime => this == TimerMode.gapTime;
 }
 
 enum AnimationType {
   work1('assets/animations/knight_way_1.gif'),
   work2('assets/animations/knight_way_2.gif'),
-  breakTime('assets/animations/break_time.gif');
+  breakTime('assets/animations/break_time.gif'),
+  gapTime('assets/animations/dragon_dark_room.gif');
 
   const AnimationType(this.assetPath);
 
@@ -70,6 +73,15 @@ class TimerModeConfig {
       durationMinutes: durationMinutes,
       animationType: AnimationType.breakTime,
       motivationalMessage: motivationalMessage ?? _getRandomBreakMessage(),
+    );
+  }
+
+  static TimerModeConfig getGapTimeConfig() {
+    return const TimerModeConfig(
+      mode: TimerMode.gapTime,
+      durationMinutes: 0, // Will be handled as 3 seconds in timer provider
+      animationType: AnimationType.gapTime,
+      motivationalMessage: "Preparing for next session...",
     );
   }
 

@@ -174,41 +174,28 @@ class _KnightIllustrationWidgetState
               child: AnimatedBuilder(
                 animation: _transitionController,
                 builder: (context, child) {
-                  double opacity;
-
-                  if (!_showNextImage) {
-                    // Primera fase: desvanecer imagen actual (1 → 0)
-                    opacity = 1.0 - _transitionController.value;
-                  } else {
-                    // Segunda fase: hacer aparecer nueva imagen (0 → 1)
-                    opacity = _transitionController.value;
-                  }
-
                   return ColoredBox(
                     color: Colors.black,
-                    child: Opacity(
-                      opacity: opacity,
-                      child: Gif(
-                        image: AssetImage(widget.currentAnimation.assetPath),
-                        controller: _controller,
-                        fit: BoxFit.cover,
-                        duration: const Duration(seconds: 7),
-                        placeholder: (context) => const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                        onFetchCompleted: () {
-                          // Verificar que el widget aún está montado antes de continuar
-                          if (mounted) {
-                            // Cuando termina de cargar, arrancamos en bucle ida-vuelta
-                            _controller.repeat(
-                              min: 0,
-                              max: 1,
-                              period: const Duration(seconds: 7),
-                              reverse: true, // Esto hace el efecto ping-pong
-                            );
-                          }
-                        },
+                    child: Gif(
+                      image: AssetImage(widget.currentAnimation.assetPath),
+                      controller: _controller,
+                      fit: BoxFit.cover,
+                      duration: const Duration(seconds: 7),
+                      placeholder: (context) => const Center(
+                        child: CircularProgressIndicator(),
                       ),
+                      onFetchCompleted: () {
+                        // Verificar que el widget aún está montado antes de continuar
+                        if (mounted) {
+                          // Cuando termina de cargar, arrancamos en bucle ida-vuelta
+                          _controller.repeat(
+                            min: 0,
+                            max: 1,
+                            period: const Duration(seconds: 7),
+                            reverse: true, // Esto hace el efecto ping-pong
+                          );
+                        }
+                      },
                     ),
                   );
                 },

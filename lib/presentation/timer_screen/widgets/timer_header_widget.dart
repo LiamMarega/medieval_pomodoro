@@ -24,7 +24,7 @@ class TimerHeaderWidget extends StatelessWidget {
             _buildSwordDecoration('assets/sprites/minize_button.png'),
             Expanded(
               child: Text(
-                'POMODORO TIMER',
+                'FOCUS KNIGHT',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.pressStart2p(
                   fontSize: 16.sp,

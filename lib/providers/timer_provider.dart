@@ -16,6 +16,7 @@ part 'timer_provider.g.dart';
 class TimerController extends _$TimerController {
   Timer? _timer;
   PlaylistAudioService? _audioService;
+  TimerMode? _previousSessionMode; // Store previous session for gap time logic
 
   @override
   TimerState build() {
@@ -49,8 +50,12 @@ class TimerController extends _$TimerController {
   }
 
   /// Converts minutes to seconds, with special handling for 0 minutes (test mode)
-  /// 0 minutes = 10 seconds for work/break, 20 seconds for long break
+  /// 0 minutes = 10 seconds for work/break, 20 seconds for long break, 3 seconds for gapTime
   int _minutesToSeconds(int minutes, {TimerMode? mode}) {
+    if (mode == TimerMode.gapTime) {
+      return 3; // Always 3 seconds for gap time
+    }
+    
     if (minutes == 0) {
       // Test mode: 10 seconds for work/break, 20 seconds for long break
       if (mode == TimerMode.longBreak) {
@@ -202,6 +207,9 @@ class TimerController extends _$TimerController {
             case TimerMode.longBreak:
               phase = PomodoroPhase.longBreak;
               break;
+            case TimerMode.gapTime:
+              phase = PomodoroPhase.focus; // Use focus phase for gap time
+              break;
           }
 
           _patchLiveActivity(
@@ -246,6 +254,9 @@ class TimerController extends _$TimerController {
         break;
       case TimerMode.longBreak:
         phase = PomodoroPhase.longBreak;
+        break;
+      case TimerMode.gapTime:
+        phase = PomodoroPhase.focus; // Use focus phase for gap time
         break;
     }
 
@@ -326,6 +337,9 @@ class TimerController extends _$TimerController {
             case TimerMode.longBreak:
               phase = PomodoroPhase.longBreak;
               break;
+            case TimerMode.gapTime:
+              phase = PomodoroPhase.focus; // Use focus phase for gap time
+              break;
           }
 
           _patchLiveActivity(
@@ -371,6 +385,9 @@ class TimerController extends _$TimerController {
       case TimerMode.longBreak:
         phase = PomodoroPhase.longBreak;
         break;
+      case TimerMode.gapTime:
+        phase = PomodoroPhase.focus; // Use focus phase for gap time
+        break;
     }
 
     _patchLiveActivity(
@@ -401,6 +418,12 @@ class TimerController extends _$TimerController {
 
     _timer?.cancel();
 
+    // Handle gap time completion differently
+    if (completedSessionType.isGapTime) {
+      _completeGapTime();
+      return;
+    }
+
     // Solo incrementar sessionNumber si completamos una sesión de trabajo
     int newSessionNumber = state.sessionNumber;
     if (state.currentMode.isWork) {
@@ -426,17 +449,126 @@ class TimerController extends _$TimerController {
     // Play completion sound and haptic feedback
     _playSessionCompletionFeedback();
 
-    // Determine next session and auto-start
-    _determineNextSession();
-
-    // Auto-start next session after a short delay
-    Future.delayed(const Duration(seconds: 1), () {
-      startTimer();
-    });
+    // Start gap time before next session
+    _startGapTime(completedSessionType);
 
     debugPrint('✅ Session completed successfully: $completedSessionType');
     debugPrint('📊 Current session number: ${state.sessionNumber}');
   }
+
+  void _startGapTime(TimerMode completedSessionType) {
+    debugPrint('⏳ Starting gap time after $completedSessionType...');
+    
+    // Store the completed session type for determining next session
+    _previousSessionMode = completedSessionType;
+    
+    // Configure gap time state
+    final gapConfig = TimerModeConfig.getGapTimeConfig();
+    state = state.copyWith(
+      currentMode: gapConfig.mode,
+      totalSeconds: 3, // Always 3 seconds for gap time
+      currentSeconds: 3,
+      currentMotivationalMessage: gapConfig.motivationalMessage,
+      currentAnimation: gapConfig.animationType,
+    );
+
+    // Auto-start gap time after a short delay
+     Future.delayed(const Duration(milliseconds: 500), () {
+       startTimer();
+     });
+   }
+
+   void _completeGapTime() {
+     debugPrint('⏳ Gap time completed, determining next session...');
+     
+     _timer?.cancel();
+     state = state.copyWith(isActive: false);
+     
+     // Determine and configure next session based on previous session stored in _startGapTime
+     _determineNextSessionAfterGap();
+     
+     // Auto-start next session after a short delay
+     Future.delayed(const Duration(seconds: 1), () {
+       startTimer();
+     });
+
+     debugPrint('✅ Gap time completed, starting next session');
+   }
+
+   void _determineNextSessionAfterGap() {
+     debugPrint('🔄 Determining next session after gap time...');
+     
+     if (_previousSessionMode == null) {
+       debugPrint('⚠️ No previous session mode stored, defaulting to work');
+       _configureSession(TimerMode.work);
+       return;
+     }
+     
+     TimerMode nextMode;
+     
+     switch (_previousSessionMode!) {
+       case TimerMode.work:
+         // After work, determine if it's short break or long break
+         if (state.sessionNumber % 4 == 0) {
+           nextMode = TimerMode.longBreak;
+         } else {
+           nextMode = TimerMode.shortBreak;
+         }
+         break;
+       case TimerMode.shortBreak:
+       case TimerMode.longBreak:
+         // After any break, go to work
+         nextMode = TimerMode.work;
+         break;
+       case TimerMode.gapTime:
+         // This shouldn't happen, but default to work
+         nextMode = TimerMode.work;
+         break;
+     }
+     
+     _configureSession(nextMode);
+     debugPrint('✅ Next session configured: $nextMode');
+   }
+
+   void _configureSession(TimerMode mode) {
+     TimerModeConfig config;
+     int newSessionNumber = state.sessionNumber;
+     
+     switch (mode) {
+       case TimerMode.work:
+         config = TimerModeConfig.getWorkConfig(
+           durationMinutes: state.workDurationMinutes,
+         );
+         break;
+       case TimerMode.shortBreak:
+         config = TimerModeConfig.getShortBreakConfig(
+           durationMinutes: state.shortBreakMinutes,
+         );
+         break;
+       case TimerMode.longBreak:
+         config = TimerModeConfig.getLongBreakConfig(
+           durationMinutes: state.longBreakMinutes,
+         );
+         // Reset session counter after long break
+         newSessionNumber = 0;
+         break;
+       case TimerMode.gapTime:
+         config = TimerModeConfig.getGapTimeConfig();
+         break;
+     }
+     
+     state = state.copyWith(
+       currentMode: config.mode,
+       totalSeconds: _minutesToSeconds(config.durationMinutes, mode: config.mode),
+       currentSeconds: _minutesToSeconds(config.durationMinutes, mode: config.mode),
+       currentMotivationalMessage: config.motivationalMessage,
+       currentAnimation: config.animationType,
+       sessionNumber: newSessionNumber,
+     );
+     
+     // Play session change feedback
+     _playSessionChangeFeedback(config.mode);
+   }
 
   void _playSessionCompletionFeedback() {
     // Play completion sound
@@ -455,54 +587,7 @@ class TimerController extends _$TimerController {
     }
   }
 
-  void _determineNextSession() {
-    TimerModeConfig newConfig;
-    int newSessionNumber = state.sessionNumber;
 
-    if (state.currentMode.isWork) {
-      // Después de cada sesión de trabajo, ir a break
-      // El long break ocurre después de 3 sesiones de trabajo completas
-      if (state.sessionNumber % 3 == 0) {
-        newConfig = TimerModeConfig.getLongBreakConfig(
-          durationMinutes: state.longBreakMinutes,
-        );
-      } else {
-        newConfig = TimerModeConfig.getShortBreakConfig(
-          durationMinutes: state.shortBreakMinutes,
-        );
-      }
-    } else {
-      // Después de cualquier break, volver a work
-      newConfig = TimerModeConfig.getWorkConfig(
-        durationMinutes: state.workDurationMinutes,
-      );
-
-      // Si acabamos de completar un long break, resetear el contador de sesiones
-      if (state.currentMode.isLongBreak) {
-        newSessionNumber = 0;
-        debugPrint('🔄 Resetting session counter after long break');
-      }
-    }
-
-    // Play session change sound and haptic feedback
-    _playSessionChangeFeedback(newConfig.mode);
-
-    state = state.copyWith(
-      currentMode: newConfig.mode,
-      totalSeconds:
-          _minutesToSeconds(newConfig.durationMinutes, mode: newConfig.mode),
-      currentSeconds:
-          _minutesToSeconds(newConfig.durationMinutes, mode: newConfig.mode),
-      currentMotivationalMessage: newConfig.motivationalMessage,
-      currentAnimation: newConfig.animationType,
-      sessionNumber: newSessionNumber,
-    );
-
-    debugPrint(
-        '📋 Next session determined: ${newConfig.mode.displayName} (${_minutesToSeconds(newConfig.durationMinutes, mode: newConfig.mode)}s) with animation: ${newConfig.animationType.assetPath}');
-    debugPrint(
-        '📊 Session counter: $newSessionNumber (Work sessions completed: ${newSessionNumber})');
-  }
 
   void _playSessionChangeFeedback(TimerMode newMode) {
     // Play session change sound
@@ -540,7 +625,7 @@ class TimerController extends _$TimerController {
     );
 
     debugPrint(
-        '💭 Motivational message updated: ${config.motivationalMessage}');
+        '💭 Motivational message updated: $config.motivationalMessage');
   }
 
   void toggleMusic() {
