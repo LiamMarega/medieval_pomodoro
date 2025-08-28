@@ -8,6 +8,7 @@ import '../models/timer_mode.dart';
 // Importa el nuevo servicio de audio
 import '../services/audio_service_manager.dart';
 import '../core/services/live_activity_service.dart';
+import '../core/services/user_stats_service.dart';
 import 'settings_provider.dart';
 
 part 'timer_provider.g.dart';
@@ -17,6 +18,7 @@ class TimerController extends _$TimerController {
   Timer? _timer;
   PlaylistAudioService? _audioService;
   TimerMode? _previousSessionMode; // Store previous session for gap time logic
+  final UserStatsService _userStatsService = UserStatsService();
 
   @override
   TimerState build() {
@@ -238,6 +240,12 @@ class TimerController extends _$TimerController {
     debugPrint(
         'Current music state - isPlaying: ${_audioService?.isPlaying ?? false}, isEnabled: ${state.isMusicEnabled}');
 
+    // Prevent pausing during gap time
+    if (state.currentMode.isGapTime) {
+      debugPrint('⚠️ Cannot pause timer during gap time');
+      return;
+    }
+
     // Cancelar el timer
     _timer?.cancel();
     state = state.copyWith(isActive: false);
@@ -430,6 +438,7 @@ class TimerController extends _$TimerController {
       newSessionNumber = state.sessionNumber + 1;
     }
 
+    // Only set isActive to false if not transitioning to gap time
     state = state.copyWith(
       isActive: false,
       sessionNumber: newSessionNumber,
@@ -449,6 +458,11 @@ class TimerController extends _$TimerController {
     // Play completion sound and haptic feedback
     _playSessionCompletionFeedback();
 
+    // Registrar estadísticas si es una sesión de trabajo completada
+    if (completedSessionType.isWork) {
+      _recordWorkSessionStats();
+    }
+
     // Start gap time before next session
     _startGapTime(completedSessionType);
 
@@ -462,7 +476,7 @@ class TimerController extends _$TimerController {
     // Store the completed session type for determining next session
     _previousSessionMode = completedSessionType;
 
-    // Configure gap time state
+    // Configure gap time state - keep timer active
     final gapConfig = TimerModeConfig.getGapTimeConfig();
     state = state.copyWith(
       lastMode: state.currentMode, // Store current mode as last mode
@@ -471,6 +485,7 @@ class TimerController extends _$TimerController {
       currentSeconds: 3,
       currentMotivationalMessage: gapConfig.motivationalMessage,
       currentAnimation: gapConfig.animationType,
+      isActive: true, // Keep timer active during gap time
     );
 
     // Auto-start gap time after a short delay
@@ -483,7 +498,8 @@ class TimerController extends _$TimerController {
     debugPrint('⏳ Gap time completed, determining next session...');
 
     _timer?.cancel();
-    state = state.copyWith(isActive: false);
+    // Keep timer active during transition to next session
+    state = state.copyWith(isActive: true);
 
     // Determine and configure next session based on previous session stored in _startGapTime
     _determineNextSessionAfterGap();
@@ -558,6 +574,9 @@ class TimerController extends _$TimerController {
         break;
     }
 
+    // Keep timer active if coming from gap time, otherwise set to false
+    final shouldKeepActive = state.currentMode.isGapTime;
+
     state = state.copyWith(
       lastMode: state.currentMode, // Store current mode as last mode
       currentMode: config.mode,
@@ -568,6 +587,7 @@ class TimerController extends _$TimerController {
       currentMotivationalMessage: config.motivationalMessage,
       currentAnimation: config.animationType,
       sessionNumber: newSessionNumber,
+      isActive: shouldKeepActive, // Keep active if coming from gap time
     );
 
     // Play session change feedback
@@ -812,6 +832,22 @@ class TimerController extends _$TimerController {
         break;
       default:
         debugPrint('⚠️ Unknown Live Activity action: $action');
+    }
+  }
+
+  /// Registra las estadísticas de una sesión de trabajo completada
+  void _recordWorkSessionStats() {
+    try {
+      // Calcular la duración de la sesión en minutos
+      final durationMinutes = state.workDurationMinutes;
+      
+      // Registrar la sesión de forma asíncrona para no bloquear el timer
+      Future.microtask(() async {
+        await _userStatsService.recordFocusSession(durationMinutes);
+        debugPrint('📊 Work session recorded: $durationMinutes minutes');
+      });
+    } catch (e) {
+      debugPrint('❌ Error recording work session stats: $e');
     }
   }
 }

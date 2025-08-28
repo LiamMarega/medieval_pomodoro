@@ -65,21 +65,6 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
             Column(
               children: [
                 const TimerHeaderWidget(),
-                //     if (_showNotification && _lastSessionType != null)
-                // Positioned(
-                //   top: 0,
-                //   left: 0,
-                //   right: 0,
-                //   child: SessionCompleteNotification(
-                //     sessionType: _lastSessionType!,
-                //     nextSessionType: timerState.currentMode.displayName,
-                //     onDismiss: () {
-                //       setState(() {
-                //         _showNotification = false;
-                //       });
-                //     },
-                //   ),
-                // ),
                 TimerDisplayWidget(),
                 Expanded(
                   child: Column(
@@ -143,16 +128,7 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
                                   const TimerControlsWidget(),
                                   const SizedBox(height: 16),
                                   Expanded(
-                                    child: KnightIllustrationWidget(
-                                      currentMode: timerState.currentMode,
-                                      currentAnimation:
-                                          timerState.currentAnimation,
-                                      onTransitionComplete: () {
-                                        // Callback opcional cuando termina la transición
-                                        debugPrint(
-                                            '🎭 Knight animation transition completed');
-                                      },
-                                    ),
+                                    child: KnightIllustrationWidget(),
                                   ),
                                 ],
                               ),

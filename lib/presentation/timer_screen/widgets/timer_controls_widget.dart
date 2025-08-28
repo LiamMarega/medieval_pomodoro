@@ -24,7 +24,10 @@ class TimerControlsWidget extends ConsumerWidget {
           onPressed: () {
             HapticFeedback.lightImpact();
             if (timerState.isActive) {
-              timerController.pauseTimer();
+              // Prevent pausing during gap time
+              if (!timerState.currentMode.isGapTime) {
+                timerController.pauseTimer();
+              }
             } else {
               timerController.startTimer();
             }
