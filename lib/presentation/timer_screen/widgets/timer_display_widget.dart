@@ -6,14 +6,53 @@ import 'package:sizer/sizer.dart';
 
 import '../../../providers/timer_provider.dart';
 
-class TimerDisplayWidget extends ConsumerWidget {
+class TimerDisplayWidget extends ConsumerStatefulWidget {
   const TimerDisplayWidget({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TimerDisplayWidget> createState() => _TimerDisplayWidgetState();
+}
+
+class _TimerDisplayWidgetState extends ConsumerState<TimerDisplayWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    );
+    _slideAnimation = Tween<double>(
+      begin: -2, // Start completely off-screen to the left
+      end: 2.0, // End 200% off-screen to the right
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.linear,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final timerState = ref.watch(timerControllerProvider);
+
+    // Start animation when in gap time mode
+    if (timerState.currentMode == TimerMode.gapTime) {
+      _animationController.repeat();
+    } else {
+      _animationController.stop();
+      _animationController.reset();
+    }
 
     return Container(
       width: double.infinity,
@@ -32,25 +71,51 @@ class TimerDisplayWidget extends ConsumerWidget {
           ),
         ),
         child: timerState.currentMode == TimerMode.gapTime
-            ? Text(
-                "NOTIFICACION",
-                style: GoogleFonts.pressStart2p(
-                  fontSize: 30.sp,
-                  fontWeight: FontWeight.normal,
-                  color: const Color(0xFFDAA520),
-                  letterSpacing: 4.0,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.8),
-                      offset: const Offset(4, 4),
-                      blurRadius: 8,
-                    ),
-                    Shadow(
-                      color: const Color(0xFFDAA520).withValues(alpha: 0.5),
-                      offset: const Offset(-2, -2),
-                      blurRadius: 3,
-                    ),
-                  ],
+            ? ClipRect(
+                child: SizedBox(
+                  width: double.infinity,
+                  // height: 40.sp, // Fixed height to prevent layout shifts
+                  child: AnimatedBuilder(
+                    animation: _slideAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(
+                          _slideAnimation.value *
+                              MediaQuery.of(context).size.width,
+                          0,
+                        ),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width *
+                              3, // Allow text to extend beyond screen
+                          child: Text(
+                            "NOTIFICACION",
+                            style: GoogleFonts.pressStart2p(
+                              fontSize: 30.sp,
+                              fontWeight: FontWeight.normal,
+                              color: const Color(0xFFDAA520),
+                              letterSpacing: 4.0,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.8),
+                                  offset: const Offset(4, 4),
+                                  blurRadius: 8,
+                                ),
+                                Shadow(
+                                  color: const Color(0xFFDAA520)
+                                      .withValues(alpha: 0.5),
+                                  offset: const Offset(-2, -2),
+                                  blurRadius: 3,
+                                ),
+                              ],
+                            ),
+                            overflow: TextOverflow.visible,
+                            maxLines: 1,
+                            softWrap: false,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               )
             : Text(
