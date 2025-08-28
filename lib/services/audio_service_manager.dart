@@ -26,6 +26,7 @@ class PlaylistAudioService {
     'assets/songs/medieval_lofi.mp3',
     'assets/songs/castle_dreams.mp3',
     'assets/songs/the_rusty_knight_tale.mp3',
+    'assets/songs/the_wandering_star.mp3'
   ];
 
   // Lista de nombres de canciones para mostrar
@@ -35,6 +36,7 @@ class PlaylistAudioService {
     'Medieval Lofi',
     'Castle Dreams',
     'The Rusty Knight Tale',
+    'The Wandering Star',
   ];
 
   // Getters

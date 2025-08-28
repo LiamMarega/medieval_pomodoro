@@ -70,5 +70,16 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <key>CFBundleLocalizations</key>
+    <array>
+      <string>en</string>
+      <string>es</string>
+      <string>fr</string>
+      <string>de</string>
+      <string>it</string>
+      <string>pt</string>
+      <string>ru</string>
+      <string>tr</string>
+    </array>
   </dict>
 </plist>

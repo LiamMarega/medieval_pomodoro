@@ -98,7 +98,8 @@ class _SettingsScreenRefactoredState
                         _buildDurationSetting(
                           title: 'WORK DURATION',
                           currentValue: _workDurationMinutes,
-                          minValue: 1,
+                          minValue:
+                              0, // Allow 0 minutes (10 seconds for testing)
                           maxValue: 60,
                           increment: 5,
                           onChanged: (value) {
@@ -120,11 +121,11 @@ class _SettingsScreenRefactoredState
                               if (currentValue > 5) {
                                 // If above 5, subtract 5
                                 return currentValue - 5;
-                              } else if (currentValue > 1) {
-                                // If between 1 and 5, subtract 1
+                              } else if (currentValue > 0) {
+                                // If between 0 and 5, subtract 1
                                 return currentValue - 1;
                               } else {
-                                // If at 1, can't go lower
+                                // If at 0, can't go lower
                                 return currentValue;
                               }
                             }
@@ -134,7 +135,8 @@ class _SettingsScreenRefactoredState
                         _buildDurationSetting(
                           title: 'SHORT BREAK TIME',
                           currentValue: _shortBreakMinutes,
-                          minValue: 1,
+                          minValue:
+                              0, // Allow 0 minutes (10 seconds for testing)
                           maxValue: 15,
                           increment: 1,
                           onChanged: (value) {
@@ -146,7 +148,8 @@ class _SettingsScreenRefactoredState
                         _buildDurationSetting(
                           title: 'LONG BREAK TIME',
                           currentValue: _longBreakMinutes,
-                          minValue: 15,
+                          minValue:
+                              0, // Allow 0 minutes (20 seconds for testing)
                           maxValue: 60,
                           increment: 5,
                           onChanged: (value) {
@@ -155,6 +158,115 @@ class _SettingsScreenRefactoredState
                           },
                         ),
                         SizedBox(height: 3.h),
+
+                        // Test durations button
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () {
+                                final settingsController = ref
+                                    .read(settingsControllerProvider.notifier);
+                                settingsController.setTestDurations();
+
+                                // Update local state
+                                setState(() {
+                                  _workDurationMinutes = 0;
+                                  _shortBreakMinutes = 0;
+                                  _longBreakMinutes = 0;
+                                });
+
+                                // Show feedback
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '🧪 Test mode activated: 10s work/break, 20s long break',
+                                      style: GoogleFonts.pressStart2p(
+                                          fontSize: 12.sp),
+                                    ),
+                                    backgroundColor: const Color(0xFFDAA520),
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 4.w, vertical: 2.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4A3728),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFDAA520),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  '🧪 SET TEST DURATIONS (10s/20s)',
+                                  style: GoogleFonts.pressStart2p(
+                                    fontSize: 12.sp,
+                                    color: const Color(0xFFDAA520),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+
+                        // Reset to normal durations button
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () {
+                                final settingsController = ref
+                                    .read(settingsControllerProvider.notifier);
+                                settingsController.resetToDefaults();
+
+                                // Update local state
+                                setState(() {
+                                  _workDurationMinutes = 25;
+                                  _shortBreakMinutes = 5;
+                                  _longBreakMinutes = 30;
+                                });
+
+                                // Show feedback
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '🔄 Normal mode activated: 25/5/30 minutes',
+                                      style: GoogleFonts.pressStart2p(
+                                          fontSize: 12.sp),
+                                    ),
+                                    backgroundColor: const Color(0xFF4CAF50),
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 4.w, vertical: 2.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4A3728),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFF4CAF50),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  '🔄 RESET TO NORMAL DURATIONS',
+                                  style: GoogleFonts.pressStart2p(
+                                    fontSize: 12.sp,
+                                    color: const Color(0xFF4CAF50),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -233,7 +345,9 @@ class _SettingsScreenRefactoredState
                     color: const Color(0xFFDAA520),
                     fontWeight: FontWeight.bold,
                   ),
-                  child: Text('${currentValue.toString().padLeft(2, '0')}:00'),
+                  child: Text(currentValue == 0
+                      ? (title == 'LONG BREAK TIME' ? '00:20' : '00:10')
+                      : '${currentValue.toString().padLeft(2, '0')}:00'),
                 ),
               ),
               // Plus button

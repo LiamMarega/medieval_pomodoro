@@ -19,16 +19,16 @@ class TimerState {
 
   const TimerState({
     this.isActive = false,
-    this.currentSeconds = 1500,
-    this.totalSeconds = 1500,
+    this.currentSeconds = 10, // 10 seconds for testing
+    this.totalSeconds = 10, // 10 seconds for testing
     this.sessionNumber = 1,
     this.currentMode = TimerMode.work,
     this.isMusicEnabled = true, // Music always ON by default
     this.isMusicPlaying = false,
     this.currentMotivationalMessage = '',
-    this.workDurationMinutes = 25,
-    this.shortBreakMinutes = 5,
-    this.longBreakMinutes = 30,
+    this.workDurationMinutes = 0, // 10 seconds for testing
+    this.shortBreakMinutes = 0, // 10 seconds for testing
+    this.longBreakMinutes = 0, // 20 seconds for testing
     this.currentVolume = 0.0,
     this.isLoading = false,
     this.error,

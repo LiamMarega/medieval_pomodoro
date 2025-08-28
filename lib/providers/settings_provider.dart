@@ -132,6 +132,17 @@ class SettingsController extends _$SettingsController {
       longBreakMinutes: 30,
       isMusicEnabled: true,
     );
-    debugPrint('🔄 Settings reset to defaults');
+    debugPrint('🔄 Settings reset to normal defaults (25/5/30 minutes)');
+  }
+
+  // Set test durations for quick testing
+  Future<void> setTestDurations() async {
+    await updateSettings(
+      workDurationMinutes: 0, // 10 seconds
+      shortBreakMinutes: 0, // 10 seconds
+      longBreakMinutes: 0, // 20 seconds
+      isMusicEnabled: true,
+    );
+    debugPrint('🧪 Test durations set: 10s work/break, 20s long break');
   }
 }

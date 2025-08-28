@@ -12,7 +12,6 @@ part 'live_activity_provider.g.dart';
 class LiveActivityController extends _$LiveActivityController {
   LiveActivityService? _liveActivityService;
   StreamSubscription<FGBGType>? _fgbgSubscription;
-  bool _isAppInBackground = false;
   TimerState? _lastTimerState;
 
   @override
@@ -53,7 +52,7 @@ class LiveActivityController extends _$LiveActivityController {
   /// Handle Live Activity actions from Dynamic Island with robust error handling
   void _handleLiveActivityAction(String action) {
     debugPrint('🎯 Handling Live Activity action: $action');
-    
+
     try {
       // Handle different actions from the Live Activity
       switch (action.toLowerCase()) {
@@ -89,11 +88,12 @@ class LiveActivityController extends _$LiveActivityController {
     try {
       // Store the timer state for background sync
       _lastTimerState = timerState;
-      
+
       // Check if Live Activities are available with timeout
-      final isAvailable = await _liveActivityService!.isAvailable()
+      final isAvailable = await _liveActivityService!
+          .isAvailable()
           .timeout(const Duration(seconds: 2), onTimeout: () => false);
-      
+
       if (!isAvailable) {
         debugPrint('⚠️ Live Activities not available on this device');
         return;
@@ -120,31 +120,35 @@ class LiveActivityController extends _$LiveActivityController {
 
       // Create snapshot with unique timestamp to avoid conflicts
       final snapshot = PomodoroSnapshot(
-        taskName: '${timerState.currentMode.name} - Session ${timerState.sessionNumber}',
+        taskName:
+            '${timerState.currentMode.name} - Session ${timerState.sessionNumber}',
         phase: phase,
         endAt: endAt,
         isRunning: timerState.isActive,
       );
 
       // Sync with timeout to prevent blocking
-      await _liveActivityService!.sync(snapshot)
+      await _liveActivityService!
+          .sync(snapshot)
           .timeout(const Duration(seconds: 3));
-      
-      debugPrint('✅ Timer state synced with Live Activity (${timerState.currentMode.name}, ${timerState.currentSeconds}s remaining)');
+
+      debugPrint(
+          '✅ Timer state synced with Live Activity (${timerState.currentMode.name}, ${timerState.currentSeconds}s remaining)');
     } catch (e) {
       debugPrint('❌ Error syncing timer state: $e');
       // Attempt recovery by trying a simple patch instead of full sync
       _attemptRecoverySync(timerState);
     }
   }
-  
+
   /// Attempt to recover from sync errors with a simpler approach
   Future<void> _attemptRecoverySync(TimerState timerState) async {
     try {
       debugPrint('🔄 Attempting Live Activity recovery sync...');
       await patchLiveActivity(
         isRunning: timerState.isActive,
-        newEndAt: DateTime.now().add(Duration(seconds: timerState.currentSeconds)),
+        newEndAt:
+            DateTime.now().add(Duration(seconds: timerState.currentSeconds)),
       );
       debugPrint('✅ Live Activity recovery sync successful');
     } catch (e) {
@@ -167,19 +171,24 @@ class LiveActivityController extends _$LiveActivityController {
 
     try {
       // Check if we have any meaningful updates to make
-      if (isRunning == null && newEndAt == null && phase == null && taskName == null) {
+      if (isRunning == null &&
+          newEndAt == null &&
+          phase == null &&
+          taskName == null) {
         debugPrint('⚠️ No Live Activity updates to apply');
         return;
       }
-      
+
       // Apply patch with timeout to prevent blocking
-      await _liveActivityService!.patch(
-        isRunning: isRunning,
-        newEndAt: newEndAt,
-        phase: phase,
-        taskName: taskName,
-      ).timeout(const Duration(seconds: 2));
-      
+      await _liveActivityService!
+          .patch(
+            isRunning: isRunning,
+            newEndAt: newEndAt,
+            phase: phase,
+            taskName: taskName,
+          )
+          .timeout(const Duration(seconds: 2));
+
       debugPrint('✅ Live Activity patched successfully (running: $isRunning)');
     } catch (e) {
       debugPrint('❌ Error patching Live Activity: $e');
@@ -196,12 +205,11 @@ class LiveActivityController extends _$LiveActivityController {
 
     try {
       // End with timeout to prevent blocking
-      await _liveActivityService!.end()
-          .timeout(const Duration(seconds: 2));
-      
+      await _liveActivityService!.end().timeout(const Duration(seconds: 2));
+
       // Clear stored timer state
       _lastTimerState = null;
-      
+
       debugPrint('✅ Live Activity ended successfully');
     } catch (e) {
       debugPrint('❌ Error ending Live Activity: $e');
@@ -245,11 +253,9 @@ class LiveActivityController extends _$LiveActivityController {
 
       switch (event) {
         case FGBGType.background:
-          _isAppInBackground = true;
           _onAppWentToBackground();
           break;
         case FGBGType.foreground:
-          _isAppInBackground = false;
           _onAppWentToForeground();
           break;
       }
@@ -259,7 +265,6 @@ class LiveActivityController extends _$LiveActivityController {
   /// Called when app goes to background with robust error handling
   void _onAppWentToBackground() {
     debugPrint('📱 App went to background');
-    _isAppInBackground = true;
 
     // Use microtask to avoid blocking the background transition
     Future.microtask(() async {
@@ -283,7 +288,6 @@ class LiveActivityController extends _$LiveActivityController {
   /// Called when app comes to foreground with robust error handling
   void _onAppWentToForeground() {
     debugPrint('📱 App came to foreground');
-    _isAppInBackground = false;
 
     // Use microtask to avoid blocking the foreground transition
     Future.microtask(() async {

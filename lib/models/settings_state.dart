@@ -7,10 +7,10 @@ class SettingsState {
   final String? error;
 
   const SettingsState({
-    this.workDurationMinutes = 25,
-    this.shortBreakMinutes = 5,
-    this.longBreakMinutes = 30,
-    this.isMusicEnabled = false,
+    this.workDurationMinutes = 0, // 10 seconds for testing
+    this.shortBreakMinutes = 0, // 10 seconds for testing
+    this.longBreakMinutes = 0, // 20 seconds for testing
+    this.isMusicEnabled = true,
     this.isLoading = false,
     this.error,
   });

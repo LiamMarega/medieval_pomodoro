@@ -32,7 +32,19 @@ public struct LiveActivitiesAppAttributes: ActivityAttributes, Identifiable {
     }
 }
 
+// MARK: - Extension for prefixed keys
+extension LiveActivitiesAppAttributes {
+    func prefixedKey(_ key: String) -> String {
+        return "\(id)_\(key)"
+    }
+}
+
 // MARK: - Medieval Live Activity Widget
+
+let sharedDefault = UserDefaults(suiteName: "group.com.focusknight.app")!
+
+// let myVariableFromFlutter = sharedDefault.string(forKey: context.attributes.prefixedKey("name"))!
+
 
 @available(iOS 16.1, *)
 struct FocusKnightLiveActivity: Widget {
@@ -48,7 +60,7 @@ struct FocusKnightLiveActivity: Widget {
                 // EXPANDED: Full medieval timer display
                 DynamicIslandExpandedRegion(.leading) {
                     HStack {
-                        Text("⚔️")
+                        Text("Liam")
                             .font(.title2)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(context.state.sessionType)
@@ -93,12 +105,14 @@ struct FocusKnightLiveActivity: Widget {
                 
             } compactLeading: {
                 // Compact leading: Knight icon with session indicator
-                ZStack {
+
+                 ZStack {
                     Circle()
                         .fill(Color(red: 0.18, green: 0.11, blue: 0.07))
                         .frame(width: 20, height: 20)
-                    Text("⚔️")
+                    Text("Liam")
                         .font(.caption)
+                        .foregroundColor(.white)
                 }
             } compactTrailing: {
                 // Compact trailing: Time remaining
@@ -112,7 +126,7 @@ struct FocusKnightLiveActivity: Widget {
                     Circle()
                         .fill(context.state.paused ? .orange : Color(red: 0.83, green: 0.63, blue: 0.09))
                         .frame(width: 16, height: 16)
-                    Text("⚔️")
+                    Text("Liam")
                         .font(.system(size: 10))
                 }
             }
@@ -158,7 +172,7 @@ struct MedievalLockScreenView: View {
             // Left side: Knight icon and session info
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    Text("⚔️")
+                    Text("Liam")
                         .font(.title2)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Focus Knight")

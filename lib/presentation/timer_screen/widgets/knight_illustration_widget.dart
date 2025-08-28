@@ -28,9 +28,9 @@ class _KnightIllustrationWidgetState
   late final GifController _controller;
   late final AnimationController _transitionController;
 
-  String _currentGifPath = '';
   TimerMode? _lastMode;
   bool _isTransitioning = false;
+  bool _showNextImage = false;
 
   @override
   void initState() {
@@ -39,11 +39,18 @@ class _KnightIllustrationWidgetState
 
     // Inicializar controlador de transición
     _transitionController = AnimationController(
-      duration: const Duration(milliseconds: 1000), // 500ms + 500ms
+      duration: const Duration(
+          milliseconds: 500), // 500ms para cada fase (desvanecer/aparecer)
       vsync: this,
     );
 
-    _updateGifPath();
+    // Inicializar el controlador de GIF
+    _controller.repeat(
+      min: 0,
+      max: 1,
+      period: const Duration(seconds: 7),
+      reverse: true,
+    );
   }
 
   @override
@@ -94,21 +101,28 @@ class _KnightIllustrationWidgetState
 
     debugPrint('🎭 KnightIllustration: Transition started');
 
+    // Preparar el siguiente GIF antes de la transición
+    _prepareNextGif();
+
     setState(() {
       _isTransitioning = true;
+      _showNextImage = false;
     });
 
-    // Ejecutar animación boomerang
+    // Primera fase: desvanecer imagen actual (1 → 0)
     _transitionController.forward().then((_) {
       // Verificar que el widget aún está montado
       if (!mounted) return;
 
-      debugPrint('🎭 KnightIllustration: Transition midpoint - changing GIF');
+      debugPrint(
+          '🎭 KnightIllustration: First phase completed - showing next image');
 
-      // Cambiar el GIF en el punto medio de la transición (opacidad = 0)
-      _updateGifPath();
+      // Segunda fase: mostrar la nueva imagen
+      setState(() {
+        _showNextImage = true;
+      });
 
-      // Continuar con la segunda mitad de la animación (0 → 1)
+      // Tercera fase: hacer aparecer la nueva imagen (0 → 1)
       _transitionController.reverse().then((_) {
         // Verificar que el widget aún está montado
         if (mounted) {
@@ -124,50 +138,9 @@ class _KnightIllustrationWidgetState
     });
   }
 
-  void _updateGifPath() {
-    String newGifPath;
-
-    // Lista de todos los GIFs disponibles excepto break_time.gif
-     final List<String> availableGifs = [
-       'assets/animations/dragon_dark_room.gif',
-       'assets/animations/knight_bridge.gif',
-       'assets/animations/knight_way_1.gif',
-       'assets/animations/knight_way_2.gif',
-     ];
- 
-     // Seleccionar aleatoriamente uno de los GIFs disponibles
-     final random = DateTime.now().millisecondsSinceEpoch % availableGifs.length;
-     newGifPath = availableGifs[random];
-
+  void _prepareNextGif() {
     debugPrint(
-        '🎭 KnightIllustration: Updating GIF path - Current: $_currentGifPath, New: $newGifPath, Mode: ${widget.currentMode.displayName}');
-
-    if (_currentGifPath != newGifPath) {
-      debugPrint('🎭 KnightIllustration: GIF path changed, updating...');
-
-      setState(() {
-        _currentGifPath = newGifPath;
-      });
-
-      // Verificar que el widget aún está montado antes de continuar
-      if (mounted) {
-        // Reiniciar el controlador para la nueva animación
-        _controller.reset();
-        Future.delayed(const Duration(milliseconds: 100), () {
-          // Verificar nuevamente que el widget aún está montado
-          if (mounted) {
-            _controller.repeat(
-              min: 0,
-              max: 1,
-              period: const Duration(seconds: 7),
-              reverse: true, // Efecto ping-pong para animación suave
-            );
-          }
-        });
-      }
-    } else {
-      debugPrint('🎭 KnightIllustration: GIF path unchanged, skipping update');
-    }
+        '🎭 KnightIllustration: Preparing next GIF for mode: ${widget.currentMode.displayName}');
   }
 
   @override
@@ -201,14 +174,14 @@ class _KnightIllustrationWidgetState
               child: AnimatedBuilder(
                 animation: _transitionController,
                 builder: (context, child) {
-                  // Calcular opacidad para efecto boomerang
                   double opacity;
-                  if (_transitionController.value <= 0.5) {
-                    // Primera mitad: 1 → 0
-                    opacity = 1.0 - (_transitionController.value * 2);
+
+                  if (!_showNextImage) {
+                    // Primera fase: desvanecer imagen actual (1 → 0)
+                    opacity = 1.0 - _transitionController.value;
                   } else {
-                    // Segunda mitad: 0 → 1
-                    opacity = (_transitionController.value - 0.5) * 2;
+                    // Segunda fase: hacer aparecer nueva imagen (0 → 1)
+                    opacity = _transitionController.value;
                   }
 
                   return ColoredBox(
@@ -216,7 +189,7 @@ class _KnightIllustrationWidgetState
                     child: Opacity(
                       opacity: opacity,
                       child: Gif(
-                        image: AssetImage(_currentGifPath),
+                        image: AssetImage(widget.currentAnimation.assetPath),
                         controller: _controller,
                         fit: BoxFit.cover,
                         duration: const Duration(seconds: 7),
