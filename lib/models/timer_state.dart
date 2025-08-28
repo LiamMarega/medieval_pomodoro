@@ -6,6 +6,7 @@ class TimerState {
   final int totalSeconds;
   final int sessionNumber;
   final TimerMode currentMode;
+  final TimerMode? lastMode;
   final bool isMusicEnabled;
   final bool isMusicPlaying;
   final String currentMotivationalMessage;
@@ -23,6 +24,7 @@ class TimerState {
     this.totalSeconds = 10, // 10 seconds for testing
     this.sessionNumber = 1,
     this.currentMode = TimerMode.work,
+    this.lastMode,
     this.isMusicEnabled = true, // Music always ON by default
     this.isMusicPlaying = false,
     this.currentMotivationalMessage = '',
@@ -44,6 +46,7 @@ class TimerState {
     int? totalSeconds,
     int? sessionNumber,
     TimerMode? currentMode,
+    TimerMode? lastMode,
     bool? isMusicEnabled,
     bool? isMusicPlaying,
     String? currentMotivationalMessage,
@@ -61,6 +64,7 @@ class TimerState {
       totalSeconds: totalSeconds ?? this.totalSeconds,
       sessionNumber: sessionNumber ?? this.sessionNumber,
       currentMode: currentMode ?? this.currentMode,
+      lastMode: lastMode ?? this.lastMode,
       isMusicEnabled: isMusicEnabled ?? this.isMusicEnabled,
       isMusicPlaying: isMusicPlaying ?? this.isMusicPlaying,
       currentMotivationalMessage:
@@ -84,6 +88,7 @@ class TimerState {
         other.totalSeconds == totalSeconds &&
         other.sessionNumber == sessionNumber &&
         other.currentMode == currentMode &&
+        other.lastMode == lastMode &&
         other.isMusicEnabled == isMusicEnabled &&
         other.isMusicPlaying == isMusicPlaying &&
         other.currentMotivationalMessage == currentMotivationalMessage &&
@@ -104,6 +109,7 @@ class TimerState {
       totalSeconds,
       sessionNumber,
       currentMode,
+      lastMode,
       isMusicEnabled,
       isMusicPlaying,
       currentMotivationalMessage,
@@ -119,6 +125,6 @@ class TimerState {
 
   @override
   String toString() {
-    return 'TimerState(isActive: $isActive, currentSeconds: $currentSeconds, totalSeconds: $totalSeconds, sessionNumber: $sessionNumber, currentMode: $currentMode, isMusicEnabled: $isMusicEnabled, isMusicPlaying: $isMusicPlaying, currentMotivationalMessage: $currentMotivationalMessage, workDurationMinutes: $workDurationMinutes, shortBreakMinutes: $shortBreakMinutes, longBreakMinutes: $longBreakMinutes, currentVolume: $currentVolume, isLoading: $isLoading, error: $error, currentAnimation: $currentAnimation)';
+    return 'TimerState(isActive: $isActive, currentSeconds: $currentSeconds, totalSeconds: $totalSeconds, sessionNumber: $sessionNumber, currentMode: $currentMode, lastMode: $lastMode, isMusicEnabled: $isMusicEnabled, isMusicPlaying: $isMusicPlaying, currentMotivationalMessage: $currentMotivationalMessage, workDurationMinutes: $workDurationMinutes, shortBreakMinutes: $shortBreakMinutes, longBreakMinutes: $longBreakMinutes, currentVolume: $currentVolume, isLoading: $isLoading, error: $error, currentAnimation: $currentAnimation)';
   }
 }

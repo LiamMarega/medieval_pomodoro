@@ -465,6 +465,7 @@ class TimerController extends _$TimerController {
     // Configure gap time state
     final gapConfig = TimerModeConfig.getGapTimeConfig();
     state = state.copyWith(
+      lastMode: state.currentMode, // Store current mode as last mode
       currentMode: gapConfig.mode,
       totalSeconds: 3, // Always 3 seconds for gap time
       currentSeconds: 3,
@@ -558,6 +559,7 @@ class TimerController extends _$TimerController {
     }
 
     state = state.copyWith(
+      lastMode: state.currentMode, // Store current mode as last mode
       currentMode: config.mode,
       totalSeconds:
           _minutesToSeconds(config.durationMinutes, mode: config.mode),
