@@ -27,12 +27,18 @@ class _TimerDisplayWidgetState extends ConsumerState<TimerDisplayWidget>
       duration: const Duration(seconds: 5),
       vsync: this,
     );
+
+    // Create a stepped animation for retro game effect (10 FPS)
+    const int framesPerSecond = 30;
+    const int totalFrames =
+        5 * framesPerSecond; // 5 seconds * 10 FPS = 50 frames
+
     _slideAnimation = Tween<double>(
-      begin: -2, // Start completely off-screen to the left
+      begin: -2.0, // Start completely off-screen to the left
       end: 2.0, // End 200% off-screen to the right
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.linear,
+      curve: _SteppedCurve(totalFrames),
     ));
   }
 
@@ -88,7 +94,7 @@ class _TimerDisplayWidgetState extends ConsumerState<TimerDisplayWidget>
                           width: MediaQuery.of(context).size.width *
                               3, // Allow text to extend beyond screen
                           child: Text(
-                            "NOTIFICACION",
+                            "BREAK TIME",
                             style: GoogleFonts.pressStart2p(
                               fontSize: 30.sp,
                               fontWeight: FontWeight.normal,
@@ -147,5 +153,19 @@ class _TimerDisplayWidgetState extends ConsumerState<TimerDisplayWidget>
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+}
+
+// Custom curve that creates stepped animation for retro game effect
+class _SteppedCurve extends Curve {
+  final int steps;
+
+  const _SteppedCurve(this.steps);
+
+  @override
+  double transform(double t) {
+    // Create discrete steps
+    final step = (t * steps).floor();
+    return step / steps;
   }
 }
