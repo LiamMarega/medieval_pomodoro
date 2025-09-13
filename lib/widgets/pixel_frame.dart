@@ -338,6 +338,7 @@ class PixelFrame extends StatelessWidget {
 /// Different medieval border styles
 enum MedievalBorderStyle {
   stone,
+  wood,
 }
 
 /// Container for border asset paths

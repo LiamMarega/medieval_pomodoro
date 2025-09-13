@@ -1,4 +1,3 @@
-
 // lib/widgets/minimized_pomodoro_widget.dart
 // Widget "minimizado" moderno para mostrar al reducir/ocultar la app.
 // Diseño: a la IZQUIERDA contador grande (mm:ss), a la DERECHA imagen cuadrada 1:1.
@@ -60,12 +59,13 @@ class MinimizedPomodoroWidget extends StatelessWidget {
           borderRadius: borderRadius,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 18,
               offset: const Offset(0, 6),
             ),
           ],
-          border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+          border: Border.all(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Row(
@@ -83,9 +83,10 @@ class MinimizedPomodoroWidget extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: primary.withOpacity(0.12),
+                            color: primary.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -179,7 +180,10 @@ class _StatusDot extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           isRunning ? 'En curso' : 'Pausado',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54),
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: Colors.black54),
         ),
       ],
     );
@@ -213,12 +217,13 @@ class _ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isDanger
-              ? theme.colorScheme.error.withOpacity(0.12)
-              : theme.colorScheme.primary.withOpacity(0.12),
+              ? theme.colorScheme.error.withValues(alpha: 0.12)
+              : theme.colorScheme.primary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: (isDanger ? theme.colorScheme.error : theme.colorScheme.primary)
-                .withOpacity(0.24),
+            color:
+                (isDanger ? theme.colorScheme.error : theme.colorScheme.primary)
+                    .withValues(alpha: 0.24),
           ),
         ),
         child: Row(
@@ -227,13 +232,17 @@ class _ActionButton extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isDanger ? theme.colorScheme.error : theme.colorScheme.primary,
+              color: isDanger
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.primary,
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: theme.textTheme.labelMedium?.copyWith(
-                color: isDanger ? theme.colorScheme.error : theme.colorScheme.primary,
+                color: isDanger
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -254,7 +263,7 @@ class _HeroImage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),

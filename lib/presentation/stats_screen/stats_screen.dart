@@ -58,14 +58,14 @@ class StatsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Widget de estadísticas
             const UserStatsWidget(),
-            
+
             const SizedBox(height: 24),
-            
+
             // Historial de sesiones
             _buildSessionsHistory(sessionsAsync),
           ],
@@ -108,10 +108,11 @@ class StatsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           _buildInfoRow('Device Model', userStats.deviceModel),
           const SizedBox(height: 8),
-          _buildInfoRow('Device ID', userStats.deviceId.substring(0, 8) + '...'),
+          _buildInfoRow(
+              'Device ID', userStats.deviceId.substring(0, 8) + '...'),
           const SizedBox(height: 8),
-          _buildInfoRow('Member Since', 
-            '${userStats.createdAt.day}/${userStats.createdAt.month}/${userStats.createdAt.year}'),
+          _buildInfoRow('Member Since',
+              '${userStats.createdAt.day}/${userStats.createdAt.month}/${userStats.createdAt.year}'),
         ],
       ),
     );
@@ -187,7 +188,7 @@ class StatsScreen extends ConsumerWidget {
                     children: sessions.take(10).map((session) {
                       final startTime = DateTime.parse(session['startTime']);
                       final duration = session['durationMinutes'];
-                      
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
@@ -200,7 +201,7 @@ class StatsScreen extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.2),
+                                color: Colors.green.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(

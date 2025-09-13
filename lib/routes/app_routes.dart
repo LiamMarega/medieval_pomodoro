@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medieval_pomodoro/presentation/onboarding/onboarding_integration.dart';
 import 'package:medieval_pomodoro/presentation/timer_screen/timer_screen.dart';
 
 class AppRoutes {
@@ -7,7 +8,7 @@ class AppRoutes {
   static const String timer = '/timer-screen';
 
   static Map<String, WidgetBuilder> routes = {
-    initial: (context) => const TimerScreen(),
+    initial: (context) => OnboardingIntegration.buildInitialScreen(const TimerScreen()),
     timer: (context) => const TimerScreen(),
     // TODO: Add your other routes here
   };

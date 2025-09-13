@@ -85,12 +85,12 @@ class _GalleryViewState extends State<GalleryView> {
         color: const Color(0xFF3D2B1F),
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
-          color: Colors.amber.withOpacity(0.3),
+          color: Colors.amber.withValues(alpha: 0.3),
           width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8.0,
             offset: const Offset(0, 4),
           ),
@@ -106,7 +106,7 @@ class _GalleryViewState extends State<GalleryView> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(
-                  color: Colors.amber.withOpacity(0.5),
+                  color: Colors.amber.withValues(alpha: 0.5),
                   width: 1.0,
                 ),
               ),
