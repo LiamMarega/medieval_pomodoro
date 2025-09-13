@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medieval_pomodoro/presentation/gallery_view.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../providers/settings_provider.dart';
@@ -10,16 +11,14 @@ import '../../widgets/pixel_frame.dart';
 import 'widgets/settings_header_widget.dart';
 import 'widgets/audio_controls_widget.dart';
 
-class SettingsScreenRefactored extends ConsumerStatefulWidget {
-  const SettingsScreenRefactored({super.key});
+class SettingsScreen extends ConsumerStatefulWidget {
+  const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsScreenRefactored> createState() =>
-      _SettingsScreenRefactoredState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenRefactoredState
-    extends ConsumerState<SettingsScreenRefactored> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late int _workDurationMinutes = 25;
   late int _shortBreakMinutes = 5;
   late int _longBreakMinutes = 30;
@@ -57,6 +56,15 @@ class _SettingsScreenRefactoredState
     return Scaffold(
       body: Column(
         children: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const GalleryView()),
+              );
+            },
+            child: const Text('Start Timer'),
+          ),
           const SettingsHeaderWidget(),
           Expanded(
             child: PixelFrame(

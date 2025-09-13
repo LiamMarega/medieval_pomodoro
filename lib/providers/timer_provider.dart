@@ -9,6 +9,7 @@ import '../models/timer_mode.dart';
 import '../services/audio_service_manager.dart';
 import '../core/services/live_activity_service.dart';
 import '../core/services/user_stats_service.dart';
+import '../core/services/live_activity_manager.dart';
 import 'settings_provider.dart';
 
 part 'timer_provider.g.dart';
@@ -19,10 +20,12 @@ class TimerController extends _$TimerController {
   PlaylistAudioService? _audioService;
   TimerMode? _previousSessionMode; // Store previous session for gap time logic
   final UserStatsService _userStatsService = UserStatsService();
+  LiveActivityManager? _liveActivityManager;
 
   @override
   TimerState build() {
     _initializeAudio();
+    _initializeLiveActivity();
     _setupSettingsListener();
     _loadInitialSettings();
 
@@ -49,6 +52,17 @@ class TimerController extends _$TimerController {
       totalSeconds: _minutesToSeconds(workDuration),
       currentSeconds: _minutesToSeconds(workDuration),
     );
+  }
+
+  void _initializeLiveActivity() async {
+    try {
+      debugPrint('🚀 Initializing Live Activity Manager...');
+      _liveActivityManager = LiveActivityManager();
+      await _liveActivityManager!.init();
+      debugPrint('✅ Live Activity Manager initialized successfully');
+    } catch (e) {
+      debugPrint('❌ Error initializing Live Activity Manager: $e');
+    }
   }
 
   /// Converts minutes to seconds, with special handling for 0 minutes (test mode)
@@ -168,7 +182,7 @@ class TimerController extends _$TimerController {
 
     state = state.copyWith(isActive: true);
 
-    // Sync with Live Activity (non-blocking)
+    // Sync with Live Activity
     _syncWithLiveActivity();
 
     // Iniciar música si está habilitada
@@ -197,30 +211,7 @@ class TimerController extends _$TimerController {
                 : (newSeconds % 30 == 0);
 
         if (shouldUpdateLiveActivity || newSeconds <= 5) {
-          // Convert current mode to PomodoroPhase for Live Activity
-          PomodoroPhase phase;
-          switch (state.currentMode) {
-            case TimerMode.work:
-              phase = PomodoroPhase.focus;
-              break;
-            case TimerMode.shortBreak:
-              phase = PomodoroPhase.shortBreak;
-              break;
-            case TimerMode.longBreak:
-              phase = PomodoroPhase.longBreak;
-              break;
-            case TimerMode.gapTime:
-              phase = PomodoroPhase.focus; // Use focus phase for gap time
-              break;
-          }
-
-          _patchLiveActivity(
-            isRunning: true,
-            newEndAt: DateTime.now().add(Duration(seconds: newSeconds)),
-            phase: phase,
-            taskName:
-                '${state.currentMode.name} - Session ${state.sessionNumber}',
-          );
+          _updateLiveActivity();
         }
 
         // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
@@ -250,31 +241,8 @@ class TimerController extends _$TimerController {
     _timer?.cancel();
     state = state.copyWith(isActive: false);
 
-    // Update Live Activity with pause state (non-blocking)
-    // Convert current mode to PomodoroPhase for Live Activity
-    PomodoroPhase phase;
-    switch (state.currentMode) {
-      case TimerMode.work:
-        phase = PomodoroPhase.focus;
-        break;
-      case TimerMode.shortBreak:
-        phase = PomodoroPhase.shortBreak;
-        break;
-      case TimerMode.longBreak:
-        phase = PomodoroPhase.longBreak;
-        break;
-      case TimerMode.gapTime:
-        phase = PomodoroPhase.focus; // Use focus phase for gap time
-        break;
-    }
-
-    _patchLiveActivity(
-      isRunning: false,
-      newEndAt: DateTime.now().add(Duration(seconds: state.currentSeconds)),
-      phase: phase,
-      taskName:
-          '${state.currentMode.name} - Session ${state.sessionNumber} (Paused)',
-    );
+    // Update Live Activity with pause state
+    _updateLiveActivity();
 
     // Detener música si está reproduciéndose
     if (state.isMusicEnabled && (_audioService?.isPlaying ?? false)) {
@@ -304,11 +272,8 @@ class TimerController extends _$TimerController {
 
     state = state.copyWith(isActive: true);
 
-    // Sync with Live Activity (non-blocking)
-    _patchLiveActivity(
-      isRunning: true,
-      newEndAt: DateTime.now().add(Duration(seconds: state.currentSeconds)),
-    );
+    // Sync with Live Activity
+    _updateLiveActivity();
 
     // Iniciar música si está habilitada
     if (state.isMusicEnabled) {
@@ -333,30 +298,7 @@ class TimerController extends _$TimerController {
                 : (newSeconds % 30 == 0);
 
         if (shouldUpdateLiveActivity || newSeconds <= 5) {
-          // Convert current mode to PomodoroPhase for Live Activity
-          PomodoroPhase phase;
-          switch (state.currentMode) {
-            case TimerMode.work:
-              phase = PomodoroPhase.focus;
-              break;
-            case TimerMode.shortBreak:
-              phase = PomodoroPhase.shortBreak;
-              break;
-            case TimerMode.longBreak:
-              phase = PomodoroPhase.longBreak;
-              break;
-            case TimerMode.gapTime:
-              phase = PomodoroPhase.focus; // Use focus phase for gap time
-              break;
-          }
-
-          _patchLiveActivity(
-            isRunning: true,
-            newEndAt: DateTime.now().add(Duration(seconds: newSeconds)),
-            phase: phase,
-            taskName:
-                '${state.currentMode.name} - Session ${state.sessionNumber}',
-          );
+          _updateLiveActivity();
         }
 
         // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
@@ -380,31 +322,8 @@ class TimerController extends _$TimerController {
       currentSeconds: state.totalSeconds,
     );
 
-    // Update Live Activity with restart state (non-blocking)
-    // Convert current mode to PomodoroPhase for Live Activity
-    PomodoroPhase phase;
-    switch (state.currentMode) {
-      case TimerMode.work:
-        phase = PomodoroPhase.focus;
-        break;
-      case TimerMode.shortBreak:
-        phase = PomodoroPhase.shortBreak;
-        break;
-      case TimerMode.longBreak:
-        phase = PomodoroPhase.longBreak;
-        break;
-      case TimerMode.gapTime:
-        phase = PomodoroPhase.focus; // Use focus phase for gap time
-        break;
-    }
-
-    _patchLiveActivity(
-      isRunning: false,
-      newEndAt: DateTime.now().add(Duration(seconds: state.currentSeconds)),
-      phase: phase,
-      taskName:
-          '${state.currentMode.name} - Session ${state.sessionNumber} (Ready)',
-    );
+    // Update Live Activity with restart state
+    _updateLiveActivity();
 
     // Detener música si está reproduciéndose
     if (_audioService?.isPlaying ?? false) {
@@ -444,7 +363,7 @@ class TimerController extends _$TimerController {
       sessionNumber: newSessionNumber,
     );
 
-    // End Live Activity when session completes (non-blocking)
+    // End Live Activity when session completes
     _endLiveActivity();
 
     // Detener música
@@ -756,58 +675,62 @@ class TimerController extends _$TimerController {
   Duration get totalDuration => _audioService?.totalDuration ?? Duration.zero;
 
   // Live Activity integration methods
-  /// Sincroniza el estado actual con Live Activity de forma no bloqueante
+  /// Sincroniza el estado actual con Live Activity
   void _syncWithLiveActivity() {
-    // Ejecutar de forma asíncrona sin bloquear el timer
-    // Future.microtask(() async {
-    //   try {
-    //     final liveActivityController = ref.read(liveActivityControllerProvider.notifier);
-    //     await liveActivityController.syncTimerState(state);
-    //   } catch (e) {
-    //     // Log error but don't affect timer functionality
-    //     debugPrint('⚠️ Live Activity sync error: $e');
-    //   }
-    // });
+    if (_liveActivityManager == null) return;
+
+    try {
+      _liveActivityManager!.createFocusActivity(
+        userName: "Liam", // O obtenerlo de SharedPreferences
+        sessionType: _getSessionTypeString(state.currentMode),
+        currentSession: state.sessionNumber,
+        timeRemaining: state.currentSeconds,
+        paused: !state.isActive,
+      );
+    } catch (e) {
+      debugPrint('⚠️ Live Activity sync error: $e');
+    }
   }
 
-  /// Actualiza campos específicos en Live Activity de forma no bloqueante
-  void _patchLiveActivity({
-    bool? isRunning,
-    DateTime? newEndAt,
-    PomodoroPhase? phase,
-    String? taskName,
-  }) {
-    // Ejecutar de forma asíncrona sin bloquear el timer
-    // Future.microtask(() async {
-    //   try {
-    //     final liveActivityController =
-    //         ref.read(liveActivityControllerProvider.notifier);
-    //     await liveActivityController.patchLiveActivity(
-    //       isRunning: isRunning,
-    //       newEndAt: newEndAt,
-    //       phase: phase,
-    //       taskName: taskName,
-    //     );
-    //   } catch (e) {
-    //     // Log error but don't affect timer functionality
-    //     debugPrint('⚠️ Live Activity patch error: $e');
-    //   }
-    // });
+  /// Actualiza campos específicos en Live Activity
+  void _updateLiveActivity() {
+    if (_liveActivityManager == null) return;
+
+    try {
+      _liveActivityManager!.updateActivity(
+        timeRemaining: state.currentSeconds,
+        sessionType: _getSessionTypeString(state.currentMode),
+        currentSession: state.sessionNumber,
+        paused: !state.isActive,
+      );
+    } catch (e) {
+      debugPrint('⚠️ Live Activity update error: $e');
+    }
   }
 
-  /// Finaliza la Live Activity de forma no bloqueante
+  /// Finaliza la Live Activity
   void _endLiveActivity() {
-    // // Ejecutar de forma asíncrona sin bloquear el timer
-    // Future.microtask(() async {
-    //   try {
-    //     final liveActivityController =
-    //         ref.read(liveActivityControllerProvider.notifier);
-    //     await liveActivityController.endLiveActivity();
-    //   } catch (e) {
-    //     // Log error but don't affect timer functionality
-    //     debugPrint('⚠️ Live Activity end error: $e');
-    //   }
-    // });
+    if (_liveActivityManager == null) return;
+
+    try {
+      _liveActivityManager!.endActivity();
+    } catch (e) {
+      debugPrint('⚠️ Live Activity end error: $e');
+    }
+  }
+
+  /// Convierte TimerMode a string para Live Activity
+  String _getSessionTypeString(TimerMode mode) {
+    switch (mode) {
+      case TimerMode.work:
+        return "Focus";
+      case TimerMode.shortBreak:
+        return "Break";
+      case TimerMode.longBreak:
+        return "Long Break";
+      case TimerMode.gapTime:
+        return "Focus"; // Use Focus for gap time
+    }
   }
 
   // Handle Live Activity actions from Dynamic Island
@@ -840,7 +763,7 @@ class TimerController extends _$TimerController {
     try {
       // Calcular la duración de la sesión en minutos
       final durationMinutes = state.workDurationMinutes;
-      
+
       // Registrar la sesión de forma asíncrona para no bloquear el timer
       Future.microtask(() async {
         await _userStatsService.recordFocusSession(durationMinutes);

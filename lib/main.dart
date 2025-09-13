@@ -2,13 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:live_activities/live_activities.dart';
 import 'package:sizer/sizer.dart';
 
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
 import 'presentation/timer_screen/timer_screen.dart';
-import 'presentation/settings_screen/settings_screen_refactored.dart';
+import 'presentation/settings_screen/settings_screen.dart';
+import 'core/services/live_activity_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,20 +22,18 @@ void main() async {
     );
   };
 
-  final _liveActivitiesPlugin = LiveActivities();
+  // Initialize Live Activity Manager
+  final liveActivityManager = LiveActivityManager();
+  await liveActivityManager.init();
 
-  final Map<String, dynamic> activityModel = {
-    'name': 'Liam',
-    'ingredient': 'tomato, mozzarella, basil',
-    'quantity': 1,
-  };
-
-  await _liveActivitiesPlugin.init(
-    appGroupId: 'group.com.focusknight.app',
-    urlScheme: 'focusknight',
+  // Create initial live activity with user data
+  await liveActivityManager.createFocusActivity(
+    userName: "Liam", // O obtenerlo de SharedPreferences
+    sessionType: "Focus",
+    currentSession: 1,
+    timeRemaining: 1500, // 25 minutes
+    paused: false,
   );
-
-  _liveActivitiesPlugin.createActivity("focusknight", activityModel);
 
   Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
@@ -77,7 +75,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         routes: {
           '/': (context) => const TimerScreen(),
-          '/settings-screen': (context) => const SettingsScreenRefactored(),
+          '/settings-screen': (context) => const SettingsScreen(),
         },
         initialRoute: '/',
       );

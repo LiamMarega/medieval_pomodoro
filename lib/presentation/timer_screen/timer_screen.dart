@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
 
 import '../../providers/timer_provider.dart';
+import '../../core/services/live_activity_manager.dart';
 import 'widgets/timer_header_widget.dart';
 import 'widgets/timer_display_widget.dart';
 import 'widgets/timer_controls_widget.dart';
@@ -21,6 +22,31 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
   String? _lastSessionType;
   int _lastSessionNumber = 0;
   bool _showNotification = false;
+  LiveActivityManager? _liveActivityManager;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeLiveActivity();
+  }
+
+  Future<void> _initializeLiveActivity() async {
+    try {
+      _liveActivityManager = LiveActivityManager();
+      await _liveActivityManager!.init();
+
+      // Create initial live activity
+      await _liveActivityManager!.createFocusActivity(
+        userName: "Liam", // O obtenerlo de SharedPreferences
+        sessionType: "Focus",
+        currentSession: 1,
+        timeRemaining: 1500, // 25 minutes
+        paused: false,
+      );
+    } catch (e) {
+      debugPrint('❌ Error initializing Live Activity: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,5 +173,11 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _liveActivityManager?.endActivity();
+    super.dispose();
   }
 }

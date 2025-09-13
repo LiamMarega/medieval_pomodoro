@@ -63,5 +63,6 @@ flutter:
     - assets/images/
     - assets/sprites/
     - assets/animations/
+    - assets/animations/animations_list.json
     - assets/songs/
  

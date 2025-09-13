@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/services/user_stats_service.dart';
 import '../models/user_stats.dart';
+import '../models/focus_session.dart';
 
 part 'user_stats_provider.g.dart';
 
@@ -38,14 +39,14 @@ class UserStatsController extends _$UserStatsController {
 
 /// Provider para las estadísticas resumidas
 @riverpod
-Future<Map<String, dynamic>> statsSummary(StatsSummaryRef ref) async {
+Future<Map<String, dynamic>> statsSummary(Ref ref) async {
   final userStatsService = UserStatsService();
   return await userStatsService.getStatsSummary();
 }
 
 /// Provider para las sesiones de enfoque
 @riverpod
-Future<List<FocusSession>> focusSessions(FocusSessionsRef ref) async {
+Future<List<FocusSession>> focusSessions(Ref ref) async {
   final userStatsService = UserStatsService();
   return await userStatsService.getFocusSessions();
 }

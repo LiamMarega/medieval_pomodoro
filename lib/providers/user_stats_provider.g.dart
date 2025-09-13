@@ -88,7 +88,7 @@ final class StatsSummaryProvider extends $FunctionalProvider<
   }
 }
 
-String _$statsSummaryHash() => r'42d971112d65ad1732a68ba9bd91a70d142d82f6';
+String _$statsSummaryHash() => r'958b6b76460319582731ea6f1e035d018dc34cd0';
 
 /// Provider para las sesiones de enfoque
 @ProviderFor(focusSessions)
@@ -129,7 +129,7 @@ final class FocusSessionsProvider extends $FunctionalProvider<
   }
 }
 
-String _$focusSessionsHash() => r'36dea584834ab49d1be8cac28cbf7017c24e5083';
+String _$focusSessionsHash() => r'7a7c0bdbd393fa92d5f3d725c6a0db06a83ac625';
 
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

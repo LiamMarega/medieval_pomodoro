@@ -1,26 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-class AnimationItem {
-  final String name;
-  final String path;
-  final String description;
-
-  AnimationItem({
-    required this.name,
-    required this.path,
-    required this.description,
-  });
-
-  factory AnimationItem.fromJson(Map<String, dynamic> json) {
-    return AnimationItem(
-      name: json['name'] ?? '',
-      path: json['path'] ?? '',
-      description: json['description'] ?? '',
-    );
-  }
-}
+import '../models/animation_item.dart';
 
 class GalleryView extends StatefulWidget {
   const GalleryView({Key? key}) : super(key: key);
@@ -41,9 +22,10 @@ class _GalleryViewState extends State<GalleryView> {
 
   Future<void> loadAnimations() async {
     try {
-      final String response = await rootBundle.loadString('assets/animations/animations_list.json');
+      final String response =
+          await rootBundle.loadString('assets/animations/animations_list.json');
       final List<dynamic> data = json.decode(response);
-      
+
       setState(() {
         animations = data.map((json) => AnimationItem.fromJson(json)).toList();
         isLoading = false;
@@ -151,7 +133,8 @@ class _GalleryViewState extends State<GalleryView> {
             flex: 1,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
