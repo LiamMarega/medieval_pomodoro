@@ -15,9 +15,10 @@ class OnboardingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingState = ref.watch(onboardingControllerProvider);
-    final onboardingController = ref.read(onboardingControllerProvider.notifier);
+    final onboardingController =
+        ref.read(onboardingControllerProvider.notifier);
     final currentStep = onboardingController.getCurrentStep();
-    
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
@@ -32,32 +33,17 @@ class OnboardingScreen extends ConsumerWidget {
               width: double.infinity,
               height: double.infinity,
             ),
-            
+
             // Diálogo superpuesto
             Positioned(
-              bottom: 10.h,
-              left: 5.w,
-              right: 5.w,
+              bottom: 0.h,
+              width: 100.w,
               child: MedievalDialogBox(
                 title: currentStep.dialogTitle ?? '',
                 content: currentStep.dialogText,
               ),
             ),
-            
-            // Botón para continuar
-            Positioned(
-              bottom: 3.h,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: _ContinueButton(
-                  onTap: () => onboardingController.nextStep(),
-                  isLastStep: onboardingState.currentStepIndex == 2,
-                ),
-              ),
-            ),
-            
-            // Formulario (si es necesario)
+
             if (currentStep.hasForm && currentStep.formWidget != null)
               Positioned(
                 bottom: 20.h,
@@ -76,7 +62,7 @@ class OnboardingScreen extends ConsumerWidget {
 class _ContinueButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool isLastStep;
-  
+
   const _ContinueButton({
     required this.onTap,
     this.isLastStep = false,
@@ -89,10 +75,10 @@ class _ContinueButton extends StatelessWidget {
       child: PixelFrame(
         cornerSize: 16,
         edgeThickness: 4,
-        padding: 8,
+        padding: 15,
         borderStyle: MedievalBorderStyle.stone,
         child: Container(
-          width: 60.w,
+          width: 100.w,
           padding: EdgeInsets.symmetric(vertical: 1.5.h),
           decoration: BoxDecoration(
             color: const Color(0xFF4A3728),

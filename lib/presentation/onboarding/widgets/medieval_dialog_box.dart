@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../widgets/pixel_frame.dart';
-import '../../../theme/app_theme.dart';
 
 /// Widget que muestra un diálogo estilo medieval con título y contenido
 class MedievalDialogBox extends StatelessWidget {
@@ -25,10 +24,8 @@ class MedievalDialogBox extends StatelessWidget {
     return PixelFrame(
       cornerSize: 20,
       edgeThickness: 6,
-      padding: 12,
-      borderStyle: MedievalBorderStyle.wood,
+      padding: 20,
       child: Container(
-        width: double.infinity,
         padding: EdgeInsets.all(2.h),
         decoration: BoxDecoration(
           color: backgroundColor,
@@ -63,7 +60,7 @@ class MedievalDialogBox extends StatelessWidget {
             Text(
               content,
               style: GoogleFonts.vt323(
-                fontSize: 16.sp,
+                fontSize: 20.sp,
                 color: Colors.white,
                 height: 1.3,
               ),
