@@ -42,6 +42,7 @@ class MedievalDialogBox extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 2.h),
             if (title.isNotEmpty) ...[
               Center(
                 child: Text(
