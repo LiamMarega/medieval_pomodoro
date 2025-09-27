@@ -31,7 +31,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
     return PixelFrame(
       cornerSize: 16,
       edgeThickness: 4,
-      padding: 8,
+      padding: 30,
       borderStyle: MedievalBorderStyle.stone,
       child: Container(
         width: double.infinity,
@@ -53,7 +53,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
             Text(
               '¿Cómo te llamas, valiente caballero?',
               style: GoogleFonts.pressStart2p(
-                fontSize: 10.sp,
+                fontSize: 15.sp,
                 color: const Color(0xFFDAA520),
                 letterSpacing: 1.0,
               ),
@@ -70,27 +70,20 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
   }
 
   Widget _buildTextField() {
-    return PixelFrame(
-      cornerSize: 8,
-      edgeThickness: 2,
-      padding: 4,
-      borderStyle: MedievalBorderStyle.wood,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 2.w),
-        color: Colors.black.withValues(alpha: 0.7),
-        child: TextField(
-          controller: _nameController,
-          style: GoogleFonts.vt323(
+    return Container(
+      color: Colors.black.withValues(alpha: 0.7),
+      child: TextField(
+        controller: _nameController,
+        style: GoogleFonts.vt323(
+          fontSize: 18.sp,
+          color: Colors.white,
+        ),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: 'Escribe tu nombre...',
+          hintStyle: GoogleFonts.vt323(
             fontSize: 16.sp,
-            color: Colors.white,
-          ),
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: 'Escribe tu nombre...',
-            hintStyle: GoogleFonts.vt323(
-              fontSize: 16.sp,
-              color: Colors.white.withValues(alpha: 0.5),
-            ),
+            color: Colors.white.withValues(alpha: 0.5),
           ),
         ),
       ),
@@ -104,33 +97,27 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
           widget.onNameSubmitted!(_nameController.text);
         }
       },
-      child: PixelFrame(
-        cornerSize: 8,
-        edgeThickness: 2,
-        padding: 4,
-        borderStyle: MedievalBorderStyle.stone,
-        child: Container(
-          width: 40.w,
-          padding: EdgeInsets.symmetric(vertical: 1.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF4A3728),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF5A4738),
-                const Color(0xFF3A2718),
-              ],
-            ),
+      child: Container(
+        width: 40.w,
+        padding: EdgeInsets.symmetric(vertical: 1.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF4A3728),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF5A4738),
+              const Color(0xFF3A2718),
+            ],
           ),
-          child: Center(
-            child: Text(
-              'CONFIRMAR',
-              style: GoogleFonts.pressStart2p(
-                fontSize: 10.sp,
-                color: const Color(0xFFDAA520),
-                letterSpacing: 1.0,
-              ),
+        ),
+        child: Center(
+          child: Text(
+            'CONFIRMAR',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 10.sp,
+              color: const Color(0xFFDAA520),
+              letterSpacing: 1.0,
             ),
           ),
         ),

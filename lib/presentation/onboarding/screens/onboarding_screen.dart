@@ -33,7 +33,7 @@ class OnboardingScreen extends ConsumerWidget {
 
             // Diálogo superpuesto
             Positioned(
-              bottom: 0.h,
+              top: 0.h,
               width: 100.w,
               child: MedievalDialogBox(
                 title: currentStep.dialogTitle ?? '',
@@ -43,9 +43,9 @@ class OnboardingScreen extends ConsumerWidget {
 
             if (currentStep.hasForm && currentStep.formWidget != null)
               Positioned(
-                bottom: 20.h,
-                left: 10.w,
-                right: 10.w,
+                bottom: 0.h,
+                left: 0.w,
+                right: 0.w,
                 child: currentStep.formWidget!,
               ),
           ],
