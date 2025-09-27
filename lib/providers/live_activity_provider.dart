@@ -112,7 +112,6 @@ class LiveActivityController extends _$LiveActivityController {
           phase = PomodoroPhase.longBreak;
           break;
         case TimerMode.gapTime:
-          // TODO: Handle this case.
           throw UnimplementedError();
       }
 

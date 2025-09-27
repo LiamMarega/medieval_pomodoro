@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../models/animation_item.dart';
 
 class GalleryView extends StatefulWidget {
-  const GalleryView({Key? key}) : super(key: key);
+  const GalleryView({super.key});
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
@@ -31,7 +31,7 @@ class _GalleryViewState extends State<GalleryView> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error loading animations: $e');
+      debugPrint('Error loading animations: $e');
       setState(() {
         isLoading = false;
       });

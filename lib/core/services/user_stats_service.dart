@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medieval_pomodoro/models/focus_session.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
@@ -46,19 +47,19 @@ class UserStatsService {
         final macOsInfo = await _deviceInfo.macOsInfo;
         return {
           'type': 'macOS',
-          'model': '${macOsInfo.computerName}',
+          'model': macOsInfo.computerName,
         };
       } else if (Platform.isWindows) {
         final windowsInfo = await _deviceInfo.windowsInfo;
         return {
           'type': 'Windows',
-          'model': '${windowsInfo.computerName}',
+          'model': windowsInfo.computerName,
         };
       } else if (Platform.isLinux) {
         final linuxInfo = await _deviceInfo.linuxInfo;
         return {
           'type': 'Linux',
-          'model': '${linuxInfo.name}',
+          'model': linuxInfo.name,
         };
       } else {
         return {
@@ -87,7 +88,6 @@ class UserStatsService {
 
       return null;
     } catch (e) {
-      print('Error loading user stats: $e');
       return null;
     }
   }
@@ -99,7 +99,7 @@ class UserStatsService {
       final statsJson = json.encode(stats.toJson());
       await prefs.setString(_userStatsKey, statsJson);
     } catch (e) {
-      print('Error saving user stats: $e');
+      debugPrint('Error saving user stats: $e');
     }
   }
 
@@ -155,7 +155,7 @@ class UserStatsService {
       // También guardar la sesión individual
       await _saveFocusSession(durationMinutes);
     } catch (e) {
-      print('Error recording focus session: $e');
+      debugPrint('Error recording focus session: $e');
     }
   }
 
@@ -193,7 +193,7 @@ class UserStatsService {
 
       await prefs.setString(_sessionsKey, json.encode(sessions));
     } catch (e) {
-      print('Error saving focus session: $e');
+      debugPrint('Error saving focus session: $e');
     }
   }
 
@@ -213,7 +213,7 @@ class UserStatsService {
 
       return [];
     } catch (e) {
-      print('Error loading focus sessions: $e');
+      debugPrint('Error loading focus sessions: $e');
       return [];
     }
   }

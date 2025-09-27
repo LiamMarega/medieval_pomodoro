@@ -48,7 +48,6 @@ class MinimizedPomodoroWidget extends StatelessWidget {
     final borderRadius = BorderRadius.circular(20);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    final onPrimary = theme.colorScheme.onPrimary;
     final cardColor = theme.colorScheme.surface;
 
     return Material(

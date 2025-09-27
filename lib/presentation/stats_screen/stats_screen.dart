@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/user_stats_provider.dart';
 import '../../widgets/user_stats_widget.dart';
-import '../../core/app_export.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -27,11 +26,7 @@ class StatsScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.refresh(userStatsControllerProvider);
-              ref.refresh(statsSummaryProvider);
-              ref.refresh(focusSessionsProvider);
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -216,7 +211,7 @@ class StatsScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${duration} min focus session',
+                                    '$duration min focus session',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w500,

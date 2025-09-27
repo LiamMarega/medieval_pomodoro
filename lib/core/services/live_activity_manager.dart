@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:live_activities/live_activities.dart';
 
 class LiveActivityManager {
@@ -39,7 +40,7 @@ class LiveActivityManager {
         paused: paused,
       );
     } catch (e) {
-      print('Error creating live activity: $e');
+      debugPrint('Error creating live activity: $e');
     }
   }
 
@@ -63,7 +64,7 @@ class LiveActivityManager {
         },
       );
     } catch (e) {
-      print('Error updating live activity: $e');
+      debugPrint('Error updating live activity: $e');
     }
   }
 
@@ -75,11 +76,7 @@ class LiveActivityManager {
       await _liveActivitiesPlugin.endActivity(_currentActivityId!);
       _currentActivityId = null;
     } catch (e) {
-      print('Error ending live activity: $e');
+      debugPrint('Error ending live activity: $e');
     }
   }
 }
-
-
-
-

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/user_stats_provider.dart';
-import '../core/app_export.dart';
 
 class UserStatsWidget extends ConsumerWidget {
   const UserStatsWidget({super.key});

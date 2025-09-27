@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../widgets/pixel_frame.dart';
-import '../../../theme/app_theme.dart';
 
 /// Widget de formulario para el onboarding
 class OnboardingFormWidget extends StatefulWidget {

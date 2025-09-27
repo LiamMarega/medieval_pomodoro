@@ -16,7 +16,6 @@ class NotificationService {
   bool _isTimerActive = false;
   int _currentSeconds = 0;
   String _sessionType = 'Work';
-  String _motivationalMessage = '';
 
   // Control de notificación
   bool _timerNotificationCreated = false;
@@ -143,7 +142,6 @@ class NotificationService {
     _isTimerActive = isActive;
     _currentSeconds = currentSeconds;
     _sessionType = sessionType;
-    _motivationalMessage = motivationalMessage;
 
     // Si la app está en background y el timer está activo, actualizar notificación
     if (_isAppInBackground && _isTimerActive && _currentSeconds > 0) {
@@ -195,48 +193,6 @@ class NotificationService {
     debugPrint('🔔 Timer notification created: $timeString remaining');
   }
 
-  /// Actualiza la notificación del timer existente
-  void _updateTimerNotification() {
-    final minutes = _currentSeconds ~/ 60;
-    final seconds = _currentSeconds % 60;
-    final timeString =
-        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-
-    final sessionEmoji = _getSessionEmoji(_sessionType);
-
-    // Usar createNotification con el mismo ID para actualizar la notificación existente
-    AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: _timerNotificationId,
-        channelKey: _channelKey,
-        groupKey: _groupKey,
-        title: '$sessionEmoji $_sessionType Session',
-        body: timeString, // El tiempo como body para que aparezca grande
-        bigPicture:
-            'https://tecnoblog.net/wp-content/uploads/2019/09/emoji.jpg', // Imagen de fondo con efecto difuminado
-        largeIcon:
-            'asset://assets/images/knight_icon.png', // Ícono del caballero
-        notificationLayout:
-            NotificationLayout.BigPicture, // Layout con imagen grande
-        category: NotificationCategory.StopWatch,
-        wakeUpScreen: false,
-        fullScreenIntent: false,
-        autoDismissible: false,
-        showWhen: true,
-        customSound: null,
-        payload: {
-          'type': 'timer',
-          'session_type': _sessionType,
-          'current_seconds': _currentSeconds.toString(),
-        },
-        backgroundColor: const Color(0xFF2D1810), // Marrón oscuro medieval
-        color: const Color(0xFFD4AF37), // Dorado medieval
-      ),
-    );
-
-    debugPrint('🔄 Timer notification updated: $timeString remaining');
-  }
-
   /// Muestra notificación cuando se completa una sesión
   void showSessionCompletedNotification({
     required String completedSessionType,
@@ -274,25 +230,6 @@ class NotificationService {
 
     debugPrint(
         '🏆 Session completion notification shown: $completedSessionType -> $nextSessionType');
-  }
-
-  /// Inicia las actualizaciones periódicas de la notificación
-  void _startNotificationUpdates() {
-    _stopNotificationUpdates(); // Cancelar cualquier timer existente
-
-    _notificationUpdateTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (_isAppInBackground && _isTimerActive && _currentSeconds > 0) {
-          // La notificación se actualizará automáticamente cuando se llame updateTimerState
-          // desde el TimerController
-        } else {
-          _stopNotificationUpdates();
-        }
-      },
-    );
-
-    debugPrint('🔄 Started notification updates timer');
   }
 
   /// Detiene las actualizaciones de notificación

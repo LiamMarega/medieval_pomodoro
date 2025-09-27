@@ -7,7 +7,6 @@ import '../models/timer_state.dart';
 import '../models/timer_mode.dart';
 // Importa el nuevo servicio de audio
 import '../services/audio_service_manager.dart';
-import '../core/services/live_activity_service.dart';
 import '../core/services/user_stats_service.dart';
 import '../core/services/live_activity_manager.dart';
 import 'settings_provider.dart';
