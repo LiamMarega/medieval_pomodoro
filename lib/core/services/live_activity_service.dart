@@ -10,7 +10,6 @@
 // - Ajustá los valores de appGroupId y urlScheme a los de tu proyecto.
 
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:live_activities/live_activities.dart';
 import 'package:live_activities/models/activity_update.dart';
 import 'package:live_activities/models/live_activity_file.dart';
@@ -37,7 +36,7 @@ class PomodoroSnapshot {
     // Claves leídas desde el Widget Extension via UserDefaults (con prefijo)
     return <String, dynamic>{
       'taskName': taskName,
-      'phase': describeEnum(phase),
+      'phase': phase.name,
       'endTimestamp': endAt.millisecondsSinceEpoch,
       'isRunning': isRunning,
       'logo':
@@ -53,12 +52,10 @@ class LiveActivityService {
     String urlScheme = 'pomodoro', // TODO: reemplazar
     String customActivityId = 'pomodoro-activity',
   })  : _appGroupId = appGroupId,
-        _urlScheme = urlScheme,
-        _customId = customActivityId;
+        _urlScheme = urlScheme;
 
   final String _appGroupId;
   final String _urlScheme;
-  final String _customId;
   final _plugin = LiveActivities();
 
   String? _activityId;
@@ -124,7 +121,7 @@ class LiveActivityService {
     if (newEndAt != null) {
       patch['endTimestamp'] = newEndAt.millisecondsSinceEpoch;
     }
-    if (phase != null) patch['phase'] = describeEnum(phase);
+    if (phase != null) patch['phase'] = phase.name;
     if (taskName != null) patch['taskName'] = taskName;
     if (patch.isEmpty) return;
     await _plugin.updateActivity(_activityId!, patch);
@@ -139,7 +136,7 @@ class LiveActivityService {
 
   /// Devuelve si el dispositivo soporta/permite Live Activities.
   Future<bool> isAvailable() async {
-    return await _plugin.areActivitiesEnabled() ?? false;
+    return await _plugin.areActivitiesEnabled();
   }
 
   /// Libera recursos.
