@@ -2,7 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:medieval_pomodoro/presentation/onboarding/screens/onboarding_screen.dart';
+import 'package:medieval_pomodoro/presentation/onboarding/onboarding_integration.dart';
+import 'package:medieval_pomodoro/presentation/timer_screen/timer_screen.dart';
 import 'package:sizer/sizer.dart';
 
 import '../core/app_export.dart';
@@ -74,10 +75,10 @@ class MyApp extends StatelessWidget {
         // 🚨 END CRITICAL SECTION
         debugShowCheckedModeBanner: false,
         routes: {
-          // '/': (context) => const TimerScreen(),
-          // '/onboarding-screen': (context) => const OnboardingScreen(),
+          '/': (context) =>
+              OnboardingIntegration.buildInitialScreen(const TimerScreen()),
+          '/timer-screen': (context) => const TimerScreen(),
           '/settings-screen': (context) => const SettingsScreen(),
-          '/': (context) => const OnboardingScreen(),
         },
         initialRoute: '/',
       );

@@ -6,6 +6,9 @@ part of 'settings_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(SettingsController)
 const settingsControllerProvider = SettingsControllerProvider._();
 
@@ -31,7 +34,7 @@ final class SettingsControllerProvider
 }
 
 String _$settingsControllerHash() =>
-    r'6d1fb14de2b55f1c335245c7b28af4748f09da63';
+    r'278ba3c222acf54300c220c3eb15cbc900a65ec9';
 
 abstract class _$SettingsController extends $AsyncNotifier<SettingsState> {
   FutureOr<SettingsState> build();
@@ -48,6 +51,3 @@ abstract class _$SettingsController extends $AsyncNotifier<SettingsState> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -7,6 +7,7 @@ class LocalStorageService {
   static const String _longBreakDurationKey = 'long_break_minutes';
   static const String _musicEnabledKey = 'music_enabled';
   static const String _onboardingCompletedKey = 'onboarding_completed';
+  static const String _userNameKey = 'user_name';
 
   static LocalStorageService? _instance;
   static SharedPreferences? _preferences;
@@ -35,11 +36,12 @@ class LocalStorageService {
   int getWorkDuration() {
     return _preferences?.getInt(_workDurationKey) ?? 25;
   }
-  
+
   // Save onboarding completed status
   Future<bool> saveOnboardingCompleted(bool completed) async {
     try {
-      final result = await _preferences!.setBool(_onboardingCompletedKey, completed);
+      final result =
+          await _preferences!.setBool(_onboardingCompletedKey, completed);
       debugPrint('💾 Onboarding completed status saved: $completed');
       return result;
     } catch (e) {
@@ -51,6 +53,23 @@ class LocalStorageService {
   // Get onboarding completed status
   bool isOnboardingCompleted() {
     return _preferences?.getBool(_onboardingCompletedKey) ?? false;
+  }
+
+  // Save user name
+  Future<bool> saveUserName(String name) async {
+    try {
+      final result = await _preferences!.setString(_userNameKey, name);
+      debugPrint('💾 User name saved: $name');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error saving user name: $e');
+      return false;
+    }
+  }
+
+  // Get user name
+  String? getUserName() {
+    return _preferences?.getString(_userNameKey);
   }
 
   // Save short break duration

@@ -6,6 +6,9 @@ part of 'user_stats_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(UserStatsController)
 const userStatsControllerProvider = UserStatsControllerProvider._();
 
@@ -50,10 +53,12 @@ abstract class _$UserStatsController extends $AsyncNotifier<UserStats> {
 }
 
 /// Provider para las estadísticas resumidas
+
 @ProviderFor(statsSummary)
 const statsSummaryProvider = StatsSummaryProvider._();
 
 /// Provider para las estadísticas resumidas
+
 final class StatsSummaryProvider extends $FunctionalProvider<
         AsyncValue<Map<String, dynamic>>,
         Map<String, dynamic>,
@@ -91,10 +96,12 @@ final class StatsSummaryProvider extends $FunctionalProvider<
 String _$statsSummaryHash() => r'958b6b76460319582731ea6f1e035d018dc34cd0';
 
 /// Provider para las sesiones de enfoque
+
 @ProviderFor(focusSessions)
 const focusSessionsProvider = FocusSessionsProvider._();
 
 /// Provider para las sesiones de enfoque
+
 final class FocusSessionsProvider extends $FunctionalProvider<
         AsyncValue<List<FocusSession>>,
         List<FocusSession>,
@@ -130,6 +137,3 @@ final class FocusSessionsProvider extends $FunctionalProvider<
 }
 
 String _$focusSessionsHash() => r'7a7c0bdbd393fa92d5f3d725c6a0db06a83ac625';
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

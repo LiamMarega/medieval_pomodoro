@@ -26,7 +26,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize with default values, will be updated when settings load
 
     // Initialize audio provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,16 +55,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       body: Column(
         children: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const GalleryView()),
-              );
-            },
-            child: const Text('Start Timer'),
-          ),
-          const SettingsHeaderWidget(),
           Expanded(
             child: PixelFrame(
               cornerSize: 24,
@@ -97,11 +86,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Controles de audio en la parte superior
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: const AudioControlsWidget(),
-                        ),
+                        const SettingsHeaderWidget(),
+
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //           builder: (context) => const GalleryView()),
+                        //     );
+                        //   },
+                        //   child: const Text('Start Timer'),
+                        // ),
+                        // // Controles de audio en la parte superior
+                        // Padding(
+                        //   padding: const EdgeInsets.all(16.0),
+                        //   child: const AudioControlsWidget(),
+                        // ),
 
                         _buildDurationSetting(
                           title: 'WORK DURATION',
@@ -275,6 +276,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ),
                         ),
+                        SizedBox(height: 2.h),
+
+                        // Reset everything button
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () =>
+                                  _showResetConfirmationDialog(context),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 4.w, vertical: 2.h),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4A3728),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFFF4444),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  '🗑️ RESET EVERYTHING & RESTART',
+                                  style: GoogleFonts.pressStart2p(
+                                    fontSize: 12.sp,
+                                    color: const Color(0xFFFF4444),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
                       ],
                     ),
                   );
@@ -286,6 +320,171 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  void _showResetConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A1B0A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFFDAA520), width: 2),
+          ),
+          title: Text(
+            '⚠️ RESET EVERYTHING',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 14.sp,
+              color: const Color(0xFFFF4444),
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            'This will delete ALL your data and return you to the onboarding flow.\n\nThis action CANNOT be undone!',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 10.sp,
+              color: const Color(0xFFDAA520),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 1.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A3728),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFDAA520),
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        'CANCEL',
+                        style: GoogleFonts.pressStart2p(
+                          fontSize: 10.sp,
+                          color: const Color(0xFFDAA520),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 2.w),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      await _performReset();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 1.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A3728),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFFF4444),
+                          width: 2,
+                        ),
+                      ),
+                      child: Text(
+                        'RESET',
+                        style: GoogleFonts.pressStart2p(
+                          fontSize: 10.sp,
+                          color: const Color(0xFFFF4444),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _performReset() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            backgroundColor: Color(0xFF2A1B0A),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  color: Color(0xFFDAA520),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Resetting everything...',
+                  style: TextStyle(color: Color(0xFFDAA520)),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      // Perform the reset
+      final settingsController = ref.read(settingsControllerProvider.notifier);
+      await settingsController.resetEverything();
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '🗑️ Everything reset! Restarting app...',
+              style: GoogleFonts.pressStart2p(fontSize: 12.sp),
+            ),
+            backgroundColor: const Color(0xFF4CAF50),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Restart the app by navigating to the root
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if it's open
+      if (mounted) Navigator.of(context).pop();
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '❌ Error resetting: $e',
+              style: GoogleFonts.pressStart2p(fontSize: 12.sp),
+            ),
+            backgroundColor: const Color(0xFFFF4444),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildDurationSetting({

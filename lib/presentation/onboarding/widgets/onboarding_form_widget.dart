@@ -19,11 +19,25 @@ class OnboardingFormWidget extends StatefulWidget {
 
 class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
   final TextEditingController _nameController = TextEditingController();
+  bool _isButtonEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_onNameChanged);
+  }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     super.dispose();
+  }
+
+  void _onNameChanged() {
+    setState(() {
+      _isButtonEnabled = _nameController.text.trim().length >= 3;
+    });
   }
 
   @override
@@ -92,31 +106,39 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
 
   Widget _buildSubmitButton() {
     return GestureDetector(
-      onTap: () {
-        if (_nameController.text.isNotEmpty && widget.onNameSubmitted != null) {
-          widget.onNameSubmitted!(_nameController.text);
-        }
-      },
+      onTap: _isButtonEnabled
+          ? () {
+              if (widget.onNameSubmitted != null) {
+                widget.onNameSubmitted!(_nameController.text.trim());
+              }
+            }
+          : null,
       child: Container(
         width: 40.w,
         padding: EdgeInsets.symmetric(vertical: 1.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF4A3728),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF5A4738),
-              const Color(0xFF3A2718),
-            ],
-          ),
+          color: _isButtonEnabled
+              ? const Color(0xFF4A3728)
+              : const Color(0xFF2A1B0A),
+          gradient: _isButtonEnabled
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF5A4738),
+                    const Color(0xFF3A2718),
+                  ],
+                )
+              : null,
         ),
         child: Center(
           child: Text(
             'CONFIRMAR',
             style: GoogleFonts.pressStart2p(
               fontSize: 10.sp,
-              color: const Color(0xFFDAA520),
+              color: _isButtonEnabled
+                  ? const Color(0xFFDAA520)
+                  : const Color(0xFF666666),
               letterSpacing: 1.0,
             ),
           ),

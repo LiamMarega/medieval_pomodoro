@@ -160,7 +160,7 @@ class SimpleTimerController extends _$SimpleTimerController {
       if (state.currentSeconds > 0) {
         final newSeconds = state.currentSeconds - 1;
 
-        state = state.copyWith(currentSeconds: newSeconds);
+        state = state.copyWith(remaining: Duration(seconds: newSeconds));
 
         if (newSeconds % 300 == 0) {
           _updateMotivationalMessage();
@@ -188,7 +188,7 @@ class SimpleTimerController extends _$SimpleTimerController {
     _timer?.cancel();
     state = state.copyWith(
       isActive: false,
-      currentSeconds: state.totalSeconds,
+      remaining: Duration(seconds: state.totalSeconds),
     );
 
     if (state.isMusicPlaying) {
@@ -252,8 +252,7 @@ class SimpleTimerController extends _$SimpleTimerController {
 
     state = state.copyWith(
       currentMode: newMode,
-      totalSeconds: newTotalSeconds,
-      currentSeconds: newTotalSeconds,
+      remaining: Duration(seconds: newTotalSeconds),
     );
   }
 
@@ -342,8 +341,7 @@ class SimpleTimerController extends _$SimpleTimerController {
     if (state.currentMode.isWork) {
       final newTotalSeconds = workDurationMinutes * 60;
       state = state.copyWith(
-        totalSeconds: newTotalSeconds,
-        currentSeconds: newTotalSeconds,
+        remaining: Duration(seconds: newTotalSeconds),
       );
     }
   }

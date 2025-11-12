@@ -145,4 +145,31 @@ class SettingsController extends _$SettingsController {
     );
     debugPrint('🧪 Test durations set: 10s work/break, 20s long break');
   }
+
+  // Reset everything and return to onboarding
+  Future<void> resetEverything() async {
+    try {
+      // Clear all settings from local storage
+      await _storage.clearAllSettings();
+
+      // Reset onboarding status
+      await _storage.saveOnboardingCompleted(false);
+
+      // Clear user name
+      await _storage.saveUserName('');
+
+      debugPrint('🗑️ Everything reset - returning to onboarding flow');
+
+      // Reset the current state to defaults
+      state = AsyncValue.data(const SettingsState(
+        workDurationMinutes: 25,
+        shortBreakMinutes: 5,
+        longBreakMinutes: 30,
+        isMusicEnabled: true,
+      ));
+    } catch (e) {
+      debugPrint('❌ Error resetting everything: $e');
+      rethrow;
+    }
+  }
 }

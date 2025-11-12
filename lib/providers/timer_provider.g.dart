@@ -6,6 +6,9 @@ part of 'timer_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
 @ProviderFor(TimerController)
 const timerControllerProvider = TimerControllerProvider._();
 
@@ -38,7 +41,7 @@ final class TimerControllerProvider
   }
 }
 
-String _$timerControllerHash() => r'9e86c4a2f0e1e1ae2d2f131ef0030b797891f679';
+String _$timerControllerHash() => r'737f516ac1f57a2ab493a3c9de4c0d052239e3d2';
 
 abstract class _$TimerController extends $Notifier<TimerState> {
   TimerState build();
@@ -52,6 +55,3 @@ abstract class _$TimerController extends $Notifier<TimerState> {
     element.handleValue(ref, created);
   }
 }
-
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

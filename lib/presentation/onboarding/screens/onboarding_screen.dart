@@ -4,6 +4,7 @@ import 'package:sizer/sizer.dart';
 
 import '../providers/onboarding_provider.dart';
 import '../widgets/medieval_dialog_box.dart';
+import '../widgets/onboarding_form_widget.dart';
 
 /// Pantalla principal de onboarding
 class OnboardingScreen extends ConsumerWidget {
@@ -11,7 +12,7 @@ class OnboardingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(onboardingControllerProvider);
+    final onboardingState = ref.watch(onboardingControllerProvider);
     final onboardingController =
         ref.read(onboardingControllerProvider.notifier);
     final currentStep = onboardingController.getCurrentStep();
@@ -19,7 +20,12 @@ class OnboardingScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
-        onTap: () => onboardingController.nextStep(),
+        onTap: () {
+          // Solo permitir navegación si no hay formulario o si el formulario es válido
+          if (!currentStep.hasForm || onboardingState.isFormValid) {
+            onboardingController.nextStep();
+          }
+        },
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -46,7 +52,11 @@ class OnboardingScreen extends ConsumerWidget {
                 bottom: 0.h,
                 left: 0.w,
                 right: 0.w,
-                child: currentStep.formWidget!,
+                child: OnboardingFormWidget(
+                  onNameSubmitted: (name) {
+                    onboardingController.submitForm(name);
+                  },
+                ),
               ),
           ],
         ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,32 +16,38 @@ class OnboardingIntegration {
 
   /// Muestra el onboarding o la pantalla principal según corresponda
   static Widget buildInitialScreen(Widget mainApp) {
-    return FutureBuilder<bool>(
-      future: shouldShowOnboarding(),
-      builder: (context, snapshot) {
-        // Mientras se carga, muestra una pantalla de carga o la app principal
-        if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+    return Consumer(
+      builder: (context, ref, _) {
+        final onboardingState = ref.watch(onboardingControllerProvider);
+        debugPrint(
+            '🔄 OnboardingIntegration - Estado actual: isCompleted=${onboardingState.isCompleted}');
 
-        final shouldShow = snapshot.data!;
-
-        if (!shouldShow) {
-          // Si no se debe mostrar el onboarding, muestra la app principal
+        // Si el onboarding está completado durante la sesión, muestra la app principal
+        if (onboardingState.isCompleted) {
+          debugPrint('🎉 Navegando al TimerScreen - onboarding completado');
           return mainApp;
         }
 
-        // Si se debe mostrar el onboarding, usa el Consumer para manejar su estado
-        return Consumer(
-          builder: (context, ref, _) {
-            final onboardingState = ref.watch(onboardingControllerProvider);
+        // Si no está completado, verificar el localStorage
+        return FutureBuilder<bool>(
+          future: shouldShowOnboarding(),
+          builder: (context, snapshot) {
+            // Mientras se carga, muestra una pantalla de carga
+            if (!snapshot.hasData) {
+              return const Scaffold(
+                backgroundColor: Colors.black,
+                body: Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFDAA520),
+                  ),
+                ),
+              );
+            }
 
-            // Si el onboarding está completado durante la sesión, muestra la app principal
-            if (onboardingState.isCompleted) {
+            final shouldShow = snapshot.data!;
+
+            if (!shouldShow) {
+              // Si no se debe mostrar el onboarding, muestra la app principal
               return mainApp;
             }
 

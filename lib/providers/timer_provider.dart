@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/timer_state.dart';
@@ -14,8 +15,8 @@ import 'settings_provider.dart';
 part 'timer_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-class TimerController extends _$TimerController {
-  Timer? _timer;
+class TimerController extends _$TimerController with WidgetsBindingObserver {
+  Timer? _ticker;
   PlaylistAudioService? _audioService;
   TimerMode? _previousSessionMode; // Store previous session for gap time logic
   final UserStatsService _userStatsService = UserStatsService();
@@ -23,6 +24,15 @@ class TimerController extends _$TimerController {
 
   @override
   TimerState build() {
+    // Agregar observer para lifecycle (principio clave: manejo de lifecycle)
+    WidgetsBinding.instance.addObserver(this);
+    
+    // Cleanup cuando el provider se destruye (principio clave: sin fugas)
+    ref.onDispose(() {
+      _stopTicker();
+      WidgetsBinding.instance.removeObserver(this);
+    });
+    
     _initializeAudio();
     _initializeLiveActivity();
     _setupSettingsListener();
@@ -40,6 +50,8 @@ class TimerController extends _$TimerController {
       motivationalMessage: "A knight's focus is their greatest weapon!",
     );
 
+    final initialDuration = Duration(seconds: _minutesToSeconds(workDuration));
+
     return TimerState(
       currentMotivationalMessage: initialConfig.motivationalMessage,
       isMusicEnabled: isMusicEnabled,
@@ -48,8 +60,8 @@ class TimerController extends _$TimerController {
       workDurationMinutes: workDuration,
       shortBreakMinutes: shortBreakDuration,
       longBreakMinutes: longBreakDuration,
-      totalSeconds: _minutesToSeconds(workDuration),
-      currentSeconds: _minutesToSeconds(workDuration),
+      remaining: initialDuration,
+      endsAt: null, // No iniciado
     );
   }
 
@@ -96,13 +108,12 @@ class TimerController extends _$TimerController {
             isMusicEnabled: data.isMusicEnabled,
           );
 
-          // Update total time if in work session
-          if (state.currentMode.isWork) {
-            final newTotalSeconds = _minutesToSeconds(data.workDurationMinutes,
-                mode: TimerMode.work);
+          // Update remaining time if in work session and not running
+          if (state.currentMode.isWork && !state.isActive) {
+            final newDuration = Duration(seconds: _minutesToSeconds(data.workDurationMinutes,
+                mode: TimerMode.work));
             state = state.copyWith(
-              totalSeconds: newTotalSeconds,
-              currentSeconds: newTotalSeconds,
+              remaining: newDuration,
             );
           }
 
@@ -135,14 +146,13 @@ class TimerController extends _$TimerController {
           // Update audio service music enabled state without stopping playback
           _audioService?.setMusicEnabled(settings.isMusicEnabled);
 
-          // If we're in a work session, update the total time
-          if (state.currentMode.isWork) {
-            final newTotalSeconds = _minutesToSeconds(
+          // If we're in a work session and not running, update the remaining time
+          if (state.currentMode.isWork && !state.isActive) {
+            final newDuration = Duration(seconds: _minutesToSeconds(
                 settings.workDurationMinutes,
-                mode: TimerMode.work);
+                mode: TimerMode.work));
             state = state.copyWith(
-              totalSeconds: newTotalSeconds,
-              currentSeconds: newTotalSeconds,
+              remaining: newDuration,
             );
           }
 
@@ -172,14 +182,29 @@ class TimerController extends _$TimerController {
     }
   }
 
+  // ======= Helper: Calcular tiempo restante desde endsAt (principio clave: DateTime-based) =======
+  Duration _remainingFromEnds() {
+    final end = state.endsAt;
+    if (end == null) return state.remaining;
+    final diff = end.difference(DateTime.now());
+    return diff.isNegative ? Duration.zero : diff;
+  }
+
   void startTimer() {
     debugPrint('▶️ Starting timer...');
-    if (_timer?.isActive ?? false) {
+    if (_ticker?.isActive ?? false) {
       debugPrint('⚠️ Timer is already active');
       return;
     }
 
-    state = state.copyWith(isActive: true);
+    // Calcular endsAt basado en remaining actual (principio clave: DateTime-based)
+    final end = DateTime.now().add(state.remaining);
+    
+    state = state.copyWith(
+      isActive: true,
+      endsAt: end,
+      remaining: state.remaining,
+    );
 
     // Sync with Live Activity
     _syncWithLiveActivity();
@@ -195,34 +220,46 @@ class TimerController extends _$TimerController {
     // Configurar modo inmersivo
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // Iniciar el timer del pomodoro
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (state.currentSeconds > 0) {
-        final newSeconds = state.currentSeconds - 1;
-        state = state.copyWith(currentSeconds: newSeconds);
+    // Iniciar el ticker (principio clave: 200ms para actualizaciones fluidas)
+    _startTicker();
 
-        // Update Live Activity with optimized frequency for better real-time experience
-        // Update every 5 seconds for the first 30 seconds, every 15 seconds for the first 5 minutes, then every 30 seconds
-        final shouldUpdateLiveActivity = newSeconds <= 30
-            ? (newSeconds % 5 == 0)
-            : newSeconds <= 300
-                ? (newSeconds % 15 == 0)
-                : (newSeconds % 30 == 0);
+    debugPrint('✅ Timer started successfully');
+  }
 
-        if (shouldUpdateLiveActivity || newSeconds <= 5) {
+  // ======= Ticker & transición (principio clave: ticker a 200ms) =======
+  void _startTicker() {
+    _ticker?.cancel();
+    _ticker = Timer.periodic(const Duration(milliseconds: 200), (_) {
+      final rem = _remainingFromEnds();
+      if (rem <= Duration.zero) {
+        _stopTicker();
+        _completeSession();
+      } else {
+        state = state.copyWith(remaining: rem);
+
+        // Update Live Activity con frecuencia optimizada
+        final seconds = rem.inSeconds;
+        final shouldUpdateLiveActivity = seconds <= 30
+            ? (seconds % 5 == 0)
+            : seconds <= 300
+                ? (seconds % 15 == 0)
+                : (seconds % 30 == 0);
+
+        if (shouldUpdateLiveActivity || seconds <= 5) {
           _updateLiveActivity();
         }
 
         // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
-        if (newSeconds % 300 == 0) {
+        if (seconds > 0 && seconds % 300 == 0) {
           _updateMotivationalMessage();
         }
-      } else {
-        _completeSession();
       }
     });
+  }
 
-    debugPrint('✅ Timer started successfully');
+  void _stopTicker() {
+    _ticker?.cancel();
+    _ticker = null;
   }
 
   void pauseTimer() {
@@ -236,9 +273,17 @@ class TimerController extends _$TimerController {
       return;
     }
 
-    // Cancelar el timer
-    _timer?.cancel();
-    state = state.copyWith(isActive: false);
+    if (!state.isActive) return;
+
+    // Detener ticker y guardar remaining actual (principio clave: DateTime-based)
+    _stopTicker();
+    final rem = _remainingFromEnds();
+    
+    state = state.copyWith(
+      isActive: false,
+      endsAt: null, // null => detenido
+      remaining: rem,
+    );
 
     // Update Live Activity with pause state
     _updateLiveActivity();
@@ -259,17 +304,23 @@ class TimerController extends _$TimerController {
 
   void resumeTimer() {
     debugPrint('▶️ Resuming timer...');
-    if (_timer?.isActive ?? false) {
+    if (_ticker?.isActive ?? false) {
       debugPrint('⚠️ Timer is already active');
       return;
     }
 
-    if (state.currentSeconds <= 0) {
+    if (state.remaining <= Duration.zero) {
       debugPrint('⚠️ Cannot resume timer with 0 seconds remaining');
       return;
     }
 
-    state = state.copyWith(isActive: true);
+    // Recalcular endsAt basado en remaining (principio clave: DateTime-based)
+    final end = DateTime.now().add(state.remaining);
+    
+    state = state.copyWith(
+      isActive: true,
+      endsAt: end,
+    );
 
     // Sync with Live Activity
     _updateLiveActivity();
@@ -283,31 +334,8 @@ class TimerController extends _$TimerController {
     // Configurar modo inmersivo
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // Reanudar el timer del pomodoro
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (state.currentSeconds > 0) {
-        final newSeconds = state.currentSeconds - 1;
-        state = state.copyWith(currentSeconds: newSeconds);
-
-        // Update Live Activity with optimized frequency for better real-time experience
-        final shouldUpdateLiveActivity = newSeconds <= 30
-            ? (newSeconds % 5 == 0)
-            : newSeconds <= 300
-                ? (newSeconds % 15 == 0)
-                : (newSeconds % 30 == 0);
-
-        if (shouldUpdateLiveActivity || newSeconds <= 5) {
-          _updateLiveActivity();
-        }
-
-        // Actualizar mensaje motivacional cada 5 minutos (300 segundos)
-        if (newSeconds % 300 == 0) {
-          _updateMotivationalMessage();
-        }
-      } else {
-        _completeSession();
-      }
-    });
+    // Reanudar el ticker
+    _startTicker();
 
     debugPrint('✅ Timer resumed successfully');
   }
@@ -315,10 +343,15 @@ class TimerController extends _$TimerController {
   void restartTimer() {
     debugPrint('🔄 Restarting timer...');
 
-    _timer?.cancel();
+    _stopTicker();
+    
+    // Calcular duración total según el modo actual
+    final totalDuration = Duration(seconds: state.totalSeconds);
+    
     state = state.copyWith(
       isActive: false,
-      currentSeconds: state.totalSeconds,
+      endsAt: null,
+      remaining: totalDuration,
     );
 
     // Update Live Activity with restart state
@@ -342,7 +375,7 @@ class TimerController extends _$TimerController {
 
     final completedSessionType = state.currentMode;
 
-    _timer?.cancel();
+    _stopTicker();
 
     // Handle gap time completion differently
     if (completedSessionType.isGapTime) {
@@ -396,11 +429,13 @@ class TimerController extends _$TimerController {
 
     // Configure gap time state - keep timer active
     final gapConfig = TimerModeConfig.getGapTimeConfig();
+    final gapDuration = const Duration(seconds: 3);
+    
     state = state.copyWith(
       lastMode: state.currentMode, // Store current mode as last mode
       currentMode: gapConfig.mode,
-      totalSeconds: 3, // Always 3 seconds for gap time
-      currentSeconds: 3,
+      remaining: gapDuration,
+      endsAt: null, // Will be set when timer starts
       currentMotivationalMessage: gapConfig.motivationalMessage,
       currentAnimation: gapConfig.animationType,
       isActive: true, // Keep timer active during gap time
@@ -415,7 +450,7 @@ class TimerController extends _$TimerController {
   void _completeGapTime() {
     debugPrint('⏳ Gap time completed, determining next session...');
 
-    _timer?.cancel();
+    _stopTicker();
     // Keep timer active during transition to next session
     state = state.copyWith(isActive: true);
 
@@ -494,14 +529,15 @@ class TimerController extends _$TimerController {
 
     // Keep timer active if coming from gap time, otherwise set to false
     final shouldKeepActive = state.currentMode.isGapTime;
+    
+    // Calcular duración según el modo (principio clave: DateTime-based)
+    final duration = Duration(seconds: _minutesToSeconds(config.durationMinutes, mode: config.mode));
 
     state = state.copyWith(
       lastMode: state.currentMode, // Store current mode as last mode
       currentMode: config.mode,
-      totalSeconds:
-          _minutesToSeconds(config.durationMinutes, mode: config.mode),
-      currentSeconds:
-          _minutesToSeconds(config.durationMinutes, mode: config.mode),
+      remaining: duration,
+      endsAt: null, // Will be set when timer starts
       currentMotivationalMessage: config.motivationalMessage,
       currentAnimation: config.animationType,
       sessionNumber: newSessionNumber,
@@ -772,4 +808,15 @@ class TimerController extends _$TimerController {
       debugPrint('❌ Error recording work session stats: $e');
     }
   }
+
+  // ======= Lifecycle: retomar cálculo exacto (principio clave: manejo de lifecycle) =======
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    if (lifecycleState == AppLifecycleState.resumed && state.isActive) {
+      // Recalcular remaining cuando la app vuelve al foreground
+      state = state.copyWith(remaining: _remainingFromEnds());
+      debugPrint('📱 App resumed, recalculated remaining time: ${state.remaining}');
+    }
+  }
+
 }
