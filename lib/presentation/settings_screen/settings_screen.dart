@@ -1,15 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medieval_pomodoro/presentation/gallery_view.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../generated/locale_keys.g.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/audio_provider.dart';
 import '../../widgets/pixel_frame.dart';
+import '../../widgets/pixel_art_effect.dart';
 import 'widgets/settings_header_widget.dart';
-import 'widgets/audio_controls_widget.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -52,272 +53,333 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsControllerProvider);
 
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: PixelFrame(
-              cornerSize: 24,
-              edgeThickness: 6,
-              padding: 20,
-              borderStyle: MedievalBorderStyle.stone,
-              child: settingsAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (error, stack) => Center(
-                  child: Text('Error loading settings: $error'),
-                ),
-                data: (settings) {
-                  // Update local state when settings are loaded
-                  if (_workDurationMinutes != settings.workDurationMinutes ||
-                      _shortBreakMinutes != settings.shortBreakMinutes ||
-                      _longBreakMinutes != settings.longBreakMinutes) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      setState(() {
-                        _workDurationMinutes = settings.workDurationMinutes;
-                        _shortBreakMinutes = settings.shortBreakMinutes;
-                        _longBreakMinutes = settings.longBreakMinutes;
+    return PixelArtEffect(
+      child: Scaffold(
+        body: Column(
+          children: [
+            Expanded(
+              child: PixelFrame(
+                cornerSize: 24,
+                edgeThickness: 6,
+                padding: 20,
+                borderStyle: MedievalBorderStyle.stone,
+                child: settingsAsync.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  error: (error, stack) => Center(
+                    child: Text(LocaleKeys
+                        .settings_screen_error_loading_settings
+                        .tr(namedArgs: {'error': error.toString()})),
+                  ),
+                  data: (settings) {
+                    // Update local state when settings are loaded
+                    if (_workDurationMinutes != settings.workDurationMinutes ||
+                        _shortBreakMinutes != settings.shortBreakMinutes ||
+                        _longBreakMinutes != settings.longBreakMinutes) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          _workDurationMinutes = settings.workDurationMinutes;
+                          _shortBreakMinutes = settings.shortBreakMinutes;
+                          _longBreakMinutes = settings.longBreakMinutes;
+                        });
                       });
-                    });
-                  }
+                    }
 
-                  return SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SettingsHeaderWidget(),
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SettingsHeaderWidget(),
 
-                        // ElevatedButton(
-                        //   onPressed: () {
-                        //     Navigator.push(
-                        //       context,
-                        //       MaterialPageRoute(
-                        //           builder: (context) => const GalleryView()),
-                        //     );
-                        //   },
-                        //   child: const Text('Start Timer'),
-                        // ),
-                        // // Controles de audio en la parte superior
-                        // Padding(
-                        //   padding: const EdgeInsets.all(16.0),
-                        //   child: const AudioControlsWidget(),
-                        // ),
+                          // ElevatedButton(
+                          //   onPressed: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //           builder: (context) => const GalleryView()),
+                          //     );
+                          //   },
+                          //   child: const Text('Start Timer'),
+                          // ),
+                          // // Controles de audio en la parte superior
+                          // Padding(
+                          //   padding: const EdgeInsets.all(16.0),
+                          //   child: const AudioControlsWidget(),
+                          // ),
 
-                        _buildDurationSetting(
-                          title: 'WORK DURATION',
-                          currentValue: _workDurationMinutes,
-                          minValue:
-                              0, // Allow 0 minutes (10 seconds for testing)
-                          maxValue: 60,
-                          increment: 5,
-                          onChanged: (value) {
-                            setState(() => _workDurationMinutes = value);
-                            _autoSaveSettings();
-                          },
-                          customIncrementLogic: (currentValue, isIncrement) {
-                            if (isIncrement) {
-                              // When incrementing, use smart logic
-                              if (currentValue < 5) {
-                                // If below 5, add 1
-                                return currentValue + 1;
+                          _buildDurationSetting(
+                            title:
+                                LocaleKeys.settings_screen_work_duration.tr(),
+                            currentValue: _workDurationMinutes,
+                            minValue:
+                                0, // Allow 0 minutes (10 seconds for testing)
+                            maxValue: 60,
+                            increment: 5,
+                            onChanged: (value) {
+                              setState(() => _workDurationMinutes = value);
+                              _autoSaveSettings();
+                            },
+                            customIncrementLogic: (currentValue, isIncrement) {
+                              if (isIncrement) {
+                                // When incrementing, use smart logic
+                                if (currentValue < 5) {
+                                  // If below 5, add 1
+                                  return currentValue + 1;
+                                } else {
+                                  // If 5 or above, add 5
+                                  return currentValue + 5;
+                                }
                               } else {
-                                // If 5 or above, add 5
-                                return currentValue + 5;
+                                // When decrementing, use smart logic
+                                if (currentValue > 5) {
+                                  // If above 5, subtract 5
+                                  return currentValue - 5;
+                                } else if (currentValue > 0) {
+                                  // If between 0 and 5, subtract 1
+                                  return currentValue - 1;
+                                } else {
+                                  // If at 0, can't go lower
+                                  return currentValue;
+                                }
                               }
-                            } else {
-                              // When decrementing, use smart logic
-                              if (currentValue > 5) {
-                                // If above 5, subtract 5
-                                return currentValue - 5;
-                              } else if (currentValue > 0) {
-                                // If between 0 and 5, subtract 1
-                                return currentValue - 1;
-                              } else {
-                                // If at 0, can't go lower
-                                return currentValue;
-                              }
-                            }
-                          },
-                        ),
-                        SizedBox(height: 4.h),
-                        _buildDurationSetting(
-                          title: 'SHORT BREAK TIME',
-                          currentValue: _shortBreakMinutes,
-                          minValue:
-                              0, // Allow 0 minutes (10 seconds for testing)
-                          maxValue: 15,
-                          increment: 1,
-                          onChanged: (value) {
-                            setState(() => _shortBreakMinutes = value);
-                            _autoSaveSettings();
-                          },
-                        ),
-                        SizedBox(height: 4.h),
-                        _buildDurationSetting(
-                          title: 'LONG BREAK TIME',
-                          currentValue: _longBreakMinutes,
-                          minValue:
-                              0, // Allow 0 minutes (20 seconds for testing)
-                          maxValue: 60,
-                          increment: 5,
-                          onChanged: (value) {
-                            setState(() => _longBreakMinutes = value);
-                            _autoSaveSettings();
-                          },
-                        ),
-                        SizedBox(height: 3.h),
+                            },
+                          ),
+                          SizedBox(height: 4.h),
+                          _buildDurationSetting(
+                            title: LocaleKeys.settings_screen_short_break_time
+                                .tr(),
+                            currentValue: _shortBreakMinutes,
+                            minValue:
+                                0, // Allow 0 minutes (10 seconds for testing)
+                            maxValue: 15,
+                            increment: 1,
+                            onChanged: (value) {
+                              setState(() => _shortBreakMinutes = value);
+                              _autoSaveSettings();
+                            },
+                          ),
+                          SizedBox(height: 4.h),
+                          _buildDurationSetting(
+                            title:
+                                LocaleKeys.settings_screen_long_break_time.tr(),
+                            currentValue: _longBreakMinutes,
+                            minValue:
+                                0, // Allow 0 minutes (20 seconds for testing)
+                            maxValue: 60,
+                            increment: 5,
+                            onChanged: (value) {
+                              setState(() => _longBreakMinutes = value);
+                              _autoSaveSettings();
+                            },
+                          ),
+                          SizedBox(height: 3.h),
 
-                        // Test durations button
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4.w),
-                          child: Center(
-                            child: GestureDetector(
-                              onTap: () {
-                                final settingsController = ref
-                                    .read(settingsControllerProvider.notifier);
-                                settingsController.setTestDurations();
+                          // Test durations button
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  final settingsController = ref.read(
+                                      settingsControllerProvider.notifier);
+                                  settingsController.setTestDurations();
 
-                                // Update local state
-                                setState(() {
-                                  _workDurationMinutes = 0;
-                                  _shortBreakMinutes = 0;
-                                  _longBreakMinutes = 0;
-                                });
+                                  // Update local state
+                                  setState(() {
+                                    _workDurationMinutes = 0;
+                                    _shortBreakMinutes = 0;
+                                    _longBreakMinutes = 0;
+                                  });
 
-                                // Show feedback
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '🧪 Test mode activated: 10s work/break, 20s long break',
-                                      style: GoogleFonts.pressStart2p(
-                                          fontSize: 12.sp),
+                                  // Show feedback
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        LocaleKeys
+                                            .settings_screen_test_mode_activated
+                                            .tr(),
+                                        style: GoogleFonts.pressStart2p(
+                                            fontSize: 12.sp),
+                                      ),
+                                      backgroundColor: const Color(0xFFDAA520),
+                                      duration: const Duration(seconds: 3),
                                     ),
-                                    backgroundColor: const Color(0xFFDAA520),
-                                    duration: const Duration(seconds: 3),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 4.w, vertical: 2.h),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4A3728),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: const Color(0xFFDAA520),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Text(
-                                  '🧪 SET TEST DURATIONS (10s/20s)',
-                                  style: GoogleFonts.pressStart2p(
-                                    fontSize: 12.sp,
-                                    color: const Color(0xFFDAA520),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-
-                        // Reset to normal durations button
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4.w),
-                          child: Center(
-                            child: GestureDetector(
-                              onTap: () {
-                                final settingsController = ref
-                                    .read(settingsControllerProvider.notifier);
-                                settingsController.resetToDefaults();
-
-                                // Update local state
-                                setState(() {
-                                  _workDurationMinutes = 25;
-                                  _shortBreakMinutes = 5;
-                                  _longBreakMinutes = 30;
-                                });
-
-                                // Show feedback
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '🔄 Normal mode activated: 25/5/30 minutes',
-                                      style: GoogleFonts.pressStart2p(
-                                          fontSize: 12.sp),
+                                  );
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 4.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4A3728),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: const Color(0xFFDAA520),
+                                      width: 2,
                                     ),
-                                    backgroundColor: const Color(0xFF4CAF50),
-                                    duration: const Duration(seconds: 3),
                                   ),
-                                );
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 4.w, vertical: 2.h),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4A3728),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: const Color(0xFF4CAF50),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Text(
-                                  '🔄 RESET TO NORMAL DURATIONS',
-                                  style: GoogleFonts.pressStart2p(
-                                    fontSize: 12.sp,
-                                    color: const Color(0xFF4CAF50),
-                                    fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    LocaleKeys
+                                        .settings_screen_set_test_durations
+                                        .tr(),
+                                    style: GoogleFonts.pressStart2p(
+                                      fontSize: 12.sp,
+                                      color: const Color(0xFFDAA520),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 2.h),
+                          SizedBox(height: 2.h),
 
-                        // Reset everything button
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4.w),
-                          child: Center(
-                            child: GestureDetector(
-                              onTap: () =>
-                                  _showResetConfirmationDialog(context),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 4.w, vertical: 2.h),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4A3728),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: const Color(0xFFFF4444),
-                                    width: 2,
+                          // Reset to normal durations button
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  final settingsController = ref.read(
+                                      settingsControllerProvider.notifier);
+                                  settingsController.resetToDefaults();
+
+                                  // Update local state
+                                  setState(() {
+                                    _workDurationMinutes = 25;
+                                    _shortBreakMinutes = 5;
+                                    _longBreakMinutes = 30;
+                                  });
+
+                                  // Show feedback
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        LocaleKeys
+                                            .settings_screen_normal_mode_activated
+                                            .tr(),
+                                        style: GoogleFonts.pressStart2p(
+                                            fontSize: 12.sp),
+                                      ),
+                                      backgroundColor: const Color(0xFF4CAF50),
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 4.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4A3728),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: const Color(0xFF4CAF50),
+                                      width: 2,
+                                    ),
                                   ),
-                                ),
-                                child: Text(
-                                  '🗑️ RESET EVERYTHING & RESTART',
-                                  style: GoogleFonts.pressStart2p(
-                                    fontSize: 12.sp,
-                                    color: const Color(0xFFFF4444),
-                                    fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    '🔄 RESET TO NORMAL DURATIONS',
+                                    style: GoogleFonts.pressStart2p(
+                                      fontSize: 12.sp,
+                                      color: const Color(0xFF4CAF50),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 2.h),
-                      ],
-                    ),
-                  );
-                },
+                          SizedBox(height: 2.h),
+
+                          // View Stats button
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: Center(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/stats-screen');
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 4.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4A3728),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: const Color(0xFFDAA520),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.analytics,
+                                        color: Color(0xFFDAA520),
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 2.w),
+                                      Text(
+                                        LocaleKeys
+                                            .settings_screen_view_statistics
+                                            .tr(),
+                                        style: GoogleFonts.pressStart2p(
+                                          fontSize: 12.sp,
+                                          color: const Color(0xFFDAA520),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+
+                          // Reset everything button
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                            child: Center(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    _showResetConfirmationDialog(context),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 4.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4A3728),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: const Color(0xFFFF4444),
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    LocaleKeys
+                                        .settings_screen_reset_everything_restart
+                                        .tr(),
+                                    style: GoogleFonts.pressStart2p(
+                                      fontSize: 12.sp,
+                                      color: const Color(0xFFFF4444),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          SizedBox(height: 2.h),
-        ],
+            SizedBox(height: 2.h),
+          ],
+        ),
       ),
     );
   }
@@ -334,7 +396,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             side: const BorderSide(color: Color(0xFFDAA520), width: 2),
           ),
           title: Text(
-            '⚠️ RESET EVERYTHING',
+            LocaleKeys.settings_screen_reset_everything_title.tr(),
             style: GoogleFonts.pressStart2p(
               fontSize: 14.sp,
               color: const Color(0xFFFF4444),
@@ -343,7 +405,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             textAlign: TextAlign.center,
           ),
           content: Text(
-            'This will delete ALL your data and return you to the onboarding flow.\n\nThis action CANNOT be undone!',
+            LocaleKeys.settings_screen_reset_everything_message.tr(),
             style: GoogleFonts.pressStart2p(
               fontSize: 10.sp,
               color: const Color(0xFFDAA520),
@@ -367,7 +429,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                       child: Text(
-                        'CANCEL',
+                        LocaleKeys.settings_screen_cancel.tr(),
                         style: GoogleFonts.pressStart2p(
                           fontSize: 10.sp,
                           color: const Color(0xFFDAA520),
@@ -395,7 +457,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                       child: Text(
-                        'RESET',
+                        LocaleKeys.settings_screen_reset.tr(),
                         style: GoogleFonts.pressStart2p(
                           fontSize: 10.sp,
                           color: const Color(0xFFFF4444),
@@ -420,7 +482,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return const AlertDialog(
+          return AlertDialog(
             backgroundColor: Color(0xFF2A1B0A),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -430,7 +492,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'Resetting everything...',
+                  LocaleKeys.settings_screen_resetting_everything.tr(),
                   style: TextStyle(color: Color(0xFFDAA520)),
                 ),
               ],
@@ -451,7 +513,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '🗑️ Everything reset! Restarting app...',
+              LocaleKeys.settings_screen_everything_reset_restarting.tr(),
               style: GoogleFonts.pressStart2p(fontSize: 12.sp),
             ),
             backgroundColor: const Color(0xFF4CAF50),
@@ -476,7 +538,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '❌ Error resetting: $e',
+              LocaleKeys.settings_screen_error_resetting
+                  .tr(namedArgs: {'error': e.toString()}),
               style: GoogleFonts.pressStart2p(fontSize: 12.sp),
             ),
             backgroundColor: const Color(0xFFFF4444),
@@ -553,7 +616,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                   child: Text(currentValue == 0
-                      ? (title == 'LONG BREAK TIME' ? '00:20' : '00:10')
+                      ? (title ==
+                              LocaleKeys.settings_screen_long_break_time.tr()
+                          ? '00:20'
+                          : '00:10')
                       : '${currentValue.toString().padLeft(2, '0')}:00'),
                 ),
               ),

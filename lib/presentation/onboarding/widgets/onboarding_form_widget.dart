@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../../generated/locale_keys.g.dart';
 import '../../../widgets/pixel_frame.dart';
 
 /// Widget de formulario para el onboarding
@@ -65,7 +67,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '¿Cómo te llamas, valiente caballero?',
+              LocaleKeys.onboarding_what_is_your_name_knight.tr(),
               style: GoogleFonts.pressStart2p(
                 fontSize: 15.sp,
                 color: const Color(0xFFDAA520),
@@ -94,7 +96,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
         ),
         decoration: InputDecoration(
           border: InputBorder.none,
-          hintText: 'Escribe tu nombre...',
+          hintText: LocaleKeys.onboarding_write_your_name.tr(),
           hintStyle: GoogleFonts.vt323(
             fontSize: 16.sp,
             color: Colors.white.withValues(alpha: 0.5),
@@ -133,7 +135,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
         ),
         child: Center(
           child: Text(
-            'CONFIRMAR',
+            LocaleKeys.onboarding_confirm.tr(),
             style: GoogleFonts.pressStart2p(
               fontSize: 10.sp,
               color: _isButtonEnabled

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'timer_provider.dart';
+part of 'stats_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,49 +9,49 @@ part of 'timer_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(TimerController)
-const timerControllerProvider = TimerControllerProvider._();
+@ProviderFor(StatsController)
+const statsControllerProvider = StatsControllerProvider._();
 
-final class TimerControllerProvider
-    extends $NotifierProvider<TimerController, TimerState> {
-  const TimerControllerProvider._()
+final class StatsControllerProvider
+    extends $NotifierProvider<StatsController, StatsState> {
+  const StatsControllerProvider._()
       : super(
           from: null,
           argument: null,
           retry: null,
-          name: r'timerControllerProvider',
+          name: r'statsControllerProvider',
           isAutoDispose: false,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
 
   @override
-  String debugGetCreateSourceHash() => _$timerControllerHash();
+  String debugGetCreateSourceHash() => _$statsControllerHash();
 
   @$internal
   @override
-  TimerController create() => TimerController();
+  StatsController create() => StatsController();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(TimerState value) {
+  Override overrideWithValue(StatsState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<TimerState>(value),
+      providerOverride: $SyncValueProvider<StatsState>(value),
     );
   }
 }
 
-String _$timerControllerHash() => r'05db440a5a9869f2fea3b9ffd52c59fa98d6faa9';
+String _$statsControllerHash() => r'368014ef62d93f56de665b1d8f7b5559eb312b94';
 
-abstract class _$TimerController extends $Notifier<TimerState> {
-  TimerState build();
+abstract class _$StatsController extends $Notifier<StatsState> {
+  StatsState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<TimerState, TimerState>;
+    final ref = this.ref as $Ref<StatsState, StatsState>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<TimerState, TimerState>, TimerState, Object?, Object?>;
+        AnyNotifier<StatsState, StatsState>, StatsState, Object?, Object?>;
     element.handleValue(ref, created);
   }
 }

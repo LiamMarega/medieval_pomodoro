@@ -1,9 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medieval_pomodoro/models/timer_mode.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../../generated/locale_keys.g.dart';
 import '../../../providers/timer_provider.dart';
 
 class TimerDisplayWidget extends ConsumerStatefulWidget {
@@ -94,7 +96,7 @@ class _TimerDisplayWidgetState extends ConsumerState<TimerDisplayWidget>
                           width: MediaQuery.of(context).size.width *
                               3, // Allow text to extend beyond screen
                           child: Text(
-                            "BREAK TIME",
+                            LocaleKeys.timer_screen_break_time.tr(),
                             style: GoogleFonts.pressStart2p(
                               fontSize: 30.sp,
                               fontWeight: FontWeight.normal,

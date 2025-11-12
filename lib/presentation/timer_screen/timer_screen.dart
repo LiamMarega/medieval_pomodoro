@@ -1,8 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
 
+import '../../generated/locale_keys.g.dart';
 import '../../providers/timer_provider.dart';
+import '../../providers/rewards_provider.dart';
 import '../../core/services/live_activity_manager.dart';
 import 'widgets/timer_header_widget.dart';
 import 'widgets/timer_display_widget.dart';
@@ -51,6 +54,54 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
   @override
   Widget build(BuildContext context) {
     final timerState = ref.watch(timerControllerProvider);
+
+    // Listen for reward events and show modals
+    ref.listen<RewardsState>(rewardsControllerProvider, (previous, next) {
+      final ev = next.lastEvent;
+      if (ev != null && mounted) {
+        // Show reward modal
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            backgroundColor: const Color(0xFF2D1B0F),
+            title: Text(
+              ev.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              ev.description,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  ref
+                      .read(rewardsControllerProvider.notifier)
+                      .consumeLastEvent();
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  LocaleKeys.timer_screen_ok_button.tr(),
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    });
 
     // Check if session just completed
     WidgetsBinding.instance.addPostFrameCallback((_) {

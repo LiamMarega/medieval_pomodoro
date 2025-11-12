@@ -1,9 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
+import '../../../generated/locale_keys.g.dart';
 import '../../../providers/timer_provider.dart';
 
 class MusicNotificationWidget extends ConsumerStatefulWidget {
@@ -56,7 +58,9 @@ class _MusicNotificationWidgetState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          isMusicEnabled ? 'Medieval Music: ON' : 'Medieval Music: OFF',
+          isMusicEnabled
+              ? LocaleKeys.music_notification_medieval_music_on.tr()
+              : LocaleKeys.music_notification_medieval_music_off.tr(),
           style: GoogleFonts.pressStart2p(fontSize: 8.sp),
         ),
         backgroundColor:

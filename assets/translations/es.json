@@ -99,5 +99,62 @@
     "96": "Que tu disciplina sea la base de tus logros.",
     "97": "Cada misión la ganan quienes nunca se rinden.",
     "98": "Un caballero enfocado es un caballero victorioso."
+  },
+  "timer_screen": {
+    "ok_button": "¡Ok!",
+    "break_time": "TIEMPO DE DESCANSO",
+    "focus_knight": "CABALLERO FOCUS"
+  },
+  "music_notification": {
+    "medieval_music_on": "Música Medieval: ACTIVADA",
+    "medieval_music_off": "Música Medieval: DESACTIVADA"
+  },
+  "settings_screen": {
+    "options": "OPCIONES",
+    "work_duration": "DURACIÓN DE TRABAJO",
+    "short_break_time": "TIEMPO DE DESCANSO CORTO",
+    "long_break_time": "TIEMPO DE DESCANSO LARGO",
+    "set_test_durations": "🧪 ESTABLECER DURACIONES DE PRUEBA (10s/20s)",
+    "test_mode_activated": "🧪 Modo de prueba activado: 10s trabajo/descanso, 20s descanso largo",
+    "reset_to_normal_durations": "🔄 RESTABLECER DURACIONES NORMALES",
+    "normal_mode_activated": "🔄 Modo normal activado: 25/5/30 minutos",
+    "view_statistics": "📊 VER ESTADÍSTICAS",
+    "reset_everything_restart": "🗑️ REINICIAR TODO Y REINICIAR",
+    "reset_everything_title": "⚠️ REINICIAR TODO",
+    "reset_everything_message": "Esto eliminará TODOS tus datos y te devolverá al flujo de onboarding.\n\n¡Esta acción NO se puede deshacer!",
+    "cancel": "CANCELAR",
+    "reset": "REINICIAR",
+    "resetting_everything": "Reiniciando todo...",
+    "everything_reset_restarting": "🗑️ ¡Todo reiniciado! Reiniciando aplicación...",
+    "error_resetting": "❌ Error al reiniciar: {error}",
+    "error_loading_settings": "Error al cargar configuraciones: {error}"
+  },
+  "stats_screen": {
+    "knights_progress": "Progreso del Caballero",
+    "knights_achievements": "Logros del Caballero",
+    "total_pomodoros": "Total de Pomodoros",
+    "total_focus_time": "Tiempo Total de Enfoque",
+    "todays_pomodoros": "Pomodoros de Hoy",
+    "current_streak": "Racha Actual",
+    "days": "días",
+    "rewards_unlocked": "Recompensas Desbloqueadas",
+    "chapters": "capítulos",
+    "mini_scenes": "mini escenas",
+    "streaks": "rachas",
+    "recent_sessions": "Sesiones Recientes",
+    "no_sessions_recorded_yet": "Aún no se han registrado sesiones",
+    "min_focus_session": "Sesión de enfoque de {minutes} min",
+    "error_loading_sessions": "Error al cargar sesiones: {error}"
+  },
+  "onboarding": {
+    "welcome_knight": "Bienvenido, Caballero",
+    "welcome_knight_message": "En un reino donde el tiempo es oro, un caballero debe aprender a administrarlo sabiamente...",
+    "wise_counsel": "El Sabio Consejo",
+    "wise_counsel_message": "El viejo sabio te enseñará la técnica ancestral del Pomodoro para maximizar tu concentración y productividad...",
+    "your_mission_begins": "Tu Misión Comienza",
+    "your_mission_begins_message": "Con tu nueva espada del tiempo, estás listo para conquistar tus tareas y vencer la procrastinación...",
+    "what_is_your_name_knight": "¿Cómo te llamas, valiente caballero?",
+    "write_your_name": "Escribe tu nombre...",
+    "confirm": "CONFIRMAR"
   }
 }

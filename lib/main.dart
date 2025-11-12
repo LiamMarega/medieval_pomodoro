@@ -9,6 +9,7 @@ import 'package:sizer/sizer.dart';
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
 import 'presentation/settings_screen/settings_screen.dart';
+import 'presentation/stats_screen/stats_screen.dart';
 // import 'core/services/live_activity_manager.dart';
 
 void main() async {
@@ -79,6 +80,7 @@ class MyApp extends StatelessWidget {
               OnboardingIntegration.buildInitialScreen(const TimerScreen()),
           '/timer-screen': (context) => const TimerScreen(),
           '/settings-screen': (context) => const SettingsScreen(),
+          '/stats-screen': (context) => const StatsScreen(),
         },
         initialRoute: '/',
       );

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medieval_pomodoro/core/widgets/inner_shadow.dart';
 import 'package:gif/gif.dart';
+import '../../../providers/animations_provider.dart';
+import '../../../providers/timer_provider.dart';
 
 class KnightIllustrationWidget extends ConsumerStatefulWidget {
   const KnightIllustrationWidget({super.key});
@@ -14,30 +16,93 @@ class KnightIllustrationWidget extends ConsumerStatefulWidget {
 class _KnightIllustrationWidgetState
     extends ConsumerState<KnightIllustrationWidget>
     with TickerProviderStateMixin {
-  late final GifController _controller;
+  late final AnimationController _fade;
 
   @override
   void initState() {
     super.initState();
-    _controller = GifController(vsync: this);
+    _fade = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..value = 1;
 
-    // Inicializar el controlador de GIF con un solo GIF
-    _controller.repeat(
-      min: 0,
-      max: 1,
-      period: const Duration(seconds: 7),
-      reverse: true,
-    );
+    // al insertar, elegir animación acorde a estado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final timerState = ref.read(timerControllerProvider);
+      _lastIsBreak = !timerState.currentMode.isWork;
+      ref
+          .read(animationsControllerProvider.notifier)
+          .pickForSession(isBreak: _lastIsBreak);
+    });
+  }
+
+  bool _lastIsBreak = false;
+
+  @override
+  void didUpdateWidget(covariant KnightIllustrationWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final timerState = ref.watch(timerControllerProvider);
+    final isBreak = !timerState.currentMode.isWork;
+
+    if (_lastIsBreak != isBreak) {
+      _lastIsBreak = isBreak;
+      _boomerang(() {
+        ref
+            .read(animationsControllerProvider.notifier)
+            .pickForSession(isBreak: isBreak);
+      });
+    }
+  }
+
+  Future<void> _boomerang(VoidCallback change) async {
+    await _fade.reverse();
+    change();
+    await _fade.forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _fade.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final anim = ref.watch(animationsControllerProvider).current;
+
+    if (anim == null) {
+      return AspectRatio(
+        aspectRatio: 1,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.black.withValues(alpha: 0.5),
+                width: 5,
+              ),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.black,
+                  width: 5,
+                ),
+              ),
+              child: const InnerShadow(
+                child: ColoredBox(
+                  color: Colors.black,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return AspectRatio(
       aspectRatio: 1,
       child: Padding(
@@ -59,26 +124,17 @@ class _KnightIllustrationWidgetState
             child: InnerShadow(
               child: ColoredBox(
                 color: Colors.black,
-                child: Gif(
-                  image: const AssetImage('assets/animations/knight_way_1.gif'),
-                  controller: _controller,
-                  fit: BoxFit.cover,
-                  duration: const Duration(seconds: 7),
-                  placeholder: (context) => const Center(
-                    child: CircularProgressIndicator(),
+                child: FadeTransition(
+                  opacity: _fade,
+                  child: Gif(
+                    image: AssetImage(anim.path),
+                    autostart: Autostart.loop,
+                    fps: 24,
+                    fit: BoxFit.cover,
+                    placeholder: (context) => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
-                  onFetchCompleted: () {
-                    // Verificar que el widget aún está montado antes de continuar
-                    if (mounted) {
-                      // Cuando termina de cargar, arrancamos en bucle ida-vuelta
-                      _controller.repeat(
-                        min: 0,
-                        max: 1,
-                        period: const Duration(seconds: 7),
-                        reverse: true, // Esto hace el efecto ping-pong
-                      );
-                    }
-                  },
                 ),
               ),
             ),

@@ -1,6 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
+
+import '../../../generated/locale_keys.g.dart';
 
 class SettingsHeaderWidget extends StatelessWidget {
   const SettingsHeaderWidget({super.key});
@@ -25,7 +28,7 @@ class SettingsHeaderWidget extends StatelessWidget {
             ),
             Expanded(
               child: Text(
-                'OPTIONS',
+                LocaleKeys.settings_screen_options.tr(),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.pressStart2p(
                   fontSize: 18.sp,

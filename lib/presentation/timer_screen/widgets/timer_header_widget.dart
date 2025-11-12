@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../../generated/locale_keys.g.dart';
 import '../../../widgets/pixel_frame.dart';
 
 class TimerHeaderWidget extends StatelessWidget {
@@ -24,7 +26,7 @@ class TimerHeaderWidget extends StatelessWidget {
             _buildSwordDecoration('assets/sprites/minize_button.png'),
             Expanded(
               child: Text(
-                'FOCUS KNIGHT',
+                LocaleKeys.timer_screen_focus_knight.tr(),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.pressStart2p(
                   fontSize: 16.sp,

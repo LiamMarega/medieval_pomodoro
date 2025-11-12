@@ -11,6 +11,7 @@ import '../services/audio_service_manager.dart';
 import '../core/services/user_stats_service.dart';
 import '../core/services/live_activity_manager.dart';
 import 'settings_provider.dart';
+import 'stats_provider.dart';
 
 part 'timer_provider.g.dart';
 
@@ -796,13 +797,29 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   /// Registra las estadísticas de una sesión de trabajo completada
   void _recordWorkSessionStats() {
     try {
-      // Calcular la duración de la sesión en minutos
-      final durationMinutes = state.workDurationMinutes;
+      // Calcular la duración de la sesión en segundos
+      final workSeconds = state.workDurationMinutes * 60;
+      if (workSeconds == 0) {
+        // Test mode: use 10 seconds
+        final testSeconds = 10;
+        Future.microtask(() async {
+          await ref.read(statsControllerProvider.notifier).markPomodoroCompleted(
+              workSeconds: testSeconds);
+          debugPrint('📊 Work session recorded (test mode): $testSeconds seconds');
+        });
+      } else {
+        // Registrar la sesión de forma asíncrona para no bloquear el timer
+        Future.microtask(() async {
+          await ref.read(statsControllerProvider.notifier).markPomodoroCompleted(
+              workSeconds: workSeconds);
+          debugPrint('📊 Work session recorded: ${state.workDurationMinutes} minutes');
+        });
+      }
 
-      // Registrar la sesión de forma asíncrona para no bloquear el timer
+      // También registrar en el servicio legacy para compatibilidad
+      final durationMinutes = state.workDurationMinutes;
       Future.microtask(() async {
         await _userStatsService.recordFocusSession(durationMinutes);
-        debugPrint('📊 Work session recorded: $durationMinutes minutes');
       });
     } catch (e) {
       debugPrint('❌ Error recording work session stats: $e');
