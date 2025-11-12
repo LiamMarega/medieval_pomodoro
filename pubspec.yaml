@@ -58,6 +58,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true 
+  shaders:
+    - shaders/pixel_art.frag
   assets:
     - assets/
     - assets/images/

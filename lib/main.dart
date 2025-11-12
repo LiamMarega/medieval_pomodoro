@@ -8,6 +8,7 @@ import 'package:sizer/sizer.dart';
 
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
+import '../widgets/pixel_art_shader.dart';
 import 'presentation/settings_screen/settings_screen.dart';
 import 'presentation/stats_screen/stats_screen.dart';
 // import 'core/services/live_activity_manager.dart';
