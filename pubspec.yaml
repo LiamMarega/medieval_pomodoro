@@ -66,4 +66,5 @@ flutter:
     - assets/animations/onboarding/
     - assets/animations/animations_list.json
     - assets/songs/
+    - assets/translations/
  

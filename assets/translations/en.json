@@ -127,7 +127,9 @@
     "resetting_everything": "Resetting everything...",
     "everything_reset_restarting": "🗑️ Everything reset! Restarting app...",
     "error_resetting": "❌ Error resetting: {error}",
-    "error_loading_settings": "Error loading settings: {error}"
+    "error_loading_settings": "Error loading settings: {error}",
+    "language": "LANGUAGE",
+    "language_changed": "🌍 Language changed successfully"
   },
   "stats_screen": {
     "knights_progress": "Knight's Progress",

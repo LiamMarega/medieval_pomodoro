@@ -173,6 +173,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               _autoSaveSettings();
                             },
                           ),
+                          SizedBox(height: 4.h),
+
+                          // Language selector
+                          _buildLanguageSelector(context),
+
                           SizedBox(height: 3.h),
 
                           // Test durations button
@@ -548,6 +553,93 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     }
+  }
+
+  Widget _buildLanguageSelector(BuildContext context) {
+    final currentLocale = context.locale;
+    final supportedLocales = context.supportedLocales;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+      child: Column(
+        children: [
+          // Title
+          Text(
+            LocaleKeys.settings_screen_language.tr(),
+            style: GoogleFonts.pressStart2p(
+              fontSize: 16.sp,
+              color: const Color(0xFFDAA520),
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 3.h),
+          // Language buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: supportedLocales.map((locale) {
+              final isSelected =
+                  currentLocale.languageCode == locale.languageCode;
+              final languageName =
+                  locale.languageCode == 'en' ? 'English' : 'Español';
+
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.setLocale(locale);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        LocaleKeys.settings_screen_language_changed.tr(),
+                        style: GoogleFonts.pressStart2p(fontSize: 12.sp),
+                      ),
+                      backgroundColor: const Color(0xFF4CAF50),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF4A3728)
+                        : const Color(0xFF2A1B0A),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFDAA520)
+                          : const Color(0xFF666666),
+                      width: 3,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFDAA520)
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Text(
+                    languageName,
+                    style: GoogleFonts.pressStart2p(
+                      fontSize: 14.sp,
+                      color: isSelected
+                          ? const Color(0xFFDAA520)
+                          : const Color(0xFF666666),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildDurationSetting({

@@ -127,7 +127,9 @@
     "resetting_everything": "Reiniciando todo...",
     "everything_reset_restarting": "🗑️ ¡Todo reiniciado! Reiniciando aplicación...",
     "error_resetting": "❌ Error al reiniciar: {error}",
-    "error_loading_settings": "Error al cargar configuraciones: {error}"
+    "error_loading_settings": "Error al cargar configuraciones: {error}",
+    "language": "IDIOMA",
+    "language_changed": "🌍 Idioma cambiado exitosamente"
   },
   "stats_screen": {
     "knights_progress": "Progreso del Caballero",
