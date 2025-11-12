@@ -17,6 +17,8 @@ class _KnightIllustrationWidgetState
     extends ConsumerState<KnightIllustrationWidget>
     with TickerProviderStateMixin {
   late final AnimationController _fade;
+  GifController? _gifController;
+  late final AnimationController _pingPongController;
 
   @override
   void initState() {
@@ -26,6 +28,16 @@ class _KnightIllustrationWidgetState
       duration: const Duration(milliseconds: 600),
     )..value = 1;
 
+    // Controlador para el efecto ping-pong
+    _pingPongController = AnimationController(
+      vsync: this,
+      duration: const Duration(
+          seconds: 4), // Duración del ciclo completo (ida y vuelta)
+    )..repeat(reverse: true);
+
+    // Escuchar cambios en el ping-pong controller para controlar el GIF
+    _pingPongController.addListener(_handlePingPongAnimation);
+
     // al insertar, elegir animación acorde a estado
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final timerState = ref.read(timerControllerProvider);
@@ -34,6 +46,16 @@ class _KnightIllustrationWidgetState
           .read(animationsControllerProvider.notifier)
           .pickForSession(isBreak: _lastIsBreak);
     });
+  }
+
+  void _handlePingPongAnimation() {
+    if (_gifController == null) return;
+
+    // Mapear el valor del ping-pong controller (0.0 a 1.0 y vuelta) al frame del GIF
+    // Cuando va hacia adelante: 0.0 -> 1.0 (frames 0 a N)
+    // Cuando va hacia atrás: 1.0 -> 0.0 (frames N a 0)
+    // El GifController.value va de 0.0 (primer frame) a 1.0 (último frame)
+    _gifController!.value = _pingPongController.value;
   }
 
   bool _lastIsBreak = false;
@@ -63,6 +85,8 @@ class _KnightIllustrationWidgetState
   @override
   void dispose() {
     _fade.dispose();
+    _pingPongController.dispose();
+    _gifController?.dispose();
     super.dispose();
   }
 
@@ -128,8 +152,9 @@ class _KnightIllustrationWidgetState
                   opacity: _fade,
                   child: Gif(
                     image: AssetImage(anim.path),
-                    autostart: Autostart.loop,
-                    fps: 24,
+                    controller: _gifController ??= GifController(vsync: this),
+                    autostart: Autostart.no,
+                    fps: 8, // Reducido de 24 a 12 para que vaya más lento
                     fit: BoxFit.cover,
                     placeholder: (context) => const Center(
                       child: CircularProgressIndicator(),
