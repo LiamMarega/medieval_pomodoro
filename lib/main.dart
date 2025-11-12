@@ -9,7 +9,7 @@ import 'package:sizer/sizer.dart';
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
 import 'presentation/settings_screen/settings_screen.dart';
-import 'core/services/live_activity_manager.dart';
+// import 'core/services/live_activity_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,17 +24,17 @@ void main() async {
   };
 
   // Initialize Live Activity Manager
-  final liveActivityManager = LiveActivityManager();
-  await liveActivityManager.init();
+  // final liveActivityManager = LiveActivityManager();
+  // await liveActivityManager.init();
 
-  // Create initial live activity with user data
-  await liveActivityManager.createFocusActivity(
-    userName: "Liam", // O obtenerlo de SharedPreferences
-    sessionType: "Focus",
-    currentSession: 1,
-    timeRemaining: 1500, // 25 minutes
-    paused: false,
-  );
+  // // Create initial live activity with user data
+  // await liveActivityManager.createFocusActivity(
+  //   userName: "Liam", // O obtenerlo de SharedPreferences
+  //   sessionType: "Focus",
+  //   currentSession: 1,
+  //   timeRemaining: 1500, // 25 minutes
+  //   paused: false,
+  // );
 
   Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
