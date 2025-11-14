@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gif/gif.dart';
 import 'package:sizer/sizer.dart';
 
 import '../providers/onboarding_provider.dart';
@@ -7,11 +8,52 @@ import '../widgets/medieval_dialog_box.dart';
 import '../widgets/onboarding_form_widget.dart';
 
 /// Pantalla principal de onboarding
-class OnboardingScreen extends ConsumerWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
+    with TickerProviderStateMixin {
+  GifController? _gifController;
+  late final AnimationController _pingPongController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Controlador para el efecto ping-pong
+    _pingPongController = AnimationController(
+      vsync: this,
+      duration: const Duration(
+          seconds: 4), // Duración del ciclo completo (ida y vuelta)
+    )..repeat(reverse: true);
+
+    // Escuchar cambios en el ping-pong controller para controlar el GIF
+    _pingPongController.addListener(_handlePingPongAnimation);
+  }
+
+  void _handlePingPongAnimation() {
+    if (_gifController == null) return;
+
+    // Mapear el valor del ping-pong controller (0.0 a 1.0 y vuelta) al frame del GIF
+    // Cuando va hacia adelante: 0.0 -> 1.0 (frames 0 a N)
+    // Cuando va hacia atrás: 1.0 -> 0.0 (frames N a 0)
+    // El GifController.value va de 0.0 (primer frame) a 1.0 (último frame)
+    _gifController!.value = _pingPongController.value;
+  }
+
+  @override
+  void dispose() {
+    _pingPongController.dispose();
+    _gifController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final onboardingState = ref.watch(onboardingControllerProvider);
     final onboardingController =
         ref.read(onboardingControllerProvider.notifier);
@@ -30,11 +72,24 @@ class OnboardingScreen extends ConsumerWidget {
           fit: StackFit.expand,
           children: [
             // Animación GIF en pantalla completa
-            Image.asset(
-              currentStep.animationPath,
+            // Image.asset(
+            //   currentStep.animationPath,
+            //   fit: BoxFit.cover,
+            //   width: double.infinity,
+            //   height: double.infinity,
+            //   filterQuality: FilterQuality.high,
+            // ),
+
+            Gif(
+              image: AssetImage(currentStep.animationPath),
+              controller: _gifController ??= GifController(vsync: this),
+              autostart: Autostart.no,
+              fps: 8, // Reducido de 24 a 12 para que vaya más lento
+              repeat: ImageRepeat.noRepeat,
               fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
+              placeholder: (context) => const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
 
             // Diálogo superpuesto
