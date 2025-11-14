@@ -111,7 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             spacing: 1.h,
                             children: [
                               // Battle Rhythm Section
-                              _buildSectionTitle('⚔️ RITMO DE BATALLA ⚔️'),
+                              _buildSectionTitle('RITMO DE BATALLA'),
                               SizedBox(height: 1.h),
 
                               _buildDurationSetting(

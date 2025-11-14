@@ -48,6 +48,11 @@ class RewardsController extends _$RewardsController {
     final sp = await SharedPreferences.getInstance();
     final set = sp.getStringList('sp.unlockedRewards') ?? [];
     state = RewardsState(unlocked: set.toSet());
+    
+    // Evaluar el estado actual para desbloquear recompensas pendientes
+    // (por si el usuario ya tenía pomodoros pero las recompensas no estaban desbloqueadas)
+    final currentStats = ref.read(statsControllerProvider);
+    evaluate(currentStats);
   }
 
   Future<void> _persist() async {
@@ -56,67 +61,86 @@ class RewardsController extends _$RewardsController {
   }
 
   void evaluate(StatsState stats) {
-    RewardEvent? ev;
+    RewardEvent? lastUnlockedEvent;
+    bool hasChanges = false;
 
-    // Onboarding rápido
+    // Onboarding rápido (solo una vez)
     if (!_isUnlocked('onboard_1') && stats.totalPomodoros >= 1) {
-      ev = const RewardEvent(RewardTier.onboard1, 'Primer paso',
+      lastUnlockedEvent = const RewardEvent(RewardTier.onboard1, 'Primer paso',
           '¡Completaste tu primer pomodoro!');
-      _unlock('onboard_1', ev);
-      return;
+      _unlockSilent('onboard_1');
+      hasChanges = true;
     }
 
     if (!_isUnlocked('onboard_2') &&
         (ref.read(statsControllerProvider.notifier).todayCount() >= 3)) {
-      ev = const RewardEvent(RewardTier.onboard2, 'Calentando motores',
+      lastUnlockedEvent = const RewardEvent(RewardTier.onboard2, 'Calentando motores',
           '3 pomodoros en un mismo día.');
-      _unlock('onboard_2', ev);
-      return;
+      _unlockSilent('onboard_2');
+      hasChanges = true;
     }
 
     if (!_isUnlocked('onboard_3') && stats.totalPomodoros >= 5) {
-      ev = const RewardEvent(
+      lastUnlockedEvent = const RewardEvent(
           RewardTier.onboard3, '¡Buen comienzo!', '5 pomodoros acumulados.');
-      _unlock('onboard_3', ev);
-      return;
+      _unlockSilent('onboard_3');
+      hasChanges = true;
     }
 
-    // Fase media: cada 8–10 pomodoros → mini escena
-    final nextMiniScene = ((stats.totalPomodoros ~/ 8) * 8);
-    if (stats.totalPomodoros >= 8 &&
-        stats.totalPomodoros == nextMiniScene &&
-        !_isUnlocked('mini_$nextMiniScene')) {
-      ev = RewardEvent(RewardTier.miniScene, 'Nueva escena',
-          'Has alcanzado $nextMiniScene pomodoros.');
-      _unlock('mini_$nextMiniScene', ev);
-      return;
+    // Desbloquear todas las mini escenas que deberías tener hasta ahora
+    // Mini escenas: cada 8 pomodoros (8, 16, 24, 32, ...)
+    if (stats.totalPomodoros >= 8) {
+      final shouldHaveMiniScenes = stats.totalPomodoros ~/ 8;
+      for (int i = 1; i <= shouldHaveMiniScenes; i++) {
+        final miniId = 'mini_${i * 8}';
+        if (!_isUnlocked(miniId)) {
+          lastUnlockedEvent = RewardEvent(RewardTier.miniScene, 'Nueva escena',
+              'Has alcanzado ${i * 8} pomodoros.');
+          _unlockSilent(miniId);
+          hasChanges = true;
+        }
+      }
+    }
+
+    // Desbloquear todos los capítulos que deberías tener hasta ahora
+    // Capítulos: cada 25 pomodoros (25, 50, 75, 100, ...)
+    if (stats.totalPomodoros >= 25) {
+      final shouldHaveChapters = stats.totalPomodoros ~/ 25;
+      for (int i = 1; i <= shouldHaveChapters; i++) {
+        final chapterId = 'chapter_${i * 25}';
+        if (!_isUnlocked(chapterId)) {
+          lastUnlockedEvent = RewardEvent(RewardTier.chapter, 'Capítulo desbloqueado',
+              '${i * 25} pomodoros acumulados.');
+          _unlockSilent(chapterId);
+          hasChanges = true;
+        }
+      }
     }
 
     // Racha 3 días seguidos
     if (stats.currentStreakDays >= 3 &&
         !_isUnlocked('streak_3_${stats.currentStreakDays}')) {
-      ev = const RewardEvent(RewardTier.streak3, 'Racha de 3 días',
+      lastUnlockedEvent = const RewardEvent(RewardTier.streak3, 'Racha de 3 días',
           'Mantuviste el hábito por 3 días seguidos.');
-      _unlock('streak_3_${stats.currentStreakDays}', ev);
-      return;
+      _unlockSilent('streak_3_${stats.currentStreakDays}');
+      hasChanges = true;
     }
 
-    // Capítulo importante cada 25–30
-    if (stats.totalPomodoros >= 25 &&
-        stats.totalPomodoros % 25 == 0 &&
-        !_isUnlocked('chapter_${stats.totalPomodoros}')) {
-      ev = RewardEvent(RewardTier.chapter, 'Capítulo desbloqueado',
-          '${stats.totalPomodoros} pomodoros acumulados.');
-      _unlock('chapter_${stats.totalPomodoros}', ev);
+    // Si se desbloqueó algo, actualizar el estado con el último evento y persistir
+    if (hasChanges) {
+      state = RewardsState(unlocked: state.unlocked, lastEvent: lastUnlockedEvent);
+      _persist();
     }
   }
 
   bool _isUnlocked(String id) => state.unlocked.contains(id);
 
-  void _unlock(String id, RewardEvent ev) {
-    final set = {...state.unlocked, id};
-    state = RewardsState(unlocked: set, lastEvent: ev);
-    _persist();
+  /// Desbloquea una recompensa sin crear evento (para uso interno en evaluate)
+  void _unlockSilent(String id) {
+    if (!_isUnlocked(id)) {
+      final set = {...state.unlocked, id};
+      state = RewardsState(unlocked: set, lastEvent: state.lastEvent);
+    }
   }
 
   /// Consumir el último evento (para no repetir modales/toasts)

@@ -10,16 +10,15 @@
     "description": "A knight on his journey - path 2"
   },
   {
-    "name": "Dragon Dark Room",
-    "path": "assets/animations/dragon_dark_room.gif",
-    "description": "A mysterious dragon in a dark room"
-  },
-  {
     "name": "Knight Bridge",
     "path": "assets/animations/knight_bridge.gif",
     "description": "A knight crossing a medieval bridge"
   },
-
+  {
+    "name": "Dragon Dark Room",
+    "path": "assets/animations/dragon_dark_room.gif",
+    "description": "A mysterious dragon in a dark room"
+  },
   {
     "name": "Break Time",
     "path": "assets/animations/break_time.gif",

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:medieval_pomodoro/providers/timer_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'rewards_provider.dart';
 
@@ -45,7 +46,13 @@ class AnimationsController extends _$AnimationsController {
     Future.microtask(() => _load());
     // Cambiar animación cuando lleguen recompensas
     ref.listen<RewardsState>(rewardsControllerProvider, (prev, next) {
-      pickForReward(next.lastEvent);
+      // Si hay cambios en las recompensas desbloqueadas, recalcular basado en puntos
+      if (prev?.unlocked.length != next.unlocked.length) {
+        // Recalcular basado en el modo actual del timer
+        final timerState = ref.read(timerControllerProvider);
+        final isBreak = !timerState.currentMode.isWork;
+        pickForSession(isBreak: isBreak);
+      }
     });
     return const AnimationsState();
   }
@@ -57,8 +64,14 @@ class AnimationsController extends _$AnimationsController {
       final data = (json.decode(jsonStr) as List)
           .map((e) => AnimationItem.fromJson(Map<String, dynamic>.from(e)))
           .toList();
-      state = AnimationsState(
-          all: data, current: data.isNotEmpty ? data.first : null);
+
+      // Después de cargar, recalcular la animación basada en el estado actual
+      Future.microtask(() {
+        final timerState = ref.read(timerControllerProvider);
+        final isBreak = !timerState.currentMode.isWork;
+        state = AnimationsState(all: data, current: null);
+        pickForSession(isBreak: isBreak);
+      });
     } catch (_) {
       state = const AnimationsState(all: [], current: null);
     }
