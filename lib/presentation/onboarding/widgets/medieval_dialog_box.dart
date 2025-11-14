@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../widgets/pixel_frame.dart';
-import '../../../widgets/pixel_art_effect.dart';
 
 /// Widget que muestra un diálogo estilo medieval con título y contenido
 class MedievalDialogBox extends StatelessWidget {
@@ -22,35 +21,36 @@ class MedievalDialogBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PixelArtEffect(
-      child: PixelFrame(
-        cornerSize: 20,
-        edgeThickness: 6,
-        padding: 20,
-        child: Container(
-          padding: EdgeInsets.all(2.h),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                backgroundColor.withValues(alpha: 0.9),
-                backgroundColor.withValues(alpha: 0.7),
-              ],
-            ),
+    return PixelFrame(
+      cornerSize: 20,
+      edgeThickness: 6,
+      padding: 10,
+      child: Container(
+        padding: EdgeInsets.all(2.h),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              backgroundColor.withValues(alpha: 0.9),
+              backgroundColor.withValues(alpha: 0.7),
+            ],
           ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 2.h),
+              SizedBox(height: 1.h),
               if (title.isNotEmpty) ...[
                 Center(
                   child: Text(
                     title,
                     style: GoogleFonts.pressStart2p(
-                      fontSize: 14.sp,
+                      fontSize: 16.sp,
                       color: textColor,
                       letterSpacing: 1.0,
                       fontWeight: FontWeight.bold,
@@ -58,18 +58,20 @@ class MedievalDialogBox extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                SizedBox(height: 1.5.h),
               ],
-              Text(
-                content,
-                style: GoogleFonts.vt323(
-                  fontSize: 20.sp,
-                  color: Colors.white,
-                  height: 1.3,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(
+                    content,
+                    style: GoogleFonts.vt323(
+                      fontSize: 20.sp,
+                      color: Colors.white,
+                      height: 1,
+                    ),
+                    textAlign: TextAlign.left,
+                  ),
                 ),
-                textAlign: TextAlign.left,
               ),
-              SizedBox(height: 1.h),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Icon(

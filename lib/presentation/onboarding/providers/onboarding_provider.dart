@@ -60,7 +60,27 @@ class OnboardingState {
 class OnboardingController extends _$OnboardingController {
   @override
   OnboardingState build() {
+    // Cargar el nombre del usuario desde el almacenamiento local si existe
+    // Se hace de forma asíncrona sin bloquear la inicialización
+    Future.microtask(() => _loadUserNameFromStorage());
     return const OnboardingState();
+  }
+
+  /// Carga el nombre del usuario desde el almacenamiento local
+  Future<void> _loadUserNameFromStorage() async {
+    try {
+      final storageService = await LocalStorageService.getInstance();
+      final savedUserName = storageService.getUserName();
+      if (savedUserName != null && savedUserName.isNotEmpty) {
+        state = state.copyWith(
+          userName: savedUserName,
+          isFormValid: true,
+        );
+        debugPrint('👤 User name loaded from storage: $savedUserName');
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading user name from storage: $e');
+    }
   }
 
   /// Avanza al siguiente paso del onboarding
@@ -130,11 +150,17 @@ class OnboardingController extends _$OnboardingController {
   /// Maneja la presentación del formulario
   Future<void> submitForm(String userName) async {
     if (userName.trim().length >= 3) {
+      final trimmedName = userName.trim();
       state = state.copyWith(
-        userName: userName.trim(),
+        userName: trimmedName,
         isFormValid: true,
       );
-      debugPrint('Formulario completado con nombre: $userName');
+      debugPrint('Formulario completado con nombre: $trimmedName');
+
+      // Guardar el nombre inmediatamente en almacenamiento local para persistencia
+      final storageService = await LocalStorageService.getInstance();
+      final userNameSaved = await storageService.saveUserName(trimmedName);
+      debugPrint('👤 User name saved immediately: $userNameSaved');
 
       // Avanzar al siguiente paso después de completar el formulario
       await nextStep();

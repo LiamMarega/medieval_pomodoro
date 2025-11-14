@@ -47,7 +47,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
     return PixelFrame(
       cornerSize: 16,
       edgeThickness: 4,
-      padding: 30,
+      padding: 20,
       borderStyle: MedievalBorderStyle.stone,
       child: Container(
         width: double.infinity,
@@ -64,7 +64,8 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
           ),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          spacing: 10,
           children: [
             Text(
               LocaleKeys.onboarding_what_is_your_name_knight.tr(),
@@ -75,9 +76,7 @@ class _OnboardingFormWidgetState extends State<OnboardingFormWidget> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 2.h),
             _buildTextField(),
-            SizedBox(height: 2.h),
             _buildSubmitButton(),
           ],
         ),

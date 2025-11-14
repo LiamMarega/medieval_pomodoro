@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gif/gif.dart';
+import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
 import 'package:sizer/sizer.dart';
 
 import '../providers/onboarding_provider.dart';
@@ -28,7 +29,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     _pingPongController = AnimationController(
       vsync: this,
       duration: const Duration(
-          seconds: 4), // Duración del ciclo completo (ida y vuelta)
+          seconds: 5), // Duración del ciclo completo (ida y vuelta)
     )..repeat(reverse: true);
 
     // Escuchar cambios en el ping-pong controller para controlar el GIF
@@ -59,61 +60,59 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         ref.read(onboardingControllerProvider.notifier);
     final currentStep = onboardingController.getCurrentStep();
 
+    final keyboardHeight =
+        MediaQuery.of(context).viewInsets.bottom; // 0 si no hay teclado
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: () {
-          // Solo permitir navegación si no hay formulario o si el formulario es válido
-          if (!currentStep.hasForm || onboardingState.isFormValid) {
-            onboardingController.nextStep();
-          }
-        },
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Animación GIF en pantalla completa
-            // Image.asset(
-            //   currentStep.animationPath,
-            //   fit: BoxFit.cover,
-            //   width: double.infinity,
-            //   height: double.infinity,
-            //   filterQuality: FilterQuality.high,
-            // ),
-
-            Gif(
-              image: AssetImage(currentStep.animationPath),
-              controller: _gifController ??= GifController(vsync: this),
-              autostart: Autostart.no,
-              fps: 8, // Reducido de 24 a 12 para que vaya más lento
-              repeat: ImageRepeat.noRepeat,
-              fit: BoxFit.cover,
-              placeholder: (context) => const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-
-            // Diálogo superpuesto
-            Positioned(
-              top: 0.h,
-              width: 100.w,
-              child: MedievalDialogBox(
-                title: currentStep.dialogTitle ?? '',
-                content: currentStep.dialogText,
-              ),
-            ),
-
-            if (currentStep.hasForm && currentStep.formWidget != null)
-              Positioned(
-                bottom: 0.h,
-                left: 0.w,
-                right: 0.w,
-                child: OnboardingFormWidget(
-                  onNameSubmitted: (name) {
-                    onboardingController.submitForm(name);
-                  },
+      body: PixelFrame(
+        child: GestureDetector(
+          onTap: () {
+            // Solo permitir navegación si no hay formulario o si el formulario es válido
+            if (!currentStep.hasForm || onboardingState.isFormValid) {
+              onboardingController.nextStep();
+            }
+          },
+          child: Column(
+            children: [
+              Expanded(
+                flex: keyboardHeight > 10 ? 1 : 2,
+                child: PixelFrame(
+                  child: Gif(
+                    image: AssetImage(currentStep.animationPath),
+                    controller: _gifController ??= GifController(vsync: this),
+                    autostart: Autostart.no,
+                    fps: 24,
+                    repeat: ImageRepeat.noRepeat,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    placeholder: (context) => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
                 ),
               ),
-          ],
+              if (!currentStep.hasForm)
+                // Diálogo superpuesto
+                Flexible(
+                  flex: 1,
+                  child: MedievalDialogBox(
+                    title: currentStep.dialogTitle ?? '',
+                    content: currentStep.dialogText,
+                  ),
+                ),
+              if (currentStep.hasForm && currentStep.formWidget != null)
+                Flexible(
+                  flex: 1,
+                  child: OnboardingFormWidget(
+                    onNameSubmitted: (name) {
+                      onboardingController.submitForm(name);
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
