@@ -112,8 +112,8 @@
   "settings_screen": {
     "options": "OPTIONS",
     "work_duration": "WORK DURATION",
-    "short_break_time": "SHORT BREAK TIME",
-    "long_break_time": "LONG BREAK TIME",
+    "short_break_time": "SHORT BREAK",
+    "long_break_time": "LONG BREAK",
     "set_test_durations": "🧪 SET TEST DURATIONS (10s/20s)",
     "test_mode_activated": "🧪 Test mode activated: 10s work/break, 20s long break",
     "reset_to_normal_durations": "🔄 RESET TO NORMAL DURATIONS",

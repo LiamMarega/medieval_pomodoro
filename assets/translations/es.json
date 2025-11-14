@@ -112,8 +112,8 @@
   "settings_screen": {
     "options": "OPCIONES",
     "work_duration": "DURACIÓN DE TRABAJO",
-    "short_break_time": "TIEMPO DE DESCANSO CORTO",
-    "long_break_time": "TIEMPO DE DESCANSO LARGO",
+    "short_break_time": "DESCANSO CORTO",
+    "long_break_time": "DESCANSO LARGO",
     "set_test_durations": "🧪 ESTABLECER DURACIONES DE PRUEBA (10s/20s)",
     "test_mode_activated": "🧪 Modo de prueba activado: 10s trabajo/descanso, 20s descanso largo",
     "reset_to_normal_durations": "🔄 RESTABLECER DURACIONES NORMALES",

@@ -15,14 +15,17 @@ class SettingsHeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 15.h,
+      height: 10.h,
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'assets/sprites/sign-sprite.png',
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.none,
+            child: Transform.scale(
+              scaleY: 1.2,
+              child: Image.asset(
+                'assets/sprites/sign-sprite.png',
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.none,
+              ),
             ),
           ),
           Positioned.fill(
