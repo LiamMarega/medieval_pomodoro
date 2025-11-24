@@ -44,6 +44,13 @@
     <true/>
     <key>NSUserNotificationUsageDescription</key>
     <string>This app needs to show timer notifications when the app is in background</string>
+    
+    <!-- App Limiter / Screen Time API Permissions -->
+    <key>com.apple.developer.device-activity-monitoring</key>
+    <true/>
+    <key>com.apple.developer.family-controls</key>
+    <true/>
+    
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     <key>UIBackgroundModes</key>

@@ -12,6 +12,7 @@ import '../core/services/user_stats_service.dart';
 import '../core/services/live_activity_manager.dart';
 import 'settings_provider.dart';
 import 'stats_provider.dart';
+import 'app_blocker_provider.dart';
 
 part 'timer_provider.g.dart';
 
@@ -218,6 +219,12 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       debugPrint('🔇 Music is disabled, not starting');
     }
 
+    // Activar bloqueo de apps si es una sesión de trabajo
+    if (state.currentMode.isWork) {
+      debugPrint('🛡️ Activating App Blocker for Focus Session');
+      ref.read(appBlockerProvider.notifier).blockDistractingApps();
+    }
+
     // Configurar modo inmersivo
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
@@ -364,6 +371,10 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       _stopMusic();
     }
 
+    // Desactivar bloqueo de apps al reiniciar
+    debugPrint('🛡️ Deactivating App Blocker (Restart)');
+    ref.read(appBlockerProvider.notifier).unblockAll();
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _updateMotivationalMessage();
     HapticFeedback.mediumImpact();
@@ -404,6 +415,14 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       debugPrint('🔇 Stopping music for session completion...');
       _stopMusic();
     }
+
+    // Desactivar bloqueo de apps si es necesario
+    // NOTA: Solo desbloqueamos si la sesión terminó, pero si vamos a gap time o break,
+    // tal vez queremos mantenerlo? El usuario pidió desbloquear al "terminar".
+    // Asumimos que el "Fin del Pomodoro" (Work) desbloquea.
+    // Si el usuario quiere que en el break se desbloquee, lo hacemos aquí.
+    debugPrint('🛡️ Deactivating App Blocker (Session Completed)');
+    ref.read(appBlockerProvider.notifier).unblockAll();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
