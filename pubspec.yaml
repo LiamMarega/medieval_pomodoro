@@ -40,6 +40,7 @@ dependencies:
   flutter_fgbg: ^0.7.1
   live_activities: ^2.4.1
   easy_localization: ^3.0.8
+  app_limiter: ^0.0.4
   
 dev_dependencies:
   flutter_test:   

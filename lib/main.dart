@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,16 +7,35 @@ import 'package:medieval_pomodoro/presentation/onboarding/onboarding_integration
 import 'package:medieval_pomodoro/presentation/timer_screen/timer_screen.dart';
 import 'package:sizer/sizer.dart';
 
-import '../core/app_export.dart';
-import '../widgets/custom_error_widget.dart';
+import 'core/app_export.dart';
+import 'core/services/notification_service.dart';
+import 'providers/audio_provider.dart';
+import 'services/audio/audio_service_handler.dart';
+import 'widgets/custom_error_widget.dart';
 import 'presentation/settings_screen/settings_screen.dart';
 import 'presentation/stats_screen/stats_screen.dart';
-// import 'core/services/live_activity_manager.dart';
+
+late AudioHandler _audioHandler;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await EasyLocalization.ensureInitialized();
+  
+  // Initialize Notification Service
+  await NotificationService().initialize();
+
+  // Initialize Audio Service
+  _audioHandler = await AudioService.init(
+    builder: () => AudioServiceHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.medieval_pomodoro.channel.audio',
+      androidNotificationChannelName: 'Medieval Pomodoro Audio',
+      androidNotificationOngoing: true,
+      androidStopForegroundOnPause: true,
+      // Esto asegura la notificación estilo Spotify
+    ),
+  );
 
   // 🚨 CRITICAL: Custom error handling - DO NOT REMOVE
   ErrorWidget.builder = (FlutterErrorDetails details) {
@@ -23,19 +43,6 @@ void main() async {
       errorDetails: details,
     );
   };
-
-  // Initialize Live Activity Manager
-  // final liveActivityManager = LiveActivityManager();
-  // await liveActivityManager.init();
-
-  // // Create initial live activity with user data
-  // await liveActivityManager.createFocusActivity(
-  //   userName: "Liam", // O obtenerlo de SharedPreferences
-  //   sessionType: "Focus",
-  //   currentSession: 1,
-  //   timeRemaining: 1500, // 25 minutes
-  //   paused: false,
-  // );
 
   Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
@@ -45,8 +52,11 @@ void main() async {
         supportedLocales: const [Locale('en'), Locale('es')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
-        child: const ProviderScope(
-          child: MyApp(),
+        child: ProviderScope(
+          overrides: [
+            audioHandlerProvider.overrideWithValue(_audioHandler),
+          ],
+          child: const MyApp(),
         ),
       ),
     );
@@ -71,7 +81,7 @@ class MyApp extends StatelessWidget {
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(1.0),
+              textScaler: const TextScaler.linear(1.0),
             ),
             child: child!,
           );

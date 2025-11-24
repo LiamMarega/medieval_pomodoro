@@ -90,7 +90,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                   ),
                 ),
                 child: Text(
-                  audioController.currentSongTitle,
+                  audioState.currentSongTitle,
                   style: GoogleFonts.pressStart2p(
                     fontSize: 12.sp,
                     color: AppColors.primaryGold,
@@ -122,13 +122,13 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
               ),
               _buildNavigationButton(
                 icon: Icons.skip_previous,
-                onPressed: audioController.hasPrevious
+                onPressed: audioState.hasPrevious
                     ? () => _handlePreviousButtonTap(audioController)
                     : null,
               ),
               _buildNavigationButton(
                 icon: Icons.skip_next,
-                onPressed: audioController.hasNext
+                onPressed: audioState.hasNext
                     ? () => audioController.nextSong()
                     : null,
               ),
@@ -194,7 +194,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
             Container(
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: AppColors.error.withValues(alpha: 0.5),

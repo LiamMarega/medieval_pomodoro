@@ -1,241 +1,178 @@
+import 'dart:async';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../services/audio_service_manager.dart';
 
 part 'audio_provider.g.dart';
 
+/// Provider for the AudioHandler instance.
+/// Must be overridden in main.dart with the initialized instance.
+final audioHandlerProvider = Provider<AudioHandler>((ref) {
+  throw UnimplementedError('AudioHandler has not been initialized');
+});
+
 @Riverpod(keepAlive: true)
 class AudioController extends _$AudioController {
-  final PlaylistAudioService _audioManager = PlaylistAudioService.instance;
+  late final AudioHandler _audioHandler;
+  StreamSubscription? _playbackStateSubscription;
+  StreamSubscription? _mediaItemSubscription;
 
   @override
   AudioState build() {
+    try {
+      _audioHandler = ref.watch(audioHandlerProvider);
+      _setupListeners();
+    } catch (e) {
+      // Handle case where provider is not overridden yet (during test/init)
+      debugPrint('AudioHandler provider not ready: $e');
+    }
+
+    // Clean up subscriptions when provider is destroyed
+    ref.onDispose(() {
+      _playbackStateSubscription?.cancel();
+      _mediaItemSubscription?.cancel();
+    });
+
     return const AudioState();
   }
 
-  Future<void> initialize() async {
-    debugPrint('🎵 AudioProvider.initialize() called');
-    
-    if (_audioManager.isInitialized) {
-      debugPrint('🎵 Audio manager already initialized, updating state');
+  void _setupListeners() {
+    _playbackStateSubscription?.cancel();
+    _playbackStateSubscription =
+        _audioHandler.playbackState.listen((playbackState) {
+      final isPlaying = playbackState.playing;
+      final processingState = playbackState.processingState;
+
       state = state.copyWith(
-        isInitialized: true,
-        isLoading: false,
+        isPlaying: isPlaying,
+        isLoading: processingState == AudioProcessingState.loading ||
+            processingState == AudioProcessingState.buffering,
       );
-      _updateNavigationState();
-      debugPrint('🎵 Audio provider state updated from existing initialization');
-      return;
-    }
-    
-    if (!_audioManager.isInitialized) {
-      state = state.copyWith(isLoading: true);
-      try {
-        debugPrint('🎵 Initializing audio manager from provider');
-        await _audioManager.initialize();
+    });
+
+    _mediaItemSubscription?.cancel();
+    _mediaItemSubscription = _audioHandler.mediaItem.listen((mediaItem) {
+      if (mediaItem != null) {
         state = state.copyWith(
-          isLoading: false,
-          isInitialized: true,
+          currentSongTitle: mediaItem.title,
+          // Update navigation state based on queue if needed
         );
-        // Pequeño delay para asegurar que el audio player esté completamente listo
-        await Future.delayed(const Duration(milliseconds: 100));
-        _updateNavigationState();
-        debugPrint('Audio provider initialized successfully');
-      } catch (e) {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Failed to initialize audio: $e',
-        );
-        debugPrint('Error initializing audio provider: $e');
       }
-    }
+    });
+  }
+
+  Future<void> initialize() async {
+    // No-op if handled by provider injection, but kept for compatibility
+    debugPrint('🎵 AudioController initialized');
+    state = state.copyWith(isInitialized: true);
   }
 
   Future<void> play() async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
     try {
-      state = state.copyWith(isLoading: true);
-      await _audioManager.play();
-      state = state.copyWith(
-        isLoading: false,
-        isPlaying: true,
-      );
-      debugPrint('Audio started via provider');
+      await _audioHandler.play();
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to play audio: $e',
-      );
-      debugPrint('Error playing audio: $e');
+      _setError('Failed to play: $e');
     }
   }
 
   Future<void> pause() async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
     try {
-      state = state.copyWith(isLoading: true);
-      await _audioManager.pause();
-      state = state.copyWith(
-        isLoading: false,
-        isPlaying: false,
-      );
-      debugPrint('Audio paused via provider');
+      await _audioHandler.pause();
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to pause audio: $e',
-      );
-      debugPrint('Error pausing audio: $e');
+      _setError('Failed to pause: $e');
+    }
+  }
+
+  Future<void> togglePlayPause() async {
+    final playing = state.isPlaying;
+    if (playing) {
+      await pause();
+    } else {
+      await play();
     }
   }
 
   Future<void> stop() async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
     try {
-      state = state.copyWith(isLoading: true);
-      await _audioManager.stop();
-      state = state.copyWith(
-        isLoading: false,
-        isPlaying: false,
-      );
-      debugPrint('Audio stopped via provider');
+      await _audioHandler.stop();
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to stop audio: $e',
-      );
-      debugPrint('Error stopping audio: $e');
-    }
-  }
-
-  void setMusicEnabled(bool enabled) {
-    _audioManager.setMusicEnabled(enabled);
-    state = state.copyWith(
-      isMusicEnabled: enabled,
-      error: null, // Clear any previous errors
-    );
-    debugPrint('Music enabled set to: $enabled');
-  }
-
-  void clearError() {
-    state = state.copyWith(error: null);
-  }
-
-  void _updateNavigationState() {
-    if (_audioManager.isInitialized) {
-      final playlistLength = _audioManager.getPlaylistInfo().length;
-      final currentIndex = _audioManager.currentIndex;
-      
-      debugPrint('Updating navigation state: index=$currentIndex, length=$playlistLength');
-      
-      state = state.copyWith(
-        hasNext: currentIndex < playlistLength - 1,
-        hasPrevious: currentIndex > 0,
-      );
-      
-      debugPrint('Navigation state updated: hasNext=${state.hasNext}, hasPrevious=${state.hasPrevious}');
-    } else {
-      debugPrint('Audio manager not initialized, setting navigation to false');
-      state = state.copyWith(
-        hasNext: false,
-        hasPrevious: false,
-      );
+      _setError('Failed to stop: $e');
     }
   }
 
   Future<void> nextSong() async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
     try {
-      await _audioManager.nextSong();
-      _updateNavigationState();
-      debugPrint('Skipped to next song via provider');
+      await _audioHandler.skipToNext();
     } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to skip to next song: $e',
-      );
-      debugPrint('Error skipping to next song: $e');
+      _setError('Failed to skip next: $e');
     }
   }
 
   Future<void> previousSong() async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
     try {
-      await _audioManager.previousSong();
-      _updateNavigationState();
-      debugPrint('Skipped to previous song via provider');
+      await _audioHandler.skipToPrevious();
     } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to skip to previous song: $e',
-      );
-      debugPrint('Error skipping to previous song: $e');
-    }
-  }
-
-  Future<void> restartCurrentSong() async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
-    try {
-      await _audioManager.restartCurrentSong();
-      _updateNavigationState();
-      debugPrint('Restarted current song via provider');
-    } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to restart current song: $e',
-      );
-      debugPrint('Error restarting current song: $e');
+      _setError('Failed to skip previous: $e');
     }
   }
 
   Future<void> setVolume(double volume) async {
-    if (!_audioManager.isInitialized) {
-      debugPrint('Audio service not initialized');
-      return;
-    }
-
     try {
-      await _audioManager.setVolume(volume);
-      state = state.copyWith(
-        currentVolume: volume,
-      );
-      debugPrint('Volume set to: ${(volume * 100).round()}% via provider');
+      await _audioHandler.customAction('setVolume', {'volume': volume});
+      state = state.copyWith(currentVolume: volume);
     } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to set volume: $e',
-      );
-      debugPrint('Error setting volume: $e');
+      _setError('Failed to set volume: $e');
     }
   }
 
-  // Getter methods for external access
-  bool get isInitialized => _audioManager.isInitialized;
-  bool get isPlaying => _audioManager.isPlaying;
-  bool get isMusicEnabled => _audioManager.isMusicEnabled;
-  double get currentVolume => _audioManager.currentVolume;
-  String get currentSongTitle => _audioManager.currentSongTitle;
+  Future<void> mute() async {
+    try {
+      await _audioHandler.customAction('mute');
+      // Guardamos el estado de habilitado/deshabilitado si queremos
+    } catch (e) {
+      _setError('Failed to mute: $e');
+    }
+  }
+
+  Future<void> unmute() async {
+    try {
+      await _audioHandler.customAction('unmute');
+    } catch (e) {
+      _setError('Failed to unmute: $e');
+    }
+  }
+
+  void setMusicEnabled(bool enabled) {
+    state = state.copyWith(isMusicEnabled: enabled);
+    if (enabled) {
+      play();
+    } else {
+      pause();
+    }
+  }
+
+  void _setError(String error) {
+    state = state.copyWith(error: error);
+    debugPrint('❌ AudioController Error: $error');
+  }
+
+  // Getters for backward compatibility
+  bool get isInitialized => state.isInitialized;
+  bool get isPlaying => state.isPlaying;
+  bool get isMusicEnabled => state.isMusicEnabled;
+  double get currentVolume => state.currentVolume;
+  String get currentSongTitle => state.currentSongTitle;
   bool get hasNext => state.hasNext;
   bool get hasPrevious => state.hasPrevious;
+
+  Future<void> restartCurrentSong() async {
+    try {
+      await _audioHandler.seek(Duration.zero);
+    } catch (e) {
+      _setError('Failed to restart song: $e');
+    }
+  }
 }
 
 class AudioState {
@@ -246,16 +183,18 @@ class AudioState {
   final double currentVolume;
   final bool hasNext;
   final bool hasPrevious;
+  final String currentSongTitle;
   final String? error;
 
   const AudioState({
     this.isInitialized = false,
     this.isLoading = false,
     this.isPlaying = false,
-    this.isMusicEnabled = true, // Music always ON by default
+    this.isMusicEnabled = true,
     this.currentVolume = 0.7,
-    this.hasNext = false,
-    this.hasPrevious = false,
+    this.hasNext = true,
+    this.hasPrevious = true,
+    this.currentSongTitle = 'Medieval Lofi',
     this.error,
   });
 
@@ -267,6 +206,7 @@ class AudioState {
     double? currentVolume,
     bool? hasNext,
     bool? hasPrevious,
+    String? currentSongTitle,
     String? error,
   }) {
     return AudioState(
@@ -277,6 +217,7 @@ class AudioState {
       currentVolume: currentVolume ?? this.currentVolume,
       hasNext: hasNext ?? this.hasNext,
       hasPrevious: hasPrevious ?? this.hasPrevious,
+      currentSongTitle: currentSongTitle ?? this.currentSongTitle,
       error: error ?? this.error,
     );
   }

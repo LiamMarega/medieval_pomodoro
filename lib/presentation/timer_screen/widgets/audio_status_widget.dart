@@ -17,7 +17,6 @@ class AudioStatusWidget extends ConsumerWidget {
     if (audioState.error != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showErrorSnackBar(context, audioState.error!);
-        ref.read(audioControllerProvider.notifier).clearError();
       });
     }
 
@@ -33,7 +32,8 @@ class AudioStatusWidget extends ConsumerWidget {
               height: 3.w,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.secondaryLight),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppTheme.secondaryLight),
               ),
             ),
             SizedBox(width: 2.w),
@@ -57,19 +57,19 @@ class AudioStatusWidget extends ConsumerWidget {
         if (!audioState.isInitialized)
           Container(
             padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.w),
-                         decoration: BoxDecoration(
-               color: AppTheme.errorLight.withValues(alpha: 0.2),
-               borderRadius: BorderRadius.circular(4),
-             ),
-             child: Text(
-               'Audio Not Ready',
-               style: GoogleFonts.pressStart2p(
-                 fontSize: 6.sp,
-                 color: AppTheme.errorLight,
-               ),
-             ),
+            decoration: BoxDecoration(
+              color: AppTheme.errorLight.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              'Audio Not Ready',
+              style: GoogleFonts.pressStart2p(
+                fontSize: 6.sp,
+                color: AppTheme.errorLight,
+              ),
+            ),
           ),
-        
+
         // Playing status
         if (audioState.isPlaying)
           Container(
@@ -98,7 +98,7 @@ class AudioStatusWidget extends ConsumerWidget {
               ],
             ),
           ),
-        
+
         // Music enabled status
         if (!audioState.isMusicEnabled)
           Container(

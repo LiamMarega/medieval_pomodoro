@@ -41,7 +41,7 @@ final class RewardsControllerProvider
   }
 }
 
-String _$rewardsControllerHash() => r'a39451c5bf5071ed08251f5ed185f6accdde24d5';
+String _$rewardsControllerHash() => r'27f027c74f02d57ce50122cd8d15df1c91d5e0b7';
 
 abstract class _$RewardsController extends $Notifier<RewardsState> {
   RewardsState build();
