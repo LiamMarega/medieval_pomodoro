@@ -54,6 +54,8 @@ class _RenderInnerShadow extends RenderProxyBox {
 
       // Check if the canvas is still valid
       final Canvas canvas = context.canvas;
+      // ignore: unnecessary_null_comparison
+      if (canvas == null) return;
 
       // Save the initial canvas state
       canvas.saveLayer(rectOuter, Paint());

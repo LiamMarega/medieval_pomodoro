@@ -1,4 +1,5 @@
 /// Exportación de todos los componentes del onboarding
+library;
 
 // Pantalla principal
 export 'screens/onboarding_screen.dart';

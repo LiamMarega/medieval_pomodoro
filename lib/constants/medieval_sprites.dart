@@ -4,6 +4,7 @@
 /// 1. Abre medieval.png en un editor de imágenes
 /// 2. Usa la herramienta de selección rectangular
 /// 3. Anota las coordenadas (x, y) y tamaño (width, height)
+library;
 
 class MedievalSprite {
   final double x;

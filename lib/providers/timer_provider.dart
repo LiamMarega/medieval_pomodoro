@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -28,13 +27,13 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   TimerState build() {
     // Agregar observer para lifecycle (principio clave: manejo de lifecycle)
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Cleanup cuando el provider se destruye (principio clave: sin fugas)
     ref.onDispose(() {
       _stopTicker();
       WidgetsBinding.instance.removeObserver(this);
     });
-    
+
     _initializeAudio();
     _initializeLiveActivity();
     _setupSettingsListener();
@@ -112,8 +111,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
           // Update remaining time if in work session and not running
           if (state.currentMode.isWork && !state.isActive) {
-            final newDuration = Duration(seconds: _minutesToSeconds(data.workDurationMinutes,
-                mode: TimerMode.work));
+            final newDuration = Duration(
+                seconds: _minutesToSeconds(data.workDurationMinutes,
+                    mode: TimerMode.work));
             state = state.copyWith(
               remaining: newDuration,
             );
@@ -150,9 +150,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
           // If we're in a work session and not running, update the remaining time
           if (state.currentMode.isWork && !state.isActive) {
-            final newDuration = Duration(seconds: _minutesToSeconds(
-                settings.workDurationMinutes,
-                mode: TimerMode.work));
+            final newDuration = Duration(
+                seconds: _minutesToSeconds(settings.workDurationMinutes,
+                    mode: TimerMode.work));
             state = state.copyWith(
               remaining: newDuration,
             );
@@ -201,7 +201,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
     // Calcular endsAt basado en remaining actual (principio clave: DateTime-based)
     final end = DateTime.now().add(state.remaining);
-    
+
     state = state.copyWith(
       isActive: true,
       endsAt: end,
@@ -286,7 +286,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Detener ticker y guardar remaining actual (principio clave: DateTime-based)
     _stopTicker();
     final rem = _remainingFromEnds();
-    
+
     state = state.copyWith(
       isActive: false,
       endsAt: null, // null => detenido
@@ -324,7 +324,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
     // Recalcular endsAt basado en remaining (principio clave: DateTime-based)
     final end = DateTime.now().add(state.remaining);
-    
+
     state = state.copyWith(
       isActive: true,
       endsAt: end,
@@ -352,10 +352,10 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     debugPrint('🔄 Restarting timer...');
 
     _stopTicker();
-    
+
     // Calcular duración total según el modo actual
     final totalDuration = Duration(seconds: state.totalSeconds);
-    
+
     state = state.copyWith(
       isActive: false,
       endsAt: null,
@@ -450,7 +450,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Configure gap time state - keep timer active
     final gapConfig = TimerModeConfig.getGapTimeConfig();
     final gapDuration = const Duration(seconds: 3);
-    
+
     state = state.copyWith(
       lastMode: state.currentMode, // Store current mode as last mode
       currentMode: gapConfig.mode,
@@ -549,9 +549,10 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
     // Keep timer active if coming from gap time, otherwise set to false
     final shouldKeepActive = state.currentMode.isGapTime;
-    
+
     // Calcular duración según el modo (principio clave: DateTime-based)
-    final duration = Duration(seconds: _minutesToSeconds(config.durationMinutes, mode: config.mode));
+    final duration = Duration(
+        seconds: _minutesToSeconds(config.durationMinutes, mode: config.mode));
 
     state = state.copyWith(
       lastMode: state.currentMode, // Store current mode as last mode
@@ -822,16 +823,20 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
         // Test mode: use 10 seconds
         final testSeconds = 10;
         Future.microtask(() async {
-          await ref.read(statsControllerProvider.notifier).markPomodoroCompleted(
-              workSeconds: testSeconds);
-          debugPrint('📊 Work session recorded (test mode): $testSeconds seconds');
+          await ref
+              .read(statsControllerProvider.notifier)
+              .markPomodoroCompleted(workSeconds: testSeconds);
+          debugPrint(
+              '📊 Work session recorded (test mode): $testSeconds seconds');
         });
       } else {
         // Registrar la sesión de forma asíncrona para no bloquear el timer
         Future.microtask(() async {
-          await ref.read(statsControllerProvider.notifier).markPomodoroCompleted(
-              workSeconds: workSeconds);
-          debugPrint('📊 Work session recorded: ${state.workDurationMinutes} minutes');
+          await ref
+              .read(statsControllerProvider.notifier)
+              .markPomodoroCompleted(workSeconds: workSeconds);
+          debugPrint(
+              '📊 Work session recorded: ${state.workDurationMinutes} minutes');
         });
       }
 
@@ -851,8 +856,8 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     if (lifecycleState == AppLifecycleState.resumed && state.isActive) {
       // Recalcular remaining cuando la app vuelve al foreground
       state = state.copyWith(remaining: _remainingFromEnds());
-      debugPrint('📱 App resumed, recalculated remaining time: ${state.remaining}');
+      debugPrint(
+          '📱 App resumed, recalculated remaining time: ${state.remaining}');
     }
   }
-
 }

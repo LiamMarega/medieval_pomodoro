@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gif/gif.dart';
 import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
-import 'package:sizer/sizer.dart';
 
 import '../providers/onboarding_provider.dart';
 import '../widgets/medieval_dialog_box.dart';

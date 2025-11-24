@@ -43,7 +43,7 @@ class AppBlockerService {
       await _appLimiter.blocAndroidApp();
     } catch (e) {
       debugPrint('❌ Error blocking Android apps: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -55,7 +55,7 @@ class AppBlockerService {
       await _appLimiter.unblocAndroidApp();
     } catch (e) {
       debugPrint('❌ Error unblocking Android apps: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -67,7 +67,7 @@ class AppBlockerService {
       await _appLimiter.blockAndUnblockIOSApp();
     } catch (e) {
       debugPrint('❌ Error blocking iOS apps: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -76,13 +76,13 @@ class AppBlockerService {
     if (!Platform.isIOS) return;
     try {
       debugPrint('🔓 Unblocking iOS apps');
-      // En iOS con app_limiter, el toggle suele manejar ambos estados, 
+      // En iOS con app_limiter, el toggle suele manejar ambos estados,
       // pero para asegurarnos intentamos llamar al método de desbloqueo si existe o re-togglaer
       // Nota: Revisar comportamiento específico del plugin en iOS
       await _appLimiter.blockAndUnblockIOSApp();
     } catch (e) {
       debugPrint('❌ Error unblocking iOS apps: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -97,4 +97,3 @@ class AppBlockerService {
     }
   }
 }
-

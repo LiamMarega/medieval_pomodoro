@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:audio_service/audio_service.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
@@ -73,7 +72,8 @@ class NotificationService {
           channelDescription: 'Media playback controls',
           defaultColor: const Color(0xFF8B4513),
           ledColor: Colors.amber,
-          importance: NotificationImportance.Low, // Low para evitar sonido/pop-up constante
+          importance: NotificationImportance
+              .Low, // Low para evitar sonido/pop-up constante
           channelShowBadge: false,
           playSound: false,
           enableVibration: false,
@@ -148,7 +148,8 @@ class NotificationService {
   void _showTimerNotification() {
     final minutes = _currentSeconds ~/ 60;
     final seconds = _currentSeconds % 60;
-    final timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final timeString =
+        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     final sessionEmoji = _getSessionEmoji(_sessionType);
 
     AwesomeNotifications().createNotification(
@@ -158,7 +159,8 @@ class NotificationService {
         groupKey: _groupKey,
         title: '$sessionEmoji $_sessionType Session',
         body: timeString,
-        notificationLayout: NotificationLayout.Default, // Usar Default o BigText
+        notificationLayout:
+            NotificationLayout.Default, // Usar Default o BigText
         category: NotificationCategory.Progress,
         wakeUpScreen: true,
         fullScreenIntent: true,
@@ -196,7 +198,8 @@ class NotificationService {
         title: '🎉 $completedEmoji $completedSessionType Completed!',
         body: '$nextEmoji Next: $nextSessionType session is ready',
         notificationLayout: NotificationLayout.BigPicture,
-        bigPicture: 'asset://assets/images/notification_background.png', // Asegurar que exista
+        bigPicture:
+            'asset://assets/images/notification_background.png', // Asegurar que exista
         wakeUpScreen: true,
         category: NotificationCategory.Alarm,
         fullScreenIntent: true,
@@ -236,7 +239,8 @@ class NotificationService {
       actionButtons: [
         NotificationActionButton(
           key: 'AUDIO_PREV',
-          icon: 'resource://drawable/res_ic_prev', // Necesitas iconos en res/drawable
+          icon:
+              'resource://drawable/res_ic_prev', // Necesitas iconos en res/drawable
           label: 'Previous',
           autoDismissible: false,
           showInCompactView: true,
@@ -244,8 +248,8 @@ class NotificationService {
         ),
         NotificationActionButton(
           key: isPlaying ? 'AUDIO_PAUSE' : 'AUDIO_PLAY',
-          icon: isPlaying 
-              ? 'resource://drawable/res_ic_pause' 
+          icon: isPlaying
+              ? 'resource://drawable/res_ic_pause'
               : 'resource://drawable/res_ic_play',
           label: isPlaying ? 'Pause' : 'Play',
           autoDismissible: false,
@@ -280,25 +284,30 @@ class NotificationService {
 
   String _getSessionEmoji(String sessionType) {
     switch (sessionType.toLowerCase()) {
-      case 'work': return '⚔️';
-      case 'short break': return '🍯';
-      case 'long break': return '🏰';
-      default: return '⏰';
+      case 'work':
+        return '⚔️';
+      case 'short break':
+        return '🍯';
+      case 'long break':
+        return '🏰';
+      default:
+        return '⏰';
     }
   }
 
   /// Callback estático para acciones
   @pragma("vm:entry-point")
-  static Future<void> onNotificationActionReceived(ReceivedAction receivedAction) async {
+  static Future<void> onNotificationActionReceived(
+      ReceivedAction receivedAction) async {
     debugPrint('🔔 Action Received: ${receivedAction.buttonKeyPressed}');
 
     // Para interactuar con audio_service desde aquí, necesitamos acceso al handler.
     // Como es estático, dependemos de que el servicio esté corriendo o sea accesible.
     // En una app Flutter normal, el isolate principal sigue vivo.
-    
+
     // NOTA: Esto asume que tienes acceso a _audioHandler global o via GetIt.
     // Si no, deberías usar ports o audio_service custom actions.
-    
+
     // Aquí un ejemplo de cómo mapear las acciones:
     /*
     final audioHandler = GetIt.I<AudioHandler>(); // Si usas GetIt
@@ -317,11 +326,11 @@ class NotificationService {
         break;
     }
     */
-    
+
     // Si el usuario pulsa START_NEXT en la notificación de Pomodoro
     if (receivedAction.buttonKeyPressed == 'START_NEXT') {
-       // Lógica para iniciar siguiente sesión
-       // Esto requeriría comunicar con el TimerProvider
+      // Lógica para iniciar siguiente sesión
+      // Esto requeriría comunicar con el TimerProvider
     }
   }
 

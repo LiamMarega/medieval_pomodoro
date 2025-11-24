@@ -1,4 +1,3 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medieval_pomodoro/providers/audio_provider.dart';
@@ -51,18 +50,17 @@ class AudioControlWidget extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               IconButton(
-                onPressed: audioState.hasPrevious 
-                    ? () => audioController.previousSong() 
+                onPressed: audioState.hasPrevious
+                    ? () => audioController.previousSong()
                     : null,
                 icon: Icon(
                   Icons.skip_previous_rounded,
-                  color: audioState.hasPrevious 
-                      ? const Color(0xFFD4AF37) 
+                  color: audioState.hasPrevious
+                      ? const Color(0xFFD4AF37)
                       : Colors.white24,
                   size: 24.sp,
                 ),
               ),
-              
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -78,17 +76,17 @@ class AudioControlWidget extends ConsumerWidget {
                 child: IconButton(
                   onPressed: () => audioController.togglePlayPause(),
                   icon: Icon(
-                    audioState.isPlaying 
-                        ? Icons.pause_rounded 
+                    audioState.isPlaying
+                        ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
                     color: const Color(0xFF2D1810),
                     size: 32.sp,
                   ),
                 ),
               ),
-
               IconButton(
-                onPressed: () => audioController.nextSong(), // Siempre habilitado si hay loop
+                onPressed: () => audioController
+                    .nextSong(), // Siempre habilitado si hay loop
                 icon: Icon(
                   Icons.skip_next_rounded,
                   color: const Color(0xFFD4AF37),
@@ -104,8 +102,8 @@ class AudioControlWidget extends ConsumerWidget {
           Row(
             children: [
               Icon(
-                audioState.currentVolume == 0 
-                    ? Icons.volume_off 
+                audioState.currentVolume == 0
+                    ? Icons.volume_off
                     : Icons.volume_down,
                 color: Colors.white70,
                 size: 14.sp,
@@ -138,4 +136,3 @@ class AudioControlWidget extends ConsumerWidget {
     );
   }
 }
-

@@ -1,7 +1,8 @@
 /// Colores principales de la aplicación Medieval Pomodoro
-/// 
+///
 /// Este archivo centraliza todos los colores utilizados en la aplicación
 /// para mantener consistencia visual y facilitar el mantenimiento.
+library;
 
 import 'package:flutter/material.dart';
 
@@ -184,4 +185,3 @@ class AppColors {
     return containerBackground.withValues(alpha: opacity);
   }
 }
-

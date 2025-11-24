@@ -8,7 +8,7 @@ class FocusSession {
   const FocusSession({
     required this.sessionId,
     required this.startTime,
-    required this.endTime,
+    this.endTime,
     required this.durationMinutes,
     required this.completed,
   });
