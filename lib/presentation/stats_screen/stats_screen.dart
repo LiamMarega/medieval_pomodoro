@@ -2,94 +2,124 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sizer/sizer.dart';
 import '../../generated/locale_keys.g.dart';
-import '../../providers/user_stats_provider.dart';
 import '../../providers/stats_provider.dart';
-import '../../providers/rewards_provider.dart';
-import '../../models/focus_session.dart';
-import '../../widgets/user_stats_widget.dart';
-import '../../widgets/pixel_art_effect.dart';
 import '../../widgets/pixel_frame.dart';
+import '../../constants/colors.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userStatsAsync = ref.watch(userStatsControllerProvider);
-    final sessionsAsync = ref.watch(focusSessionsProvider);
     final stats = ref.watch(statsControllerProvider);
-    final rewards = ref.watch(rewardsControllerProvider);
 
-    return PixelArtEffect(
+    return PixelFrame(
+      cornerSize: 32,
+      edgeThickness: 8,
       child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.black,
-          title: Text(
-            LocaleKeys.stats_screen_knights_progress.tr(),
-            style: GoogleFonts.pressStart2p(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+        backgroundColor: AppColors.primaryBackground,
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: const AssetImage(
+                  'assets/sprites/backgrounds/pixel-art-bg-2.png'),
+              fit: BoxFit.none,
+              repeat: ImageRepeat.noRepeat,
+              scale: 1.5,
+              filterQuality: FilterQuality.low,
+              colorFilter: ColorFilter.mode(
+                AppColors.primaryBackground,
+                BlendMode.dstOver,
+              ),
+              opacity: 0.2,
             ),
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                ref.invalidate(userStatsControllerProvider);
-                ref.invalidate(focusSessionsProvider);
-              },
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nuevas estadísticas del sistema de recompensas
-              _buildNewStatsSection(stats, rewards),
-
-              const SizedBox(height: 24),
-
-              // // Información del dispositivo
-              // userStatsAsync.when(
-              //   data: (userStats) => _buildDeviceInfo(userStats),
-              //   loading: () => const Center(
-              //     child: CircularProgressIndicator(color: Colors.amber),
-              //   ),
-              //   error: (error, stack) => PixelFrame(
-              //     cornerSize: 16,
-              //     edgeThickness: 4,
-              //     padding: 16,
-              //     child: Container(
-              //       padding: const EdgeInsets.all(16),
-              //       decoration: BoxDecoration(
-              //         color: Colors.red[900],
-              //       ),
-              //       child: Text(
-              //         'Error loading user info: $error',
-              //         style: GoogleFonts.pressStart2p(
-              //           color: Colors.white,
-              //           fontSize: 10,
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
-
-              // const SizedBox(height: 24),
-
-              // Widget de estadísticas legacy
-              const UserStatsWidget(),
-
-              const SizedBox(height: 24),
-
-              // Historial de sesiones
-              _buildSessionsHistory(sessionsAsync),
+              SizedBox(height: 6.h),
+              _buildHeader(stats),
+              SizedBox(height: 4.h),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        width: 5,
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(
+                            'assets/sprites/bricks_background_mobile.png'),
+                        fit: BoxFit.none,
+                        repeat: ImageRepeat.repeat,
+                        scale: 2,
+                        filterQuality: FilterQuality.low,
+                        colorFilter: ColorFilter.mode(
+                          AppColors.filterBrownRed,
+                          BlendMode.color,
+                        ),
+                        opacity: 0.5,
+                      ),
+                    ),
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 4.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PixelFrame(
+                            cornerSize: 0,
+                            edgeThickness: 100,
+                            showBorder: false,
+                            showLeftBorder: false,
+                            showRightBorder: false,
+                            padding: 10,
+                            showLeftShadow: false,
+                            showRightShadow: false,
+                            child: Container(
+                              color: AppColors.containerBackground,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 10,
+                              ),
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 2.h),
+                                  Center(
+                                    child: Text(
+                                      LocaleKeys.stats_screen_weekly_performance
+                                          .tr(),
+                                      style: GoogleFonts.pressStart2p(
+                                        fontSize: 14.sp,
+                                        color: AppColors.primaryGold,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2.h),
+                                  _buildWeeklyPerformanceSection(stats),
+                                  SizedBox(height: 2.h),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 3.h),
+                          _buildWeeklyChart(stats),
+                          SizedBox(height: 3.h),
+                          _buildTimeMetrics(stats),
+                          SizedBox(height: 3.h),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -97,160 +127,216 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNewStatsSection(StatsState stats, RewardsState rewards) {
-    // Calcular tiempo total formateado
+  Widget _buildHeader(StatsState stats) {
     final totalHours = stats.totalFocusSeconds ~/ 3600;
     final totalMinutes = (stats.totalFocusSeconds % 3600) ~/ 60;
 
-    // Contar recompensas desbloqueadas
-    final totalRewards = rewards.unlocked.length;
-    final chapters =
-        rewards.unlocked.where((id) => id.startsWith('chapter_')).length;
-    final miniScenes =
-        rewards.unlocked.where((id) => id.startsWith('mini_')).length;
-    final streaks =
-        rewards.unlocked.where((id) => id.startsWith('streak_')).length;
-
-    // Pomodoros de hoy
-    final today = DateTime.now().toLocal().toIso8601String().substring(0, 10);
-    final todayPomodoros = stats.dailyPomodoros[today] ?? 0;
-
-    return PixelFrame(
-      cornerSize: 20,
-      edgeThickness: 6,
-      padding: 16,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Color(0xFF2A1B0A),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.emoji_events,
-                  color: Color(0xFFDAA520),
-                  size: 28,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  LocaleKeys.stats_screen_knights_achievements.tr(),
-                  style: GoogleFonts.pressStart2p(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Total Pomodoros
-            _buildStatCard(
-              LocaleKeys.stats_screen_total_pomodoros.tr(),
-              '${stats.totalPomodoros}',
-              Icons.timer,
-              Colors.blue,
-            ),
-            const SizedBox(height: 12),
-
-            // Tiempo total de enfoque
-            _buildStatCard(
-              LocaleKeys.stats_screen_total_focus_time.tr(),
-              totalHours > 0
-                  ? '${totalHours}h ${totalMinutes}m'
-                  : '${totalMinutes}m',
-              Icons.access_time,
-              Colors.green,
-            ),
-            const SizedBox(height: 12),
-
-            // Pomodoros de hoy
-            _buildStatCard(
-              LocaleKeys.stats_screen_todays_pomodoros.tr(),
-              '$todayPomodoros',
-              Icons.today,
-              Colors.orange,
-            ),
-            const SizedBox(height: 12),
-
-            // Racha actual
-            _buildStatCard(
-              LocaleKeys.stats_screen_current_streak.tr(),
-              '${stats.currentStreakDays} ${LocaleKeys.stats_screen_days.tr()}',
-              Icons.local_fire_department,
-              Colors.red,
-            ),
-            const SizedBox(height: 12),
-
-            // Recompensas desbloqueadas
-            _buildStatCard(
-              LocaleKeys.stats_screen_rewards_unlocked.tr(),
-              '$totalRewards',
-              Icons.star,
-              Colors.amber,
-              subtitle:
-                  '($chapters ${LocaleKeys.stats_screen_chapters.tr()}, $miniScenes ${LocaleKeys.stats_screen_mini_scenes.tr()}, $streaks ${LocaleKeys.stats_screen_streaks.tr()})',
-            ),
-          ],
-        ),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: AppColors.containerBackground.withValues(alpha: 0.9),
+        border: Border.all(color: Colors.black, width: 4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // Tiempo total enfocado
+          _buildHeaderStat(
+            '💰',
+            '${totalHours}h ${totalMinutes}m',
+            LocaleKeys.stats_screen_total_focused_time.tr(),
+          ),
+          // Espadas cruzadas (sesiones totales)
+          _buildHeaderStat(
+            '⚔️',
+            '${stats.totalPomodoros}',
+            LocaleKeys.stats_screen_total_sessions_header.tr(),
+          ),
+          // Días de streak
+          _buildHeaderStat(
+            '🛡️',
+            '${stats.currentStreakDays}',
+            LocaleKeys.stats_screen_streak_days.tr(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color,
-      {String? subtitle}) {
+  Widget _buildHeaderStat(String icon, String value, String label) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(icon, style: TextStyle(fontSize: 20.sp)),
+            SizedBox(width: 2.w),
+            Text(
+              value,
+              style: GoogleFonts.pressStart2p(
+                fontSize: 18.sp,
+                color: AppColors.primaryGold,
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    offset: const Offset(2, 2),
+                    blurRadius: 2,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 0.5.h),
+        Text(
+          label,
+          style: GoogleFonts.pressStart2p(
+            fontSize: 7.sp,
+            color: AppColors.textSecondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeeklyPerformanceSection(StatsState stats) {
+    // Mock data para achievements - puedes personalizarlo después
+    final achievements = [
+      {
+        'icon': '🏅',
+        'title': LocaleKeys.stats_screen_iron_initiate.tr(),
+        'subtitle': LocaleKeys.stats_screen_complete_5_sessions.tr(),
+        'progress': stats.totalPomodoros >= 5 ? 1.0 : stats.totalPomodoros / 5,
+        'current': stats.totalPomodoros >= 5 ? 5 : stats.totalPomodoros,
+        'total': 5,
+      },
+      {
+        'icon': '🔥',
+        'title': LocaleKeys.stats_screen_infernal_flame_guardian.tr(),
+        'subtitle': LocaleKeys.stats_screen_10_hours_total_focus.tr(),
+        'progress': (stats.totalFocusSeconds / 36000).clamp(0.0, 1.0),
+        'current': ((stats.totalFocusSeconds / 3600) >= 10
+                ? 10
+                : (stats.totalFocusSeconds / 3600))
+            .toInt(),
+        'total': 10,
+      },
+      {
+        'icon': '🗡️',
+        'title': LocaleKeys.stats_screen_dragon_hunter.tr(),
+        'subtitle': LocaleKeys.stats_screen_7_consecutive_days.tr(),
+        'progress':
+            stats.currentStreakDays >= 7 ? 1.0 : stats.currentStreakDays / 7,
+        'current': stats.currentStreakDays >= 7 ? 7 : stats.currentStreakDays,
+        'total': 7,
+      },
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Background image - centered and sized to fit width while maintaining aspect ratio
+            Center(
+              child: Transform.scale(
+                scaleX: 1.15,
+                child: Transform.scale(
+                  scale: 1.05,
+                  child: Image.asset(
+                    'assets/sprites/paper-sprite-2.png',
+                    fit: BoxFit.fitWidth,
+                    width: 100.w,
+                    filterQuality: FilterQuality.none,
+                  ),
+                ),
+              ),
+            ),
+            // Content on top of the image
+            Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ...achievements.map((achievement) => _buildAchievementRow(
+                        achievement['icon'] as String,
+                        achievement['title'] as String,
+                        achievement['subtitle'] as String,
+                        achievement['progress'] as double,
+                        achievement['current'] as int,
+                        achievement['total'] as int,
+                      )),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAchievementRow(
+    String icon,
+    String title,
+    String subtitle,
+    double progress,
+    int current,
+    int total,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF3A2318),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
+        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.8),
+        border: Border.all(color: Colors.black, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 12),
+          Text(icon, style: TextStyle(fontSize: 24.sp)),
+          SizedBox(width: 3.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label,
+                  title,
                   style: GoogleFonts.pressStart2p(
-                    color: Colors.grey[400],
-                    fontSize: 10,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: GoogleFonts.pressStart2p(
+                    fontSize: 14.sp,
                     color: Colors.white,
-                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.pressStart2p(
-                      color: Colors.grey[500],
-                      fontSize: 8,
-                    ),
+                SizedBox(height: 0.5.h),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 8.sp,
+                    color: AppColors.textSecondary,
                   ),
-                ],
+                ),
               ],
+            ),
+          ),
+          Text(
+            '$current/$total',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 10.sp,
+              color: AppColors.primaryGold,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -258,201 +344,194 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDeviceInfo(dynamic userStats) {
-    return PixelFrame(
-      cornerSize: 20,
-      edgeThickness: 6,
-      padding: 16,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Color(0xFF2A1B0A),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.device_hub,
-                  color: Color(0xFFDAA520),
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Device Information',
-                  style: GoogleFonts.pressStart2p(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+  Widget _buildWeeklyChart(StatsState stats) {
+    // Obtener los últimos 7 días
+    final now = DateTime.now();
+    final weekDays = List.generate(7, (index) {
+      final date = now.subtract(Duration(days: 6 - index));
+      return date;
+    });
+
+    // Obtener los datos para cada día
+    final weekData = weekDays.map((date) {
+      final dateStr = date.toIso8601String().substring(0, 10);
+      final count = stats.dailyPomodoros[dateStr] ?? 0;
+      return count;
+    }).toList();
+
+    final maxValue = weekData.reduce((a, b) => a > b ? a : b);
+    final normalizedData = weekData.map((count) {
+      if (maxValue == 0) return 0.0;
+      return count / maxValue;
+    }).toList();
+
+    final dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.8),
+        border: Border.all(color: Colors.black, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Gráfica de barras
+          SizedBox(
+            height: 20.h,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(7, (index) {
+                final isToday = index == 6;
+                return _buildBar(
+                  normalizedData[index],
+                  weekData[index],
+                  isToday,
+                );
+              }),
             ),
-            const SizedBox(height: 16),
-            _buildInfoRow('Device Type', userStats.deviceType),
-            const SizedBox(height: 8),
-            _buildInfoRow('Device Model', userStats.deviceModel),
-            const SizedBox(height: 8),
-            _buildInfoRow(
-                'Device ID', userStats.deviceId.substring(0, 8) + '...'),
-            const SizedBox(height: 8),
-            _buildInfoRow('Member Since',
-                '${userStats.createdAt.day}/${userStats.createdAt.month}/${userStats.createdAt.year}'),
-          ],
-        ),
+          ),
+          SizedBox(height: 1.h),
+          // Etiquetas de días
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: dayLabels
+                .map((day) => Text(
+                      day,
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 10.sp,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ))
+                .toList(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
+  Widget _buildBar(double normalizedValue, int actualValue, bool isToday) {
+    final barColor = isToday ? AppColors.primaryGold : const Color(0xFFD4A017);
+    final minHeight = 2.h;
+    final maxHeight = 18.h;
+    final barHeight = minHeight + (normalizedValue * (maxHeight - minHeight));
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
+        if (actualValue > 0)
+          Text(
+            '$actualValue',
             style: GoogleFonts.pressStart2p(
-              color: Colors.grey[400],
-              fontSize: 10,
+              fontSize: 8.sp,
+              color: barColor,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            style: GoogleFonts.pressStart2p(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-            ),
+        SizedBox(height: 0.5.h),
+        Container(
+          width: 8.w,
+          height: barHeight,
+          decoration: BoxDecoration(
+            color: barColor,
+            border: Border.all(color: Colors.black, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 2,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSessionsHistory(AsyncValue<List<FocusSession>> sessionsAsync) {
-    return PixelFrame(
-      cornerSize: 20,
-      edgeThickness: 6,
-      padding: 16,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Color(0xFF2A1B0A),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.history,
-                  color: Color(0xFFDAA520),
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  LocaleKeys.stats_screen_recent_sessions.tr(),
-                  style: GoogleFonts.pressStart2p(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            sessionsAsync.when(
-              data: (sessions) => sessions.isEmpty
-                  ? Center(
-                      child: Text(
-                        LocaleKeys.stats_screen_no_sessions_recorded_yet.tr(),
-                        style: GoogleFonts.pressStart2p(
-                          color: Colors.grey,
-                          fontSize: 10,
-                        ),
-                      ),
-                    )
-                  : Column(
-                      children: sessions.take(10).map((session) {
-                        final startTime = session.startTime;
-                        final duration = session.durationMinutes;
+  Widget _buildTimeMetrics(StatsState stats) {
+    final totalHours = stats.totalFocusSeconds ~/ 3600;
+    final totalMinutes = (stats.totalFocusSeconds % 3600) ~/ 60;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF3A2318),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: Colors.green.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      LocaleKeys.stats_screen_min_focus_session
-                                          .tr(namedArgs: {
-                                        'minutes': duration.toString()
-                                      }),
-                                      style: GoogleFonts.pressStart2p(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${startTime.day}/${startTime.month}/${startTime.year} at ${startTime.hour}:${startTime.minute.toString().padLeft(2, '0')}',
-                                      style: GoogleFonts.pressStart2p(
-                                        color: Colors.grey[400],
-                                        fontSize: 8,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: Color(0xFFDAA520)),
-              ),
-              error: (error, stack) => Center(
-                child: Text(
-                  LocaleKeys.stats_screen_error_loading_sessions
-                      .tr(namedArgs: {'error': error.toString()}),
-                  style: GoogleFonts.pressStart2p(
-                    color: Colors.red,
-                    fontSize: 10,
-                  ),
-                ),
+    // Mock data para descansos (puedes ajustarlo si tienes estos datos)
+    final shortBreakMinutes =
+        (stats.totalPomodoros * 5); // Asumiendo 5 min por descanso corto
+    final longBreakMinutes =
+        ((stats.totalPomodoros / 4).floor() * 30); // 30 min cada 4 pomodoros
+
+    return Column(
+      children: [
+        _buildTimeMetricRow(
+          '⏳',
+          LocaleKeys.stats_screen_total_work.tr(),
+          '${totalHours}h ${totalMinutes}m',
+        ),
+        SizedBox(height: 1.5.h),
+        _buildTimeMetricRow(
+          '🌿',
+          LocaleKeys.stats_screen_short_breaks.tr(),
+          '${shortBreakMinutes ~/ 60}h ${shortBreakMinutes % 60}m',
+        ),
+        SizedBox(height: 1.5.h),
+        _buildTimeMetricRow(
+          '🏰',
+          LocaleKeys.stats_screen_long_breaks.tr(),
+          '${longBreakMinutes ~/ 60}h ${longBreakMinutes % 60}m',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeMetricRow(String icon, String label, String value) {
+    return Container(
+      padding: EdgeInsets.all(3.w),
+      decoration: BoxDecoration(
+        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.8),
+        border: Border.all(color: Colors.black, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Text(icon, style: TextStyle(fontSize: 20.sp)),
+          SizedBox(width: 3.w),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.pressStart2p(
+                fontSize: 10.sp,
+                color: AppColors.textSecondary,
               ),
             ),
-          ],
-        ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
+            decoration: BoxDecoration(
+              color: AppColors.containerBackground,
+              border: Border.all(color: Colors.black, width: 2),
+            ),
+            child: Text(
+              value,
+              style: GoogleFonts.pressStart2p(
+                fontSize: 10.sp,
+                color: AppColors.primaryGold,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

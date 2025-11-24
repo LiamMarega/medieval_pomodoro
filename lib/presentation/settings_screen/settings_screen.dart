@@ -9,7 +9,7 @@ import '../../generated/locale_keys.g.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/audio_provider.dart';
 import '../../widgets/pixel_frame.dart';
-import 'widgets/settings_header_widget.dart';
+import '../../constants/colors.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -31,6 +31,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(audioControllerProvider.notifier).initialize();
     });
+  }
+
+  // Cached TextStyle to avoid repeated font loading calls
+  TextStyle? _cachedDurationTextStyle;
+
+  /// Helper method to safely create pressStart2p TextStyle with fallback
+  /// This prevents callstack freezing when the font is not loaded
+  TextStyle _safePressStart2p({
+    required double fontSize,
+    Color? color,
+    FontWeight? fontWeight,
+    List<Shadow>? shadows,
+  }) {
+    // Use cached style if available and parameters match
+    if (_cachedDurationTextStyle != null &&
+        _cachedDurationTextStyle!.fontSize == fontSize) {
+      return _cachedDurationTextStyle!.copyWith(
+        color: color,
+        fontWeight: fontWeight,
+        shadows: shadows,
+      );
+    }
+
+    try {
+      final style = GoogleFonts.pressStart2p(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+        shadows: shadows,
+      );
+      // Cache the style for reuse
+      _cachedDurationTextStyle = style;
+      return style;
+    } catch (e) {
+      // Fallback to default TextStyle if font loading fails
+      return TextStyle(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+        shadows: shadows,
+        fontFamily: 'monospace',
+      );
+    }
   }
 
   void _autoSaveSettings() {
@@ -57,7 +100,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       edgeThickness: 8,
       padding: 10,
       child: Scaffold(
-        backgroundColor: const Color(0xFF2D1B0F),
+        backgroundColor: AppColors.primaryBackground,
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -68,7 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               scale: 1.5,
               filterQuality: FilterQuality.low,
               colorFilter: ColorFilter.mode(
-                Color(0xFF2D1B0F),
+                AppColors.primaryBackground,
                 BlendMode.dstOver,
               ),
               opacity: 0.2,
@@ -206,7 +249,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   scale: 2,
                                   filterQuality: FilterQuality.low,
                                   colorFilter: ColorFilter.mode(
-                                    Color(0x006b2f01),
+                                    AppColors.filterBrownRed,
                                     BlendMode.color,
                                   ),
                                   opacity: 0.5,
@@ -228,7 +271,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           .settings_screen_set_test_durations
                                           .tr(),
                                       icon: '⚡',
-                                      color: const Color(0xFFDAA520),
+                                      color: AppColors.primaryGold,
                                       onTap: () {
                                         final settingsController = ref.read(
                                             settingsControllerProvider
@@ -254,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                                   fontSize: 12.sp),
                                             ),
                                             backgroundColor:
-                                                const Color(0xFFDAA520),
+                                                AppColors.primaryGold,
                                             duration:
                                                 const Duration(seconds: 3),
                                           ),
@@ -267,7 +310,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     _buildActionButton(
                                       label: 'RESET TO NORMAL',
                                       icon: '🔄',
-                                      color: const Color(0xFF4CAF50),
+                                      color: AppColors.success,
                                       onTap: () {
                                         final settingsController = ref.read(
                                             settingsControllerProvider
@@ -292,8 +335,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                               style: GoogleFonts.pressStart2p(
                                                   fontSize: 12.sp),
                                             ),
-                                            backgroundColor:
-                                                const Color(0xFF4CAF50),
+                                            backgroundColor: AppColors.success,
                                             duration:
                                                 const Duration(seconds: 3),
                                           ),
@@ -308,7 +350,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           .settings_screen_view_statistics
                                           .tr(),
                                       icon: '📊',
-                                      color: const Color(0xFF6B9BD1),
+                                      color: AppColors.info,
                                       onTap: () {
                                         Navigator.pushNamed(
                                             context, '/stats-screen');
@@ -322,7 +364,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           .settings_screen_reset_everything_restart
                                           .tr(),
                                       icon: '💀',
-                                      color: const Color(0xFFFF4444),
+                                      color: AppColors.error,
                                       onTap: () =>
                                           _showResetConfirmationDialog(context),
                                     ),
@@ -362,7 +404,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF4A3728),
+              color: AppColors.containerBackground,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: Colors.black,
@@ -410,16 +452,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF2A1B0A),
+          backgroundColor: AppColors.secondaryBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFDAA520), width: 2),
+            side: const BorderSide(color: AppColors.primaryGold, width: 2),
           ),
           title: Text(
             LocaleKeys.settings_screen_reset_everything_title.tr(),
             style: GoogleFonts.pressStart2p(
               fontSize: 14.sp,
-              color: const Color(0xFFFF4444),
+              color: AppColors.error,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -428,7 +470,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             LocaleKeys.settings_screen_reset_everything_message.tr(),
             style: GoogleFonts.pressStart2p(
               fontSize: 10.sp,
-              color: const Color(0xFFDAA520),
+              color: AppColors.primaryGold,
             ),
             textAlign: TextAlign.center,
           ),
@@ -441,10 +483,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 1.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4A3728),
+                        color: AppColors.containerBackground,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFFDAA520),
+                          color: AppColors.primaryGold,
                           width: 2,
                         ),
                       ),
@@ -452,7 +494,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         LocaleKeys.settings_screen_cancel.tr(),
                         style: GoogleFonts.pressStart2p(
                           fontSize: 10.sp,
-                          color: const Color(0xFFDAA520),
+                          color: AppColors.primaryGold,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -469,10 +511,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 1.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4A3728),
+                        color: AppColors.containerBackground,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFFFF4444),
+                          color: AppColors.error,
                           width: 2,
                         ),
                       ),
@@ -480,7 +522,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         LocaleKeys.settings_screen_reset.tr(),
                         style: GoogleFonts.pressStart2p(
                           fontSize: 10.sp,
-                          color: const Color(0xFFFF4444),
+                          color: AppColors.error,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -503,17 +545,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            backgroundColor: Color(0xFF2A1B0A),
+            backgroundColor: AppColors.secondaryBackground,
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircularProgressIndicator(
-                  color: Color(0xFFDAA520),
+                  color: AppColors.primaryGold,
                 ),
                 SizedBox(height: 16),
                 Text(
                   LocaleKeys.settings_screen_resetting_everything.tr(),
-                  style: TextStyle(color: Color(0xFFDAA520)),
+                  style: TextStyle(color: AppColors.primaryGold),
                 ),
               ],
             ),
@@ -536,7 +578,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               LocaleKeys.settings_screen_everything_reset_restarting.tr(),
               style: GoogleFonts.pressStart2p(fontSize: 12.sp),
             ),
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: AppColors.success,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -562,7 +604,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   .tr(namedArgs: {'error': e.toString()}),
               style: GoogleFonts.pressStart2p(fontSize: 12.sp),
             ),
-            backgroundColor: const Color(0xFFFF4444),
+            backgroundColor: AppColors.error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -599,7 +641,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
       padding: EdgeInsets.all(3.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3A2A1A).withValues(alpha: 0.9),
+        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(0),
         border: Border.all(
           color: Colors.black,
@@ -620,7 +662,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             '🏰 ${LocaleKeys.settings_screen_language.tr()} 🏰',
             style: GoogleFonts.pressStart2p(
               fontSize: 12.sp,
-              color: const Color(0xFFDAA520),
+              color: AppColors.primaryGold,
               fontWeight: FontWeight.bold,
               shadows: [
                 Shadow(
@@ -652,7 +694,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         LocaleKeys.settings_screen_language_changed.tr(),
                         style: GoogleFonts.pressStart2p(fontSize: 12.sp),
                       ),
-                      backgroundColor: const Color(0xFF4CAF50),
+                      backgroundColor: AppColors.success,
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -663,12 +705,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.5.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF4A3728)
-                        : const Color(0xFF2A1B0A),
+                        ? AppColors.containerBackground
+                        : AppColors.secondaryBackground,
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color:
-                          isSelected ? const Color(0xFFDAA520) : Colors.black,
+                      color: isSelected
+                          ? AppColors.primaryGold
+                          : AppColors.borderBlack,
                       width: 3,
                     ),
                     boxShadow: isSelected
@@ -686,8 +729,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     style: GoogleFonts.pressStart2p(
                       fontSize: 10.sp,
                       color: isSelected
-                          ? const Color(0xFFDAA520)
-                          : const Color(0xFF888888),
+                          ? AppColors.primaryGold
+                          : AppColors.textSecondary,
                       fontWeight: FontWeight.bold,
                       shadows: isSelected
                           ? [
@@ -731,7 +774,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title,
                 style: GoogleFonts.pressStart2p(
                   fontSize: 15.sp,
-                  color: const Color(0xFFDAA520).withValues(alpha: 0.8),
+                  color: AppColors.primaryGold.withValues(alpha: 0.8),
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -774,7 +817,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               }
                             })()
                           : '${currentValue.toString().padLeft(2, '0')}:00',
-                      style: GoogleFonts.pressStart2p(
+                      style: _safePressStart2p(
                         fontSize: 20,
                         color: const Color.fromARGB(255, 0, 0, 0),
                         fontWeight: FontWeight.bold,
@@ -969,8 +1012,8 @@ class _AnimatedControlButtonState extends State<_AnimatedControlButton>
               height: 10.w,
               decoration: BoxDecoration(
                 color: isEnabled
-                    ? const Color(0xFF4A3728)
-                    : const Color(0xFF4A3728).withValues(alpha: 0.5),
+                    ? AppColors.containerBackground
+                    : AppColors.containerBackground.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: isEnabled
@@ -996,9 +1039,9 @@ class _AnimatedControlButtonState extends State<_AnimatedControlButton>
                     fontSize: 14.sp,
                     color: isEnabled
                         ? (_isPressed
-                            ? const Color(0xFFDAA520).withValues(alpha: 0.8)
-                            : const Color(0xFFDAA520))
-                        : const Color(0xFFDAA520).withValues(alpha: 0.5),
+                            ? AppColors.primaryGold.withValues(alpha: 0.8)
+                            : AppColors.primaryGold)
+                        : AppColors.primaryGold.withValues(alpha: 0.5),
                     fontWeight: FontWeight.bold,
                     shadows: isEnabled
                         ? [

@@ -146,7 +146,20 @@
     "recent_sessions": "Recent Sessions",
     "no_sessions_recorded_yet": "No sessions recorded yet",
     "min_focus_session": "{minutes} min focus session",
-    "error_loading_sessions": "Error loading sessions: {error}"
+    "error_loading_sessions": "Error loading sessions: {error}",
+    "total_focused_time": "Total focused time",
+    "total_sessions_header": "Sessions",
+    "streak_days": "Streak (days)",
+    "weekly_performance": "WEEKLY PERFORMANCE",
+    "iron_initiate": "Iron Initiate",
+    "complete_5_sessions": "Complete 5 sessions",
+    "infernal_flame_guardian": "Infernal Flame Guardian",
+    "10_hours_total_focus": "10 hours total focus",
+    "dragon_hunter": "Dragon Hunter",
+    "7_consecutive_days": "7 consecutive days",
+    "total_work": "Total work",
+    "short_breaks": "Short breaks",
+    "long_breaks": "Long breaks"
   },
   "onboarding": {
     "welcome_knight": "Welcome, Knight",

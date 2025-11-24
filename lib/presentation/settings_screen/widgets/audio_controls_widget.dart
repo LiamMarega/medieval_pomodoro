@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../providers/audio_provider.dart';
+import '../../../constants/colors.dart';
 
 class AudioControlsWidget extends ConsumerStatefulWidget {
   const AudioControlsWidget({super.key});
@@ -56,10 +57,10 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D1B0E),
+        color: AppColors.audioBackground,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFFDAA520),
+          color: AppColors.primaryGold,
           width: 3,
         ),
         boxShadow: [
@@ -81,7 +82,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                 padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4A3728),
+                  color: AppColors.containerBackground,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: const Color(0xFFDAA520).withValues(alpha: 0.5),
@@ -92,7 +93,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                   audioController.currentSongTitle,
                   style: GoogleFonts.pressStart2p(
                     fontSize: 12.sp,
-                    color: const Color(0xFFDAA520),
+                    color: AppColors.primaryGold,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -143,7 +144,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                 'VOLUMEN',
                 style: GoogleFonts.pressStart2p(
                   fontSize: 12.sp,
-                  color: const Color(0xFFDAA520),
+                  color: AppColors.primaryGold,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -159,10 +160,10 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                       padding:
                           EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4A3728),
+                        color: AppColors.containerBackground,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFFDAA520),
+                          color: AppColors.primaryGold,
                           width: 2,
                         ),
                       ),
@@ -170,7 +171,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                         '${(audioState.currentVolume * 100).round()}%',
                         style: GoogleFonts.pressStart2p(
                           fontSize: 16.sp,
-                          color: const Color(0xFFDAA520),
+                          color: AppColors.primaryGold,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -193,10 +194,10 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
             Container(
               padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
+                  color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: Colors.red.withValues(alpha: 0.5),
+                  color: AppColors.error.withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
@@ -204,7 +205,7 @@ class _AudioControlsWidgetState extends ConsumerState<AudioControlsWidget>
                 audioState.error!,
                 style: GoogleFonts.pressStart2p(
                   fontSize: 8.sp,
-                  color: Colors.red,
+                  color: AppColors.error,
                 ),
                 textAlign: TextAlign.center,
               ),

@@ -5,6 +5,7 @@ import 'package:sizer/sizer.dart';
 
 import '../../../generated/locale_keys.g.dart';
 import '../../../widgets/pixel_frame.dart';
+import '../../../constants/colors.dart';
 
 class TimerHeaderWidget extends StatelessWidget {
   const TimerHeaderWidget({super.key});
@@ -31,7 +32,7 @@ class TimerHeaderWidget extends StatelessWidget {
                 style: GoogleFonts.pressStart2p(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.normal,
-                  color: const Color(0xFFDAA520),
+                  color: AppColors.primaryGold,
                   letterSpacing: 2.0,
                   height: 1.2,
                   shadows: [

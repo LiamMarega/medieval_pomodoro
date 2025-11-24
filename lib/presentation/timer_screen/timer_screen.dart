@@ -7,6 +7,7 @@ import '../../generated/locale_keys.g.dart';
 import '../../providers/timer_provider.dart';
 import '../../providers/rewards_provider.dart';
 import '../../core/services/live_activity_manager.dart';
+import '../../constants/colors.dart';
 import 'widgets/timer_header_widget.dart';
 import 'widgets/timer_display_widget.dart';
 import 'widgets/timer_controls_widget.dart';
@@ -64,19 +65,19 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
           context: context,
           barrierDismissible: false,
           builder: (_) => AlertDialog(
-            backgroundColor: const Color(0xFF2D1B0F),
+            backgroundColor: AppColors.primaryBackground,
             title: Text(
               ev.title,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             content: Text(
               ev.description,
-              style: const TextStyle(
-                color: Colors.white70,
+              style: TextStyle(
+                color: AppColors.textPrimary.withValues(alpha: 0.7),
                 fontSize: 16,
               ),
             ),
@@ -91,7 +92,7 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
                 child: Text(
                   LocaleKeys.timer_screen_ok_button.tr(),
                   style: const TextStyle(
-                    color: Colors.amber,
+                    color: AppColors.primaryGold,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -136,7 +137,7 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
       padding: 16,
       borderStyle: MedievalBorderStyle.stone,
       child: Scaffold(
-        backgroundColor: const Color(0xFF2D1B0F),
+        backgroundColor: AppColors.primaryBackground,
         body: Stack(
           children: [
             Column(
@@ -157,7 +158,7 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
                               scale: 2,
                               filterQuality: FilterQuality.low,
                               colorFilter: ColorFilter.mode(
-                                Color(0x006b2f01),
+                                AppColors.filterBrownRed,
                                 BlendMode.color,
                               ),
                               opacity: 0.5,

@@ -24,9 +24,8 @@ PODS:
     - FlutterMacOS
   - live_activities (0.0.1):
     - Flutter
-  - path_provider_foundation (0.0.1):
+  - objective_c (0.0.1):
     - Flutter
-    - FlutterMacOS
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -46,7 +45,7 @@ DEPENDENCIES:
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - live_activities (from `.symlinks/plugins/live_activities/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - objective_c (from `.symlinks/plugins/objective_c/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
 
@@ -77,8 +76,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/just_audio/darwin"
   live_activities:
     :path: ".symlinks/plugins/live_activities/ios"
-  path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  objective_c:
+    :path: ".symlinks/plugins/objective_c/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqflite_darwin:
@@ -97,8 +96,8 @@ SPEC CHECKSUMS:
   IosAwnCore: 653786a911089012092ce831f2945cd339855a89
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   live_activities: 4dfa736d0736e1c77866a2f9c056a76513cc9e7b
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
-  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  objective_c: 89e720c30d716b036faf9c9684022048eee1eee2
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
 
 PODFILE CHECKSUM: 49f3e4f1fc39353314954b9603da55bf7755e4fe

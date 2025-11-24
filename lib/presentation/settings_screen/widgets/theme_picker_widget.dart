@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
+import '../../../constants/colors.dart';
 
 class ThemePickerWidget extends StatefulWidget {
   final String selectedTheme;
@@ -25,29 +26,29 @@ class _ThemePickerWidgetState extends State<ThemePickerWidget> {
     {
       'id': 'medieval_brown',
       'name': 'Medieval Brown',
-      'primaryColor': Color(0xFF4B2E20),
-      'secondaryColor': Color(0xFFD4A017),
+      'primaryColor': AppColors.themeMedievalBrownPrimary,
+      'secondaryColor': AppColors.themeMedievalBrownSecondary,
       'description': 'Classic medieval castle theme',
     },
     {
       'id': 'forest_green',
       'name': 'Forest Green',
-      'primaryColor': Color(0xFF2D4A2B),
-      'secondaryColor': Color(0xFF8FBC8F),
+      'primaryColor': AppColors.themeForestGreenPrimary,
+      'secondaryColor': AppColors.themeForestGreenSecondary,
       'description': 'Enchanted forest theme',
     },
     {
       'id': 'royal_purple',
       'name': 'Royal Purple',
-      'primaryColor': Color(0xFF4A2C5A),
-      'secondaryColor': Color(0xFFDDA0DD),
+      'primaryColor': AppColors.themeRoyalPurplePrimary,
+      'secondaryColor': AppColors.themeRoyalPurpleSecondary,
       'description': 'Noble kingdom theme',
     },
     {
       'id': 'dragon_red',
       'name': 'Dragon Red',
-      'primaryColor': Color(0xFF5A2D2D),
-      'secondaryColor': Color(0xFFFF6B6B),
+      'primaryColor': AppColors.themeDragonRedPrimary,
+      'secondaryColor': AppColors.themeDragonRedSecondary,
       'description': 'Fierce dragon lair theme',
     },
   ];
@@ -143,7 +144,7 @@ class _ThemePickerWidgetState extends State<ThemePickerWidget> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 8.sp,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.normal,
                           ),
                         ),

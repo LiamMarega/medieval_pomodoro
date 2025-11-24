@@ -7,6 +7,7 @@ import 'package:sizer/sizer.dart';
 
 import '../../../generated/locale_keys.g.dart';
 import '../../../providers/timer_provider.dart';
+import '../../../constants/colors.dart';
 
 class TimerDisplayWidget extends ConsumerStatefulWidget {
   const TimerDisplayWidget({
@@ -100,7 +101,7 @@ class _TimerDisplayWidgetState extends ConsumerState<TimerDisplayWidget>
                             style: GoogleFonts.pressStart2p(
                               fontSize: 30.sp,
                               fontWeight: FontWeight.normal,
-                              color: const Color(0xFFDAA520),
+                              color: AppColors.primaryGold,
                               letterSpacing: 4.0,
                               shadows: [
                                 Shadow(

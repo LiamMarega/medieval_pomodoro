@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../generated/locale_keys.g.dart';
+import '../../../constants/colors.dart';
 
 class SettingsHeaderWidget extends StatelessWidget {
   const SettingsHeaderWidget({
@@ -47,7 +48,7 @@ class SettingsHeaderWidget extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.arrow_back,
-                        color: const Color(0xFFDAA520),
+                        color: AppColors.primaryGold,
                         size: 20.sp,
                       ),
                     ),
@@ -62,7 +63,7 @@ class SettingsHeaderWidget extends StatelessWidget {
                         style: GoogleFonts.pressStart2p(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFDAA520),
+                          color: AppColors.primaryGold,
                           letterSpacing: 1.0,
                           shadows: [
                             Shadow(

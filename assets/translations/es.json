@@ -146,7 +146,20 @@
     "recent_sessions": "Sesiones Recientes",
     "no_sessions_recorded_yet": "Aún no se han registrado sesiones",
     "min_focus_session": "Sesión de enfoque de {minutes} min",
-    "error_loading_sessions": "Error al cargar sesiones: {error}"
+    "error_loading_sessions": "Error al cargar sesiones: {error}",
+    "total_focused_time": "Tiempo total enfocado",
+    "total_sessions_header": "Sesiones",
+    "streak_days": "Racha (días)",
+    "weekly_performance": "RENDIMIENTO SEMANAL",
+    "iron_initiate": "Iniciado de Hierro",
+    "complete_5_sessions": "Completa 5 sesiones",
+    "infernal_flame_guardian": "Guardián del Fuego Infernal",
+    "10_hours_total_focus": "10 horas totales de enfoque",
+    "dragon_hunter": "Cazador de Dragones",
+    "7_consecutive_days": "7 días seguidos",
+    "total_work": "Trabajo total",
+    "short_breaks": "Descansos cortos",
+    "long_breaks": "Descansos largos"
   },
   "onboarding": {
     "welcome_knight": "Bienvenido, Caballero",
