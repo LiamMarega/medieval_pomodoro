@@ -71,6 +71,13 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       debugPrint('🚀 Initializing Live Activity Manager...');
       _liveActivityManager = LiveActivityManager();
       await _liveActivityManager!.init();
+
+      // Listen to actions from Live Activity
+      _liveActivityManager!.actionStream.listen((action) {
+        debugPrint('🎮 Live Activity Action received: $action');
+        handleLiveActivityAction(action);
+      });
+
       debugPrint('✅ Live Activity Manager initialized successfully');
     } catch (e) {
       debugPrint('❌ Error initializing Live Activity Manager: $e');
@@ -791,26 +798,20 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
   // Handle Live Activity actions from Dynamic Island
   void handleLiveActivityAction(String action) {
+    debugPrint('Handling Live Activity action: $action');
     switch (action) {
       case 'pause':
-        pauseTimer();
+        if (state.isActive) pauseTimer();
         break;
       case 'resume':
       case 'play':
-        // Use resumeTimer if timer is paused, otherwise startTimer for new sessions
-        if (!state.isActive &&
-            state.currentSeconds > 0 &&
-            state.currentSeconds < state.totalSeconds) {
-          resumeTimer();
-        } else {
-          startTimer();
-        }
+        if (!state.isActive) resumeTimer();
         break;
-      case 'stop':
-        restartTimer();
+      case 'skip':
+        _completeSession(); // Or skip logic
         break;
       default:
-        debugPrint('⚠️ Unknown Live Activity action: $action');
+        debugPrint('Unknown action: $action');
     }
   }
 

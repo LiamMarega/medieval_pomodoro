@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:live_activities/live_activities.dart';
 
@@ -5,12 +6,24 @@ class LiveActivityManager {
   final LiveActivities _liveActivitiesPlugin = LiveActivities();
   String? _currentActivityId;
 
+  // Stream controller for actions received from Live Activity
+  final _actionController = StreamController<String>.broadcast();
+  Stream<String> get actionStream => _actionController.stream;
+
   // Inicializar el plugin
   Future<void> init() async {
     await _liveActivitiesPlugin.init(
       appGroupId: 'group.com.focusknight.app',
       urlScheme: 'focusknight',
     );
+
+    // Listen to URL schemes (actions from Live Activity)
+    _liveActivitiesPlugin.urlSchemeStream().listen((schemeData) {
+      debugPrint('🔗 URL Scheme received: ${schemeData.url}');
+      if (schemeData.host != null) {
+        _actionController.add(schemeData.host!);
+      }
+    });
   }
 
   // Crear la actividad con los datos iniciales
@@ -29,8 +42,9 @@ class LiveActivityManager {
     };
 
     try {
-      _currentActivityId = await _liveActivitiesPlugin.createActivity(
-          "focusknight", activityModel);
+      final activityId = DateTime.now().millisecondsSinceEpoch.toString();
+      _currentActivityId =
+          await _liveActivitiesPlugin.createActivity(activityId, activityModel);
 
       // Inmediatamente actualizar con el estado del timer
       await updateActivity(
@@ -78,5 +92,9 @@ class LiveActivityManager {
     } catch (e) {
       debugPrint('Error ending live activity: $e');
     }
+  }
+
+  void dispose() {
+    _actionController.close();
   }
 }
