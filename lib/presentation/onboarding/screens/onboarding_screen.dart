@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gif/gif.dart';
+import 'package:medieval_pomodoro/presentation/onboarding/models/onboarding_step.dart';
 import 'package:medieval_pomodoro/widgets/pixel_frame.dart';
 
 import '../providers/onboarding_provider.dart';
 import '../widgets/medieval_dialog_box.dart';
 import '../widgets/onboarding_form_widget.dart';
+import '../widgets/onboarding_permission_widget.dart';
 
 /// Pantalla principal de onboarding
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -67,8 +69,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       body: PixelFrame(
         child: GestureDetector(
           onTap: () {
-            // Solo permitir navegación si no hay formulario o si el formulario es válido
-            if (!currentStep.hasForm || onboardingState.isFormValid) {
+            // Solo permitir navegación si es un diálogo o si el formulario/permisos están listos
+            if (currentStep.type == OnboardingStepType.dialog ||
+                (currentStep.type == OnboardingStepType.nameInput &&
+                    onboardingState.isFormValid) ||
+                (currentStep.type == OnboardingStepType.permissions &&
+                    onboardingState.arePermissionsGranted)) {
               onboardingController.nextStep();
             }
           },
@@ -92,7 +98,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   ),
                 ),
               ),
-              if (!currentStep.hasForm)
+              if (currentStep.type == OnboardingStepType.dialog)
                 // Diálogo superpuesto
                 Flexible(
                   flex: 1,
@@ -101,13 +107,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     content: currentStep.dialogText,
                   ),
                 ),
-              if (currentStep.hasForm && currentStep.formWidget != null)
+              if (currentStep.type == OnboardingStepType.nameInput &&
+                  currentStep.formWidget != null)
                 Flexible(
                   flex: 1,
                   child: OnboardingFormWidget(
                     onNameSubmitted: (name) {
                       onboardingController.submitForm(name);
                     },
+                  ),
+                ),
+              if (currentStep.type == OnboardingStepType.permissions)
+                Flexible(
+                  flex: 1,
+                  child: OnboardingPermissionWidget(
+                    onPermissionsRequested: () {
+                      onboardingController.requestPermissions();
+                    },
+                    arePermissionsGranted:
+                        onboardingState.arePermissionsGranted,
                   ),
                 ),
             ],

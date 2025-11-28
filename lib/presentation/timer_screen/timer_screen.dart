@@ -13,6 +13,12 @@ import 'widgets/timer_display_widget.dart';
 import 'widgets/timer_controls_widget.dart';
 import 'widgets/knight_illustration_widget.dart';
 import 'widgets/motivational_message_widget.dart';
+import 'dart:io';
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sizer/sizer.dart';
+import '../../core/services/notification_service.dart';
+import '../../services/app_blocker_service.dart';
 import 'widgets/music_notification_widget.dart';
 
 class TimerScreen extends ConsumerStatefulWidget {
@@ -128,6 +134,9 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
 
       _lastSessionType = timerState.currentMode.displayName;
       _lastSessionNumber = timerState.sessionNumber;
+
+      // Check permissions
+      _checkPermissions();
     });
     return PixelFrame(
       cornerSize: 32,
@@ -225,6 +234,104 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _checkPermissions() async {
+    // Don't check if we already showed it this session or if timer is active
+    if (ref.read(timerControllerProvider).isActive) return;
+
+    final notificationService = NotificationService();
+    final appBlockerService = AppBlockerService();
+
+    // Check permissions (this is a simplified check, ideally we check status without requesting)
+    // For now, we assume if we haven't granted them, we should prompt.
+    // However, checking "status" often requires requesting or using specific "check" methods.
+    // AwesomeNotifications has isNotificationAllowed().
+    // AppBlocker has checkAndroidPermission(). iOS is trickier.
+
+    bool notificationsAllowed =
+        await AwesomeNotifications().isNotificationAllowed();
+    bool androidPermissionAllowed = true;
+    if (Platform.isAndroid) {
+      androidPermissionAllowed =
+          await appBlockerService.checkAndroidPermission();
+    }
+
+    // If any permission is missing, show dialog
+    if (!notificationsAllowed || !androidPermissionAllowed) {
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          child: PixelFrame(
+            cornerSize: 16,
+            edgeThickness: 4,
+            padding: 20,
+            borderStyle: MedievalBorderStyle.stone,
+            child: Container(
+              padding: EdgeInsets.all(2.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A1B0A).withValues(alpha: 0.95),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    LocaleKeys.onboarding_permissions_title.tr(),
+                    style: GoogleFonts.pressStart2p(
+                      fontSize: 12.sp,
+                      color: const Color(0xFFDAA520),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    LocaleKeys.onboarding_permissions_message.tr(),
+                    style: GoogleFonts.vt323(
+                      fontSize: 16.sp,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 3.h),
+                  GestureDetector(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      // Request permissions
+                      await notificationService.requestPermissions();
+                      if (Platform.isAndroid) {
+                        await appBlockerService.requestAndroidPermission();
+                      } else if (Platform.isIOS) {
+                        await appBlockerService.requestIosPermission();
+                      }
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 1.5.h, horizontal: 4.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A3728),
+                        border: Border.all(
+                            color: const Color(0xFFDAA520), width: 2),
+                      ),
+                      child: Text(
+                        LocaleKeys.onboarding_grant_permissions.tr(),
+                        style: GoogleFonts.pressStart2p(
+                          fontSize: 10.sp,
+                          color: const Color(0xFFDAA520),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   @override

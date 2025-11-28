@@ -169,6 +169,10 @@ abstract class  LocaleKeys {
   static const onboarding_what_is_your_name_knight = 'onboarding.what_is_your_name_knight';
   static const onboarding_write_your_name = 'onboarding.write_your_name';
   static const onboarding_confirm = 'onboarding.confirm';
+  static const onboarding_permissions_title = 'onboarding.permissions_title';
+  static const onboarding_permissions_message = 'onboarding.permissions_message';
+  static const onboarding_grant_permissions = 'onboarding.grant_permissions';
+  static const onboarding_permissions_granted = 'onboarding.permissions_granted';
   static const onboarding = 'onboarding';
 
 }

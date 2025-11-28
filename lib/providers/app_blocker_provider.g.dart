@@ -33,7 +33,7 @@ final class AppBlockerProvider
   AppBlocker create() => AppBlocker();
 }
 
-String _$appBlockerHash() => r'886a26c21aacdfa91d69192009699d53cc8dc7fb';
+String _$appBlockerHash() => r'9151338b09102360fb333b257b6705410ce560b0';
 
 abstract class _$AppBlocker extends $AsyncNotifier<List<String>> {
   FutureOr<List<String>> build();

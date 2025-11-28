@@ -61,7 +61,7 @@ class AppBlockerService {
 
   /// Bloquea apps en iOS
   Future<void> blockIos(List<String> apps) async {
-    if (!Platform.isIOS) return;
+    // if (!Platform.isIOS) return;
     try {
       debugPrint('🚫 Blocking iOS apps');
       await _appLimiter.blockAndUnblockIOSApp();

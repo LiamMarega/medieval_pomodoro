@@ -65,11 +65,16 @@ class AppBlocker extends _$AppBlocker {
   Future<void> blockDistractingApps() async {
     final apps = state.value ?? _defaultBlockedApps;
     debugPrint('🛡️ AppBlocker: Activating Shield for ${apps.length} apps');
-    
+
     try {
       if (Platform.isAndroid) {
+        // En Android, verificar/solicitar permisos antes de bloquear
+        await _service.requestAndroidPermission();
         await _service.blockAndroid(apps);
       } else if (Platform.isIOS) {
+        debugPrint('🛡️ AppBlocker: Activating Shield for ${apps.length} apps');
+        // En iOS, solicitar autorización (no-op si ya está concedido)
+        await _service.requestIosPermission();
         await _service.blockIos(apps);
       }
     } catch (e) {
@@ -81,7 +86,7 @@ class AppBlocker extends _$AppBlocker {
   Future<void> unblockAll() async {
     final apps = state.value ?? _defaultBlockedApps;
     debugPrint('🛡️ AppBlocker: Deactivating Shield');
-    
+
     try {
       if (Platform.isAndroid) {
         await _service.unblockAndroid(apps);
@@ -119,4 +124,3 @@ class AppBlocker extends _$AppBlocker {
     await _saveBlockedApps(_defaultBlockedApps);
   }
 }
-

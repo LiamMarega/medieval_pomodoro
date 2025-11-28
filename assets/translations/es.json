@@ -170,6 +170,10 @@
     "your_mission_begins_message": "Con tu nueva espada del tiempo, estás listo para conquistar tus tareas y vencer la procrastinación...",
     "what_is_your_name_knight": "¿Cómo te llamas, valiente caballero?",
     "write_your_name": "Escribe tu nombre...",
-    "confirm": "CONFIRMAR"
+    "confirm": "CONFIRMAR",
+    "permissions_title": "¡Escudo Arriba!",
+    "permissions_message": "Para defender tu enfoque, necesitamos permiso para bloquear distracciones y notificarte de tus victorias.",
+    "grant_permissions": "CONCEDER PERMISOS",
+    "permissions_granted": "PERMISOS CONCEDIDOS"
   }
 }

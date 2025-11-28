@@ -170,6 +170,10 @@
     "your_mission_begins_message": "With your new time sword, you are ready to conquer your tasks and defeat procrastination...",
     "what_is_your_name_knight": "What is your name, brave knight?",
     "write_your_name": "Write your name...",
-    "confirm": "CONFIRM"
+    "confirm": "CONFIRM",
+    "permissions_title": "Shield Up!",
+    "permissions_message": "To defend your focus, we need permission to block distractions and notify you of your victories.",
+    "grant_permissions": "GRANT PERMISSIONS",
+    "permissions_granted": "PERMISSIONS GRANTED"
   }
 }

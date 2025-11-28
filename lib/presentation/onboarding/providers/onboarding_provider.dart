@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/services/notification_service.dart';
+import '../../../services/app_blocker_service.dart';
 import '../../../services/local_storage_service.dart';
 import '../models/onboarding_step.dart';
 
@@ -26,6 +28,9 @@ class OnboardingState {
   /// Indica si el formulario actual es válido
   final bool isFormValid;
 
+  /// Indica si los permisos han sido concedidos
+  final bool arePermissionsGranted;
+
   /// Constructor
   const OnboardingState({
     this.currentStepIndex = 0,
@@ -34,6 +39,7 @@ class OnboardingState {
     this.error,
     this.userName,
     this.isFormValid = false,
+    this.arePermissionsGranted = false,
   });
 
   /// Método para crear una copia con algunos valores modificados
@@ -44,6 +50,7 @@ class OnboardingState {
     String? error,
     String? userName,
     bool? isFormValid,
+    bool? arePermissionsGranted,
   }) {
     return OnboardingState(
       currentStepIndex: currentStepIndex ?? this.currentStepIndex,
@@ -52,6 +59,8 @@ class OnboardingState {
       error: error,
       userName: userName ?? this.userName,
       isFormValid: isFormValid ?? this.isFormValid,
+      arePermissionsGranted:
+          arePermissionsGranted ?? this.arePermissionsGranted,
     );
   }
 }
@@ -90,8 +99,16 @@ class OnboardingController extends _$OnboardingController {
     final currentStep = OnboardingData.steps[currentIndex];
 
     // Si el paso actual tiene formulario, verificar que sea válido
-    if (currentStep.hasForm && !state.isFormValid) {
+    if (currentStep.type == OnboardingStepType.nameInput &&
+        !state.isFormValid) {
       debugPrint('No se puede avanzar: formulario incompleto');
+      return;
+    }
+
+    // Si el paso actual es de permisos, verificar que estén concedidos
+    if (currentStep.type == OnboardingStepType.permissions &&
+        !state.arePermissionsGranted) {
+      debugPrint('No se puede avanzar: permisos no concedidos');
       return;
     }
 
@@ -112,6 +129,34 @@ class OnboardingController extends _$OnboardingController {
     if (currentIndex > 0) {
       state = state.copyWith(currentStepIndex: currentIndex - 1);
       debugPrint('Retrocediendo al paso ${currentIndex - 1} del onboarding');
+    }
+  }
+
+  /// Solicita los permisos necesarios
+  Future<void> requestPermissions() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      debugPrint('🛡️ Requesting permissions...');
+      final appBlocker = AppBlockerService();
+
+      // Request Android permissions
+      await appBlocker.requestAndroidPermission();
+
+      // Request iOS permissions
+      await appBlocker.requestIosPermission();
+
+      // Request notification permissions
+      debugPrint('🔔 Requesting notification permissions...');
+      await NotificationService().requestPermissions();
+
+      state = state.copyWith(
+        isLoading: false,
+        arePermissionsGranted: true,
+      );
+      debugPrint('✅ Permissions granted state updated');
+    } catch (e) {
+      debugPrint('❌ Error requesting permissions: $e');
+      state = state.copyWith(isLoading: false);
     }
   }
 

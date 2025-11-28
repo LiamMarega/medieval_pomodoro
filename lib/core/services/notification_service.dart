@@ -82,18 +82,21 @@ class NotificationService {
       ],
     );
 
-    await _requestPermissions();
+    await requestPermissions();
   }
 
   /// Solicita permisos para notificaciones
-  Future<void> _requestPermissions() async {
+  Future<bool> requestPermissions() async {
     try {
       final isAllowed = await AwesomeNotifications().isNotificationAllowed();
       if (!isAllowed) {
-        await AwesomeNotifications().requestPermissionToSendNotifications();
+        return await AwesomeNotifications()
+            .requestPermissionToSendNotifications();
       }
+      return true;
     } catch (e) {
       debugPrint('❌ Error requesting notification permissions: $e');
+      return false;
     }
   }
 
