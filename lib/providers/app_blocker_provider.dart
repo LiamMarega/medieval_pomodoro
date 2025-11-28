@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:app_limiter/app_limiter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,7 @@ part 'app_blocker_provider.g.dart';
 class AppBlocker extends _$AppBlocker {
   final AppBlockerService _service = AppBlockerService();
   static const String _prefsKey = 'blocked_apps_list';
+  final _appLimiterPlugin = AppLimiter();
 
   static const List<String> _defaultBlockedApps = [
     "com.facebook.katana",
@@ -63,38 +65,49 @@ class AppBlocker extends _$AppBlocker {
 
   /// Bloquea todas las apps configuradas
   Future<void> blockDistractingApps() async {
-    final apps = state.value ?? _defaultBlockedApps;
-    debugPrint('🛡️ AppBlocker: Activating Shield for ${apps.length} apps');
-
     try {
-      if (Platform.isAndroid) {
-        // En Android, verificar/solicitar permisos antes de bloquear
-        await _service.requestAndroidPermission();
-        await _service.blockAndroid(apps);
-      } else if (Platform.isIOS) {
-        debugPrint('🛡️ AppBlocker: Activating Shield for ${apps.length} apps');
-        // En iOS, solicitar autorización (no-op si ya está concedido)
-        await _service.requestIosPermission();
-        await _service.blockIos(apps);
-      }
+      print("blockDistractingApps");
+      await _appLimiterPlugin.blockAndUnblockIOSApp();
     } catch (e) {
-      debugPrint('❌ Failed to block apps: $e');
+      debugPrint('❌ Provider error in blockDistractingApps: $e');
+      // Don't propagate error - app should continue
+    }
+  }
+
+  Future<void> _blockDistractingAppsInternal() async {
+    final apps = state.value ?? _defaultBlockedApps;
+
+    if (Platform.isAndroid) {
+      // En Android, verificar/solicitar permisos antes de bloquear
+      await _service.blockAndroid(apps);
+    } else if (Platform.isIOS) {
+      await _service.blockIos();
     }
   }
 
   /// Desbloquea todas las apps
   Future<void> unblockAll() async {
+    try {
+      await _unblockAllInternal().timeout(
+        const Duration(seconds: 6),
+        onTimeout: () {
+          debugPrint('⏱️ Provider timeout: unblockAll operation');
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Provider error in unblockAll: $e');
+      // Don't propagate error - app should continue
+    }
+  }
+
+  Future<void> _unblockAllInternal() async {
     final apps = state.value ?? _defaultBlockedApps;
     debugPrint('🛡️ AppBlocker: Deactivating Shield');
 
-    try {
-      if (Platform.isAndroid) {
-        await _service.unblockAndroid(apps);
-      } else if (Platform.isIOS) {
-        await _service.unblockIos(apps);
-      }
-    } catch (e) {
-      debugPrint('❌ Failed to unblock apps: $e');
+    if (Platform.isAndroid) {
+      await _service.unblockAndroid(apps);
+    } else if (Platform.isIOS) {
+      await _service.unblockIos();
     }
   }
 

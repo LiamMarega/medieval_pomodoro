@@ -135,20 +135,37 @@ class OnboardingController extends _$OnboardingController {
   /// Solicita los permisos necesarios
   Future<void> requestPermissions() async {
     state = state.copyWith(isLoading: true);
+
     try {
       debugPrint('🛡️ Requesting permissions...');
       final appBlocker = AppBlockerService();
 
-      // Request Android permissions
-      await appBlocker.requestAndroidPermission();
+      // Request Android permissions with error handling
+      try {
+        await appBlocker.requestAndroidPermission();
+      } catch (e) {
+        debugPrint('⚠️ Android permission request failed (non-critical): $e');
+      }
 
-      // Request iOS permissions
-      await appBlocker.requestIosPermission();
+      // Request iOS permissions with ROBUST error handling (can crash the app)
+      try {
+        await appBlocker.requestIosPermission();
+      } catch (e) {
+        debugPrint('⚠️ iOS permission request failed (non-critical): $e');
+        // Don't rethrow - iOS permission requests can crash if called incorrectly
+        // or if the user denies. We just log and continue.
+      }
 
       // Request notification permissions
-      debugPrint('🔔 Requesting notification permissions...');
-      await NotificationService().requestPermissions();
+      try {
+        debugPrint('🔔 Requesting notification permissions...');
+        await NotificationService().requestPermissions();
+      } catch (e) {
+        debugPrint(
+            '⚠️ Notification permission request failed (non-critical): $e');
+      }
 
+      // Always mark as granted (user can retry later in TimerScreen if needed)
       state = state.copyWith(
         isLoading: false,
         arePermissionsGranted: true,
@@ -156,7 +173,12 @@ class OnboardingController extends _$OnboardingController {
       debugPrint('✅ Permissions granted state updated');
     } catch (e) {
       debugPrint('❌ Error requesting permissions: $e');
-      state = state.copyWith(isLoading: false);
+      // Even if there's an error, mark as "granted" to allow user to proceed
+      // They can be prompted again in TimerScreen if truly needed
+      state = state.copyWith(
+        isLoading: false,
+        arePermissionsGranted: true,
+      );
     }
   }
 

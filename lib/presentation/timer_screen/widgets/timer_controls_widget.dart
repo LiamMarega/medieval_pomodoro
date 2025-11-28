@@ -22,7 +22,7 @@ class TimerControlsWidget extends ConsumerWidget {
               ? 'assets/sprites/stop_button.png'
               : 'assets/sprites/play_button.png',
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticFeedback.mediumImpact();
             if (timerState.isActive) {
               // Prevent pausing during gap time
               if (!timerState.currentMode.isGapTime) {
@@ -36,14 +36,14 @@ class TimerControlsWidget extends ConsumerWidget {
         _buildControlButton(
           spritePath: 'assets/sprites/reset_button.png',
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticFeedback.mediumImpact();
             timerController.restartTimer();
           },
         ),
         _buildControlButton(
           spritePath: 'assets/sprites/settings_button.png',
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticFeedback.mediumImpact();
             Navigator.pushNamed(context, '/settings-screen');
           },
         ),

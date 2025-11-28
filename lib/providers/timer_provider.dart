@@ -229,7 +229,13 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Activar bloqueo de apps si es una sesión de trabajo
     if (state.currentMode.isWork) {
       debugPrint('🛡️ Activating App Blocker for Focus Session');
-      ref.read(appBlockerProvider.notifier).blockDistractingApps();
+      // Fire and forget - don't await, don't block timer
+      ref
+          .read(appBlockerProvider.notifier)
+          .blockDistractingApps()
+          .catchError((e) {
+        debugPrint('⚠️ App blocker failed to activate: $e');
+      });
     }
 
     // Configurar modo inmersivo
@@ -380,7 +386,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
     // Desactivar bloqueo de apps al reiniciar
     debugPrint('🛡️ Deactivating App Blocker (Restart)');
-    ref.read(appBlockerProvider.notifier).unblockAll();
+    ref.read(appBlockerProvider.notifier).unblockAll().catchError((e) {
+      debugPrint('⚠️ App blocker failed to deactivate: $e');
+    });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _updateMotivationalMessage();
@@ -429,7 +437,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Asumimos que el "Fin del Pomodoro" (Work) desbloquea.
     // Si el usuario quiere que en el break se desbloquee, lo hacemos aquí.
     debugPrint('🛡️ Deactivating App Blocker (Session Completed)');
-    ref.read(appBlockerProvider.notifier).unblockAll();
+    ref.read(appBlockerProvider.notifier).unblockAll().catchError((e) {
+      debugPrint('⚠️ App blocker failed to deactivate: $e');
+    });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 

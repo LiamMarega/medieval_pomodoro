@@ -240,97 +240,124 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
     // Don't check if we already showed it this session or if timer is active
     if (ref.read(timerControllerProvider).isActive) return;
 
-    final notificationService = NotificationService();
-    final appBlockerService = AppBlockerService();
+    try {
+      final notificationService = NotificationService();
+      final appBlockerService = AppBlockerService();
 
-    // Check permissions (this is a simplified check, ideally we check status without requesting)
-    // For now, we assume if we haven't granted them, we should prompt.
-    // However, checking "status" often requires requesting or using specific "check" methods.
-    // AwesomeNotifications has isNotificationAllowed().
-    // AppBlocker has checkAndroidPermission(). iOS is trickier.
+      // Check permissions with timeout to prevent hanging
+      bool notificationsAllowed = false;
+      try {
+        notificationsAllowed = await AwesomeNotifications()
+            .isNotificationAllowed()
+            .timeout(const Duration(seconds: 2), onTimeout: () => true);
+      } catch (e) {
+        debugPrint('⚠️ Error checking notification permission: $e');
+        notificationsAllowed = true; // Assume granted to avoid blocking user
+      }
 
-    bool notificationsAllowed =
-        await AwesomeNotifications().isNotificationAllowed();
-    bool androidPermissionAllowed = true;
-    if (Platform.isAndroid) {
-      androidPermissionAllowed =
-          await appBlockerService.checkAndroidPermission();
-    }
+      bool androidPermissionAllowed = true;
+      if (Platform.isAndroid) {
+        try {
+          androidPermissionAllowed = await appBlockerService
+              .checkAndroidPermission()
+              .timeout(const Duration(seconds: 2), onTimeout: () => true);
+        } catch (e) {
+          debugPrint('⚠️ Error checking Android permission: $e');
+          androidPermissionAllowed =
+              true; // Assume granted to avoid blocking user
+        }
+      }
 
-    // If any permission is missing, show dialog
-    if (!notificationsAllowed || !androidPermissionAllowed) {
-      if (!mounted) return;
+      // If any permission is missing, show dialog
+      if (!notificationsAllowed || !androidPermissionAllowed) {
+        if (!mounted) return;
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Dialog(
-          backgroundColor: Colors.transparent,
-          child: PixelFrame(
-            cornerSize: 16,
-            edgeThickness: 4,
-            padding: 20,
-            borderStyle: MedievalBorderStyle.stone,
-            child: Container(
-              padding: EdgeInsets.all(2.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A1B0A).withValues(alpha: 0.95),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    LocaleKeys.onboarding_permissions_title.tr(),
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 12.sp,
-                      color: const Color(0xFFDAA520),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    LocaleKeys.onboarding_permissions_message.tr(),
-                    style: GoogleFonts.vt323(
-                      fontSize: 16.sp,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 3.h),
-                  GestureDetector(
-                    onTap: () async {
-                      Navigator.pop(context);
-                      // Request permissions
-                      await notificationService.requestPermissions();
-                      if (Platform.isAndroid) {
-                        await appBlockerService.requestAndroidPermission();
-                      } else if (Platform.isIOS) {
-                        await appBlockerService.requestIosPermission();
-                      }
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 1.5.h, horizontal: 4.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4A3728),
-                        border: Border.all(
-                            color: const Color(0xFFDAA520), width: 2),
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: PixelFrame(
+              cornerSize: 16,
+              edgeThickness: 4,
+              padding: 20,
+              borderStyle: MedievalBorderStyle.stone,
+              child: Container(
+                padding: EdgeInsets.all(2.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A1B0A).withValues(alpha: 0.95),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      LocaleKeys.onboarding_permissions_title.tr(),
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 12.sp,
+                        color: const Color(0xFFDAA520),
                       ),
-                      child: Text(
-                        LocaleKeys.onboarding_grant_permissions.tr(),
-                        style: GoogleFonts.pressStart2p(
-                          fontSize: 10.sp,
-                          color: const Color(0xFFDAA520),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      LocaleKeys.onboarding_permissions_message.tr(),
+                      style: GoogleFonts.vt323(
+                        fontSize: 16.sp,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 3.h),
+                    GestureDetector(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        // Request permissions with robust error handling
+                        try {
+                          await notificationService.requestPermissions();
+                        } catch (e) {
+                          debugPrint('⚠️ Notification permission failed: $e');
+                        }
+
+                        try {
+                          if (Platform.isAndroid) {
+                            await appBlockerService.requestAndroidPermission();
+                          } else if (Platform.isIOS) {
+                            // iOS Screen Time permissions can crash the app
+                            // Wrap in try-catch for safety
+                            await appBlockerService.requestIosPermission();
+                          }
+                        } catch (e) {
+                          debugPrint('⚠️ App blocker permission failed: $e');
+                          // Don't show error to user, just log it
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            vertical: 1.5.h, horizontal: 4.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4A3728),
+                          border: Border.all(
+                              color: const Color(0xFFDAA520), width: 2),
+                        ),
+                        child: Text(
+                          LocaleKeys.onboarding_grant_permissions.tr(),
+                          style: GoogleFonts.pressStart2p(
+                            fontSize: 10.sp,
+                            color: const Color(0xFFDAA520),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error in _checkPermissions: $e');
+      // Silent failure - don't block the user from using the app
     }
   }
 

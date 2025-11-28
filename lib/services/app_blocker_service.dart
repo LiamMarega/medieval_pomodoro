@@ -25,7 +25,13 @@ class AppBlockerService {
     if (!Platform.isIOS) return false;
     try {
       debugPrint('🔒 Requesting iOS permissions for AppBlocker...');
-      final result = await _appLimiter.requestIosPermission();
+      final result = await _appLimiter.requestIosPermission().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ Timeout requesting iOS permissions (10s)');
+          return false;
+        },
+      );
       debugPrint('🔒 iOS Permission result: $result');
       return result;
     } catch (e) {
@@ -43,7 +49,7 @@ class AppBlockerService {
       await _appLimiter.blocAndroidApp();
     } catch (e) {
       debugPrint('❌ Error blocking Android apps: $e');
-      rethrow;
+      // Don't rethrow - let app continue
     }
   }
 
@@ -55,34 +61,41 @@ class AppBlockerService {
       await _appLimiter.unblocAndroidApp();
     } catch (e) {
       debugPrint('❌ Error unblocking Android apps: $e');
-      rethrow;
+      // Don't rethrow - let app continue
     }
   }
 
   /// Bloquea apps en iOS
-  Future<void> blockIos(List<String> apps) async {
-    // if (!Platform.isIOS) return;
+  Future<void> blockIos() async {
+    if (!Platform.isIOS) return;
     try {
       debugPrint('🚫 Blocking iOS apps');
       await _appLimiter.blockAndUnblockIOSApp();
+      debugPrint('✅ iOS apps blocked successfully');
     } catch (e) {
       debugPrint('❌ Error blocking iOS apps: $e');
-      rethrow;
+      // Don't rethrow - let app continue even if blocking fails
     }
   }
 
   /// Desbloquea apps en iOS
-  Future<void> unblockIos(List<String> apps) async {
+  Future<void> unblockIos() async {
     if (!Platform.isIOS) return;
     try {
       debugPrint('🔓 Unblocking iOS apps');
       // En iOS con app_limiter, el toggle suele manejar ambos estados,
       // pero para asegurarnos intentamos llamar al método de desbloqueo si existe o re-togglaer
       // Nota: Revisar comportamiento específico del plugin en iOS
-      await _appLimiter.blockAndUnblockIOSApp();
+      await _appLimiter.blockAndUnblockIOSApp().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('⏱️ Timeout unblocking iOS apps (5s)');
+        },
+      );
+      debugPrint('✅ iOS apps unblocked successfully');
     } catch (e) {
       debugPrint('❌ Error unblocking iOS apps: $e');
-      rethrow;
+      // Don't rethrow - let app continue even if unblocking fails
     }
   }
 

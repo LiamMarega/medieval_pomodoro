@@ -10,7 +10,6 @@ import 'package:sizer/sizer.dart';
 import 'core/app_export.dart';
 import 'core/services/notification_service.dart';
 import 'providers/audio_provider.dart';
-import 'providers/app_blocker_provider.dart';
 import 'services/audio/audio_service_handler.dart';
 import 'widgets/custom_error_widget.dart';
 import 'presentation/settings_screen/settings_screen.dart';
@@ -22,7 +21,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await EasyLocalization.ensureInitialized();
-  
+
   // Initialize Notification Service
   await NotificationService().initialize();
 
@@ -57,50 +56,11 @@ void main() async {
           overrides: [
             audioHandlerProvider.overrideWithValue(_audioHandler),
           ],
-          child: const AppBlockerInitializer(child: MyApp()),
+          child: const MyApp(),
         ),
       ),
     );
   });
-}
-
-class AppBlockerInitializer extends ConsumerStatefulWidget {
-  final Widget child;
-  const AppBlockerInitializer({super.key, required this.child});
-
-  @override
-  ConsumerState<AppBlockerInitializer> createState() => _AppBlockerInitializerState();
-}
-
-class _AppBlockerInitializerState extends ConsumerState<AppBlockerInitializer> {
-  @override
-  void initState() {
-    super.initState();
-    // Inicialización segura del bloqueador de apps
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initAppBlocker();
-    });
-  }
-
-  Future<void> _initAppBlocker() async {
-    try {
-      debugPrint('🛡️ Initializing App Blocker...');
-      // 1. Desbloquear todo al inicio por seguridad (si la app crasheó antes)
-      await ref.read(appBlockerProvider.notifier).unblockAll();
-      
-      // 2. Solicitar permisos si es necesario (opcional, mejor hacerlo en settings)
-      // await ref.read(appBlockerProvider.notifier).requestPermissions();
-      
-      debugPrint('✅ App Blocker initialized');
-    } catch (e) {
-      debugPrint('❌ Error initializing App Blocker: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.child;
-  }
 }
 
 class MyApp extends StatelessWidget {
