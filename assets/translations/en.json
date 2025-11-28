@@ -129,7 +129,10 @@
     "error_resetting": "❌ Error resetting: {error}",
     "error_loading_settings": "Error loading settings: {error}",
     "language": "LANGUAGE",
-    "language_changed": "🌍 Language changed successfully"
+    "language_changed": "🌍 Language changed successfully",
+    "manage_blocked_apps": "🛡️ MANAGE BLOCKED APPS",
+    "apps_selected_successfully": "✅ Apps selected successfully",
+    "app_selection_cancelled": "⚠️ App selection cancelled"
   },
   "stats_screen": {
     "knights_progress": "Knight's Progress",

@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
+import 'dart:io';
 import '../../generated/locale_keys.g.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/audio_provider.dart';
+import '../../providers/app_blocker_provider.dart';
 import '../../widgets/pixel_frame.dart';
 import '../../constants/colors.dart';
 
@@ -264,6 +266,81 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     _buildLanguageSelector(context),
 
                                     SizedBox(height: 3.h),
+
+                                    // Manage Blocked Apps button (iOS only)
+                                    if (Platform.isIOS)
+                                      _buildActionButton(
+                                        label: LocaleKeys
+                                            .settings_screen_manage_blocked_apps
+                                            .tr(),
+                                        icon: '🛡️',
+                                        color: AppColors.primaryGold,
+                                        onTap: () async {
+                                          HapticFeedback.mediumImpact();
+                                          
+                                          // Check permission first
+                                          final hasPermission = await ref
+                                              .read(appBlockerProvider.notifier)
+                                              .hasPermission();
+                                          
+                                          if (!hasPermission) {
+                                            // Request permission first
+                                            final authResult = await ref
+                                                .read(appBlockerProvider.notifier)
+                                                .requestPermission();
+                                            
+                                            if (!authResult) {
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      '⚠️ Permission denied. Please grant Screen Time permission in Settings.',
+                                                      style: GoogleFonts.pressStart2p(
+                                                          fontSize: 10.sp),
+                                                    ),
+                                                    backgroundColor:
+                                                        AppColors.error,
+                                                    duration: const Duration(
+                                                        seconds: 3),
+                                                  ),
+                                                );
+                                              }
+                                              return;
+                                            }
+                                          }
+                                          
+                                          // Open app selection UI
+                                          final result = await ref
+                                              .read(appBlockerProvider.notifier)
+                                              .selectAppsToBlock();
+                                          
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  result
+                                                      ? LocaleKeys
+                                                          .settings_screen_apps_selected_successfully
+                                                          .tr()
+                                                      : LocaleKeys
+                                                          .settings_screen_app_selection_cancelled
+                                                          .tr(),
+                                                  style: GoogleFonts.pressStart2p(
+                                                      fontSize: 10.sp),
+                                                ),
+                                                backgroundColor: result
+                                                    ? AppColors.success
+                                                    : AppColors.primaryGold,
+                                                duration:
+                                                    const Duration(seconds: 2),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    if (Platform.isIOS) SizedBox(height: 2.h),
 
                                     // Test durations button
                                     _buildActionButton(

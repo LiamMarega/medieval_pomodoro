@@ -61,7 +61,7 @@ class NativeScreenTimeService {
   }
 
   /// Show app selection UI (FamilyActivityPicker)
-  /// Should only be called once - selected apps are persisted
+  /// Loads previous selection and allows user to modify it
   Future<bool> selectAppsToBlock() async {
     if (!Platform.isIOS) return false;
 
@@ -77,9 +77,13 @@ class NativeScreenTimeService {
       final result = await _channel.invokeMethod<bool>('selectAppsToBlock');
       debugPrint('📱 App selection result: $result');
 
-      if (result == true) {
-        await _saveAppsSelectedStatus(true);
-      }
+      // Update status based on result (true = apps selected, false = no apps or cancelled)
+      // The native code now always saves the selection, even if empty
+      await _saveAppsSelectedStatus(result == true);
+      
+      // Also check actual state from native side to ensure sync
+      final actualState = await hasAppsSelected();
+      debugPrint('📱 Actual apps selected state: $actualState');
 
       return result ?? false;
     } catch (e) {
@@ -127,13 +131,35 @@ class NativeScreenTimeService {
   }
 
   /// Check if user has selected apps to block
+  /// First checks native code for actual state, then falls back to SharedPreferences
   Future<bool> hasAppsSelected() async {
+    if (!Platform.isIOS) return false;
+
     try {
+      // First check native code for the actual state
+      final nativeResult = await _channel.invokeMethod<bool>('checkAppsSelected');
+      if (nativeResult != null) {
+        // Sync with SharedPreferences
+        await _saveAppsSelectedStatus(nativeResult);
+        debugPrint('📱 Apps selected state from native: $nativeResult');
+        return nativeResult;
+      }
+      
+      // Fallback to SharedPreferences if native check fails
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool(_prefsKeyAppsSelected) ?? false;
+      final prefsResult = prefs.getBool(_prefsKeyAppsSelected) ?? false;
+      debugPrint('📱 Apps selected state from SharedPreferences: $prefsResult');
+      return prefsResult;
     } catch (e) {
       debugPrint('❌ Error checking apps selected status: $e');
-      return false;
+      // Fallback to SharedPreferences on error
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        return prefs.getBool(_prefsKeyAppsSelected) ?? false;
+      } catch (e2) {
+        debugPrint('❌ Error reading from SharedPreferences: $e2');
+        return false;
+      }
     }
   }
 

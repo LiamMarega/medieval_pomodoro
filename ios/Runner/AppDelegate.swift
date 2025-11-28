@@ -131,6 +131,8 @@ func startHelloWorldLiveActivity() {
         self.blockApps(result: result)
       case "unblockApps":
         self.unblockApps(result: result)
+      case "checkAppsSelected":
+        self.checkAppsSelected(result: result)
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -180,21 +182,28 @@ func startHelloWorldLiveActivity() {
     
     Task {
       await MainActor.run {
-        let selection = FamilyActivitySelection()
+        // Load previous selection if it exists
+        var selection = self.loadAppSelection() ?? FamilyActivitySelection()
         var hostingController: UIHostingController<FamilyActivityPickerWrapper>!
         
         let pickerWrapper = FamilyActivityPickerWrapper(
           selection: selection,
           onComplete: { finalSelection in
-            // Save selected apps tokens
-            if !finalSelection.applicationTokens.isEmpty || !finalSelection.categoryTokens.isEmpty {
-              self.saveAppSelection(finalSelection)
-              print("✅ Apps selected and saved: \(finalSelection.applicationTokens.count) apps")
-              result(true)
+            // Always save the selection, even if empty (user deselected all apps)
+            self.saveAppSelection(finalSelection)
+            
+            // Update SharedPreferences status based on whether apps are selected
+            let hasApps = !finalSelection.applicationTokens.isEmpty || !finalSelection.categoryTokens.isEmpty
+            UserDefaults.standard.set(hasApps, forKey: "screen_time_apps_selected")
+            UserDefaults.standard.synchronize()
+            
+            if hasApps {
+              print("✅ Apps selected and saved: \(finalSelection.applicationTokens.count) apps, \(finalSelection.categoryTokens.count) categories")
             } else {
-              print("⚠️ No apps selected")
-              result(false)
+              print("✅ All apps deselected - selection cleared")
             }
+            
+            result(hasApps)
             hostingController.dismiss(animated: true)
           },
           onCancel: {
@@ -281,6 +290,18 @@ func startHelloWorldLiveActivity() {
     
     print("✅ Apps unblocked successfully")
     result(nil)
+  }
+  
+  @available(iOS 16.0, *)
+  private func checkAppsSelected(result: @escaping FlutterResult) {
+    guard let selection = loadAppSelection() else {
+      result(false)
+      return
+    }
+    
+    let hasApps = !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty
+    print("📱 Checking apps selected: \(hasApps) (\(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categories)")
+    result(hasApps)
   }
 }
 

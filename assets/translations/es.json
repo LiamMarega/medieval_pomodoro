@@ -129,7 +129,10 @@
     "error_resetting": "❌ Error al reiniciar: {error}",
     "error_loading_settings": "Error al cargar configuraciones: {error}",
     "language": "IDIOMA",
-    "language_changed": "🌍 Idioma cambiado exitosamente"
+    "language_changed": "🌍 Idioma cambiado exitosamente",
+    "manage_blocked_apps": "🛡️ GESTIONAR APPS BLOQUEADAS",
+    "apps_selected_successfully": "✅ Apps seleccionadas exitosamente",
+    "app_selection_cancelled": "⚠️ Selección de apps cancelada"
   },
   "stats_screen": {
     "knights_progress": "Progreso del Caballero",

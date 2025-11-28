@@ -43,7 +43,8 @@ class AppBlocker extends _$AppBlocker {
     }
   }
 
-  /// Show app selection UI (one-time, stores selection persistently)
+  /// Show app selection UI (loads previous selection, allows modification)
+  /// Updates state in real-time based on selection result
   Future<bool> selectAppsToBlock() async {
     if (!Platform.isIOS) {
       debugPrint('⚠️ App selection only supported on iOS');
@@ -61,10 +62,15 @@ class AppBlocker extends _$AppBlocker {
       debugPrint('📱 Showing app selection UI...');
       final result = await _service.selectAppsToBlock();
 
-      if (result) {
-        // Update state to reflect apps are now selected
-        state = const AsyncValue.data(true);
-      }
+      // Always update state based on result (true = apps selected, false = no apps)
+      // This ensures the UI reflects the current selection state
+      state = AsyncValue.data(result);
+      
+      // Also refresh from service to ensure we have the latest state
+      final actualState = await _service.hasAppsSelected();
+      state = AsyncValue.data(actualState);
+      
+      debugPrint('📱 App selection completed. State updated: $actualState');
 
       return result;
     } catch (e) {

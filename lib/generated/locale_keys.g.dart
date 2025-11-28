@@ -130,6 +130,9 @@ abstract class  LocaleKeys {
   static const settings_screen_error_loading_settings = 'settings_screen.error_loading_settings';
   static const settings_screen_language = 'settings_screen.language';
   static const settings_screen_language_changed = 'settings_screen.language_changed';
+  static const settings_screen_manage_blocked_apps = 'settings_screen.manage_blocked_apps';
+  static const settings_screen_apps_selected_successfully = 'settings_screen.apps_selected_successfully';
+  static const settings_screen_app_selection_cancelled = 'settings_screen.app_selection_cancelled';
   static const settings_screen = 'settings_screen';
   static const stats_screen_knights_progress = 'stats_screen.knights_progress';
   static const stats_screen_knights_achievements = 'stats_screen.knights_achievements';
