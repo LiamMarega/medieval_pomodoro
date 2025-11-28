@@ -45,6 +45,15 @@
     <key>NSUserNotificationUsageDescription</key>
     <string>This app needs to show timer notifications when the app is in background</string>
     
+    <!-- Local Network Access for Flutter Debugging -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app needs local network access for debugging and development purposes</string>
+    <key>NSBonjourServices</key>
+    <array>
+      <string>_dartVmService._tcp</string>
+      <string>_dartobservatory._tcp</string>
+    </array>
+    
     <!-- App Limiter / Screen Time API Permissions -->
     <key>com.apple.developer.device-activity-monitoring</key>
     <true/>
