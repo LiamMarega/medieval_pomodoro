@@ -317,6 +317,14 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       debugPrint('🔇 Music is not playing or is disabled, skipping stop');
     }
 
+    // Desactivar bloqueo de apps al pausar
+    if (state.currentMode.isWork) {
+      debugPrint('🛡️ Deactivating App Blocker (Timer Paused)');
+      ref.read(appBlockerProvider.notifier).unblockAll().catchError((e) {
+        debugPrint('⚠️ App blocker failed to deactivate on pause: $e');
+      });
+    }
+
     // Salir del modo inmersivo
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 

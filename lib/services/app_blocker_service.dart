@@ -1,112 +1,105 @@
 import 'dart:io';
-import 'package:app_limiter/app_limiter.dart';
 import 'package:flutter/foundation.dart';
+import 'native_screen_time_service.dart';
 
+/// Service for blocking distracting apps during focus sessions
+/// iOS: Uses native Screen Time API via NativeScreenTimeService
+/// Android: Not currently supported (removed)
 class AppBlockerService {
   static final AppBlockerService _instance = AppBlockerService._internal();
   factory AppBlockerService() => _instance;
   AppBlockerService._internal();
 
-  final AppLimiter _appLimiter = AppLimiter();
+  final NativeScreenTimeService _nativeService = NativeScreenTimeService();
 
-  /// Solicita permisos necesarios en Android
-  Future<void> requestAndroidPermission() async {
-    if (!Platform.isAndroid) return;
-    try {
-      debugPrint('🔒 Requesting Android permissions for AppBlocker...');
-      await _appLimiter.requestAndroidPermission();
-    } catch (e) {
-      debugPrint('❌ Error requesting Android permissions: $e');
+  /// Request Family Controls authorization (iOS only)
+  /// This should be called during onboarding, only once
+  Future<bool> requestPermission() async {
+    if (!Platform.isIOS) {
+      debugPrint('⚠️ App blocking only supported on iOS');
+      return false;
     }
-  }
 
-  /// Solicita permisos necesarios en iOS (Family Controls)
-  Future<bool> requestIosPermission() async {
-    if (!Platform.isIOS) return false;
     try {
-      debugPrint('🔒 Requesting iOS permissions for AppBlocker...');
-      final result = await _appLimiter.requestIosPermission().timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          debugPrint('⏱️ Timeout requesting iOS permissions (10s)');
-          return false;
-        },
-      );
-      debugPrint('🔒 iOS Permission result: $result');
+      debugPrint('🔒 Requesting Screen Time permissions...');
+      final result = await _nativeService.requestAuthorization();
+      debugPrint('🔒 Screen Time permission result: $result');
       return result;
     } catch (e) {
-      debugPrint('❌ Error requesting iOS permissions: $e');
+      debugPrint('❌ Error requesting Screen Time permissions: $e');
       return false;
     }
   }
 
-  /// Bloquea las apps especificadas en Android
-  /// Nota: En la versión actual del plugin, se activa el bloqueo general configurado
-  Future<void> blockAndroid(List<String> apps) async {
-    if (!Platform.isAndroid) return;
+  /// Check if Family Controls authorization has been granted
+  Future<bool> hasPermission() async {
+    if (!Platform.isIOS) return false;
+
     try {
-      debugPrint('🚫 Blocking Android apps: $apps');
-      await _appLimiter.blocAndroidApp();
+      return await _nativeService.isAuthorized();
     } catch (e) {
-      debugPrint('❌ Error blocking Android apps: $e');
-      // Don't rethrow - let app continue
+      debugPrint('❌ Error checking Screen Time authorization: $e');
+      return false;
     }
   }
 
-  /// Desbloquea las apps en Android
-  Future<void> unblockAndroid(List<String> apps) async {
-    if (!Platform.isAndroid) return;
+  /// Show app selection UI (FamilyActivityPicker)
+  /// Should only be called once - selected apps are persisted
+  Future<bool> selectAppsToBlock() async {
+    if (!Platform.isIOS) {
+      debugPrint('⚠️ App selection only supported on iOS');
+      return false;
+    }
+
     try {
-      debugPrint('🔓 Unblocking Android apps');
-      await _appLimiter.unblocAndroidApp();
+      debugPrint('📱 Showing app selection UI...');
+      final result = await _nativeService.selectAppsToBlock();
+      debugPrint('📱 App selection result: $result');
+      return result;
     } catch (e) {
-      debugPrint('❌ Error unblocking Android apps: $e');
-      // Don't rethrow - let app continue
+      debugPrint('❌ Error showing app selection UI: $e');
+      return false;
     }
   }
 
-  /// Bloquea apps en iOS
-  Future<void> blockIos() async {
+  /// Check if user has selected apps to block
+  Future<bool> hasAppsSelected() async {
+    if (!Platform.isIOS) return false;
+
+    try {
+      return await _nativeService.hasAppsSelected();
+    } catch (e) {
+      debugPrint('❌ Error checking apps selected: $e');
+      return false;
+    }
+  }
+
+  /// Block the selected apps
+  /// Apps must be selected first via selectAppsToBlock()
+  Future<void> blockApps() async {
     if (!Platform.isIOS) return;
+
     try {
-      debugPrint('🚫 Blocking iOS apps');
-      await _appLimiter.blockAndUnblockIOSApp();
-      debugPrint('✅ iOS apps blocked successfully');
+      debugPrint('🚫 Blocking apps...');
+      await _nativeService.blockApps();
+      debugPrint('✅ Apps blocked successfully');
     } catch (e) {
-      debugPrint('❌ Error blocking iOS apps: $e');
+      debugPrint('❌ Error blocking apps: $e');
       // Don't rethrow - let app continue even if blocking fails
     }
   }
 
-  /// Desbloquea apps en iOS
-  Future<void> unblockIos() async {
+  /// Unblock all apps
+  Future<void> unblockApps() async {
     if (!Platform.isIOS) return;
-    try {
-      debugPrint('🔓 Unblocking iOS apps');
-      // En iOS con app_limiter, el toggle suele manejar ambos estados,
-      // pero para asegurarnos intentamos llamar al método de desbloqueo si existe o re-togglaer
-      // Nota: Revisar comportamiento específico del plugin en iOS
-      await _appLimiter.blockAndUnblockIOSApp().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          debugPrint('⏱️ Timeout unblocking iOS apps (5s)');
-        },
-      );
-      debugPrint('✅ iOS apps unblocked successfully');
-    } catch (e) {
-      debugPrint('❌ Error unblocking iOS apps: $e');
-      // Don't rethrow - let app continue even if unblocking fails
-    }
-  }
 
-  /// Verifica si los permisos de Android están concedidos
-  Future<bool> checkAndroidPermission() async {
-    if (!Platform.isAndroid) return false;
     try {
-      return await _appLimiter.isAndroidPermissionAllowed();
+      debugPrint('🔓 Unblocking apps...');
+      await _nativeService.unblockApps();
+      debugPrint('✅ Apps unblocked successfully');
     } catch (e) {
-      debugPrint('❌ Error checking Android permissions: $e');
-      return false;
+      debugPrint('❌ Error unblocking apps: $e');
+      // Don't rethrow - let app continue even if unblocking fails
     }
   }
 }

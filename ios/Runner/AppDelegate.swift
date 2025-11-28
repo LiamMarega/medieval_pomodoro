@@ -1,6 +1,10 @@
 import UIKit
 import Flutter
+import SwiftUI
 import ActivityKit
+import FamilyControls
+import ManagedSettings
+import DeviceActivity
 
 // MARK: - Live Activity Attributes (shared between app and widget)
 public struct LiveActivitiesAppAttributes: ActivityAttributes, Identifiable {
@@ -62,11 +66,30 @@ func startHelloWorldLiveActivity() {
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+  // Screen Time components - using computed properties to avoid @available on stored properties
+  @available(iOS 16.0, *)
+  private var authCenter: AuthorizationCenter {
+    AuthorizationCenter.shared
+  }
+  
+  @available(iOS 15.0, *)
+  private var managedSettingsStore: ManagedSettingsStore {
+    ManagedSettingsStore()
+  }
+  
+  private let userDefaults = UserDefaults.standard
+  private let appsSelectedKey = "apps_selected_tokens"
+  
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    
+    // Setup Screen Time method channel
+    if #available(iOS 16.0, *) {
+      setupScreenTimeChannel()
+    }
     
     // Start Live Activity when app launches
     if #available(iOS 16.1, *) {
@@ -85,4 +108,213 @@ func startHelloWorldLiveActivity() {
       startHelloWorldLiveActivity()
     }
   }
+  
+  @available(iOS 16.0, *)
+  private func setupScreenTimeChannel() {
+    let controller = window?.rootViewController as! FlutterViewController
+    let channel = FlutterMethodChannel(
+      name: "com.focusknight.app/screen_time",
+      binaryMessenger: controller.binaryMessenger
+    )
+    
+    channel.setMethodCallHandler { [weak self] (call, result) in
+      guard let self = self else { return }
+      
+      switch call.method {
+      case "checkAuthorizationStatus":
+        self.checkAuthorizationStatus(result: result)
+      case "requestFamilyControlsAuth":
+        self.requestFamilyControlsAuth(result: result)
+      case "selectAppsToBlock":
+        self.selectAppsToBlock(result: result)
+      case "blockApps":
+        self.blockApps(result: result)
+      case "unblockApps":
+        self.unblockApps(result: result)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+  
+  @available(iOS 16.0, *)
+  private func checkAuthorizationStatus(result: @escaping FlutterResult) {
+    let status = authCenter.authorizationStatus
+    let isAuthorized = (status == .approved)
+    print("🔐 Authorization status: \(status.rawValue), isAuthorized: \(isAuthorized)")
+    result(isAuthorized)
+  }
+  
+  @available(iOS 16.0, *)
+  private func requestFamilyControlsAuth(result: @escaping FlutterResult) {
+    print("🔒 Requesting Family Controls authorization...")
+    
+    Task {
+      do {
+        try await authCenter.requestAuthorization(for: .individual)
+        let isAuthorized = authCenter.authorizationStatus == .approved
+        print("✅ Authorization result: \(isAuthorized)")
+        await MainActor.run {
+          result(isAuthorized)
+        }
+      } catch {
+        print("❌ Authorization error: \(error)")
+        await MainActor.run {
+          result(false)
+        }
+      }
+    }
+  }
+  
+  @available(iOS 16.0, *)
+  private func selectAppsToBlock(result: @escaping FlutterResult) {
+    print("📱 Showing app selection UI...")
+    
+    guard authCenter.authorizationStatus == .approved else {
+      print("❌ Not authorized to select apps")
+      result(false)
+      return
+    }
+    
+    let controller = window?.rootViewController as! FlutterViewController
+    
+    Task {
+      await MainActor.run {
+        let selection = FamilyActivitySelection()
+        var hostingController: UIHostingController<FamilyActivityPickerWrapper>!
+        
+        let pickerWrapper = FamilyActivityPickerWrapper(
+          selection: selection,
+          onComplete: { finalSelection in
+            // Save selected apps tokens
+            if !finalSelection.applicationTokens.isEmpty || !finalSelection.categoryTokens.isEmpty {
+              self.saveAppSelection(finalSelection)
+              print("✅ Apps selected and saved: \(finalSelection.applicationTokens.count) apps")
+              result(true)
+            } else {
+              print("⚠️ No apps selected")
+              result(false)
+            }
+            hostingController.dismiss(animated: true)
+          },
+          onCancel: {
+            result(false)
+            hostingController.dismiss(animated: true)
+          }
+        )
+        
+        hostingController = UIHostingController(rootView: pickerWrapper)
+        hostingController.modalPresentationStyle = .formSheet
+        hostingController.isModalInPresentation = true
+        controller.present(hostingController, animated: true)
+      }
+    }
+  }
+  
+  @available(iOS 16.0, *)
+  private func saveAppSelection(_ selection: FamilyActivitySelection) {
+    do {
+      let encoder = JSONEncoder()
+      let appTokensData = try encoder.encode(selection.applicationTokens)
+      let categoryTokensData = try encoder.encode(selection.categoryTokens)
+      
+      userDefaults.set(appTokensData, forKey: appsSelectedKey + "_apps")
+      userDefaults.set(categoryTokensData, forKey: appsSelectedKey + "_categories")
+      userDefaults.synchronize()
+      
+      print("💾 Saved app selection to UserDefaults")
+    } catch {
+      print("❌ Error saving app selection: \(error)")
+    }
+  }
+  
+  @available(iOS 16.0, *)
+  private func loadAppSelection() -> FamilyActivitySelection? {
+    guard let appTokensData = userDefaults.data(forKey: appsSelectedKey + "_apps"),
+          let categoryTokensData = userDefaults.data(forKey: appsSelectedKey + "_categories") else {
+      print("⚠️ No saved app selection found")
+      return nil
+    }
+    
+    do {
+      let decoder = JSONDecoder()
+      let appTokens = try decoder.decode(Set<ApplicationToken>.self, from: appTokensData)
+      let categoryTokens = try decoder.decode(Set<ActivityCategoryToken>.self, from: categoryTokensData)
+      
+      var selection = FamilyActivitySelection()
+      selection.applicationTokens = appTokens
+      selection.categoryTokens = categoryTokens
+      
+      print("📂 Loaded app selection: \(appTokens.count) apps")
+      return selection
+    } catch {
+      print("❌ Error loading app selection: \(error)")
+      return nil
+    }
+  }
+  
+  @available(iOS 16.0, *)
+  private func blockApps(result: @escaping FlutterResult) {
+    print("🚫 Blocking apps...")
+    
+    guard let selection = loadAppSelection() else {
+      print("❌ No apps selected to block")
+      result(FlutterError(code: "NO_APPS_SELECTED", message: "No apps selected", details: nil))
+      return
+    }
+    
+    // Block selected apps using ManagedSettingsStore
+    managedSettingsStore.shield.applications = selection.applicationTokens
+    managedSettingsStore.shield.applicationCategories = .specific(selection.categoryTokens)
+    
+    print("✅ Apps blocked successfully")
+    result(nil)
+  }
+  
+  @available(iOS 16.0, *)
+  private func unblockApps(result: @escaping FlutterResult) {
+    print("🔓 Unblocking apps...")
+    
+    // Clear all shields
+    managedSettingsStore.shield.applications = nil
+    managedSettingsStore.shield.applicationCategories = nil
+    
+    print("✅ Apps unblocked successfully")
+    result(nil)
+  }
 }
+
+// MARK: - FamilyActivityPicker Wrapper
+@available(iOS 16.0, *)
+private struct FamilyActivityPickerWrapper: View {
+  @State private var selection: FamilyActivitySelection
+  let onComplete: (FamilyActivitySelection) -> Void
+  let onCancel: () -> Void
+  
+  init(selection: FamilyActivitySelection, onComplete: @escaping (FamilyActivitySelection) -> Void, onCancel: @escaping () -> Void) {
+    _selection = State(initialValue: selection)
+    self.onComplete = onComplete
+    self.onCancel = onCancel
+  }
+  
+  var body: some View {
+    NavigationView {
+      FamilyActivityPicker(selection: $selection)
+        .navigationTitle("Select Apps to Block")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+          ToolbarItem(placement: .navigationBarLeading) {
+            Button("Cancel") {
+              onCancel()
+            }
+          }
+          ToolbarItem(placement: .navigationBarTrailing) {
+            Button("Done") {
+              onComplete(selection)
+            }
+          }
+        }
+    }
+  }
+}
+

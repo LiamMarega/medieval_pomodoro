@@ -255,21 +255,8 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
         notificationsAllowed = true; // Assume granted to avoid blocking user
       }
 
-      bool androidPermissionAllowed = true;
-      if (Platform.isAndroid) {
-        try {
-          androidPermissionAllowed = await appBlockerService
-              .checkAndroidPermission()
-              .timeout(const Duration(seconds: 2), onTimeout: () => true);
-        } catch (e) {
-          debugPrint('⚠️ Error checking Android permission: $e');
-          androidPermissionAllowed =
-              true; // Assume granted to avoid blocking user
-        }
-      }
-
       // If any permission is missing, show dialog
-      if (!notificationsAllowed || !androidPermissionAllowed) {
+      if (!notificationsAllowed) {
         if (!mounted) return;
 
         showDialog(
@@ -318,17 +305,14 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
                           debugPrint('⚠️ Notification permission failed: $e');
                         }
 
-                        try {
-                          if (Platform.isAndroid) {
-                            await appBlockerService.requestAndroidPermission();
-                          } else if (Platform.isIOS) {
-                            // iOS Screen Time permissions can crash the app
-                            // Wrap in try-catch for safety
-                            await appBlockerService.requestIosPermission();
+                        // Request iOS Screen Time permissions if on iOS
+                        if (Platform.isIOS) {
+                          try {
+                            await appBlockerService.requestPermission();
+                          } catch (e) {
+                            debugPrint('⚠️ App blocker permission failed: $e');
+                            // Don't show error to user, just log it
                           }
-                        } catch (e) {
-                          debugPrint('⚠️ App blocker permission failed: $e');
-                          // Don't show error to user, just log it
                         }
                       },
                       child: Container(

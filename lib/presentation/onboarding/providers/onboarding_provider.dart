@@ -140,20 +140,15 @@ class OnboardingController extends _$OnboardingController {
       debugPrint('🛡️ Requesting permissions...');
       final appBlocker = AppBlockerService();
 
-      // Request Android permissions with error handling
+      // Request app blocker permissions (iOS Screen Time)
+      // AppBlockerService handles platform checks internally
       try {
-        await appBlocker.requestAndroidPermission();
+        await appBlocker.requestPermission();
       } catch (e) {
-        debugPrint('⚠️ Android permission request failed (non-critical): $e');
-      }
-
-      // Request iOS permissions with ROBUST error handling (can crash the app)
-      try {
-        await appBlocker.requestIosPermission();
-      } catch (e) {
-        debugPrint('⚠️ iOS permission request failed (non-critical): $e');
-        // Don't rethrow - iOS permission requests can crash if called incorrectly
-        // or if the user denies. We just log and continue.
+        debugPrint(
+            '⚠️ App blocker permission request failed (non-critical): $e');
+        // Don't rethrow - Permission requests can fail if denied or called incorrectly
+        // We just log and continue, user can retry later if needed
       }
 
       // Request notification permissions

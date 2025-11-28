@@ -1,6 +1,4 @@
 PODS:
-  - app_limiter (0.0.1):
-    - Flutter
   - audio_service (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -36,7 +34,6 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
-  - app_limiter (from `.symlinks/plugins/app_limiter/ios`)
   - audio_service (from `.symlinks/plugins/audio_service/darwin`)
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
   - awesome_notifications (from `.symlinks/plugins/awesome_notifications/ios`)
@@ -57,8 +54,6 @@ SPEC REPOS:
     - IosAwnCore
 
 EXTERNAL SOURCES:
-  app_limiter:
-    :path: ".symlinks/plugins/app_limiter/ios"
   audio_service:
     :path: ".symlinks/plugins/audio_service/darwin"
   audio_session:
@@ -89,7 +84,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
 
 SPEC CHECKSUMS:
-  app_limiter: 98f11b431bb74c07bf530f8695cf91efed1ff9a2
   audio_service: aa99a6ba2ae7565996015322b0bb024e1d25c6fd
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
   awesome_notifications: 0f432b28098d193920b11a44cfa9d2d9313a3888

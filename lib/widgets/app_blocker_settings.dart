@@ -39,13 +39,13 @@ class AppBlockerSettingsWidget extends ConsumerWidget {
             style: TextStyle(color: Colors.white70, fontSize: 12),
           ),
           const SizedBox(height: 16),
-          
+
           // Permissions Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                ref.read(appBlockerProvider.notifier).requestPermissions();
+                ref.read(appBlockerProvider.notifier).requestPermission();
               },
               icon: const Icon(Icons.lock_open, size: 18),
               label: const Text('Grant Permissions'),
@@ -58,105 +58,84 @@ class AppBlockerSettingsWidget extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
 
-          // List of apps
+          // App selection status
           blockedAppsAsync.when(
-            data: (apps) => Column(
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: apps.length > 5 ? 5 : apps.length, // Show first 5 only
-                  itemBuilder: (context, index) {
-                    final app = apps[index];
-                    return ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.block, color: Colors.redAccent, size: 16),
-                      title: Text(
-                        app,
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
+            data: (appsSelected) => appsSelected
+                ? Column(
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.check_circle,
+                              color: Colors.green, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Apps have been selected',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        ],
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white54, size: 16),
-                        onPressed: () {
-                          ref.read(appBlockerProvider.notifier).removeBlockedApp(app);
-                        },
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            ref
+                                .read(appBlockerProvider.notifier)
+                                .selectAppsToBlock();
+                          },
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: const Text('Change Selection'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.withOpacity(0.2),
+                            foregroundColor: Colors.blue,
+                            side: const BorderSide(color: Colors.blue),
+                          ),
+                        ),
                       ),
-                    );
-                  },
-                ),
-                if (apps.length > 5)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      '+ ${apps.length - 5} more apps',
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              color: Colors.amber, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'No apps selected yet. Select apps to block during focus sessions.',
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            ref
+                                .read(appBlockerProvider.notifier)
+                                .selectAppsToBlock();
+                          },
+                          icon: const Icon(Icons.add_circle, size: 18),
+                          label: const Text('Select Apps to Block'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber.withOpacity(0.2),
+                            foregroundColor: Colors.amber,
+                            side: const BorderSide(color: Colors.amber),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text('Error: $e', style: const TextStyle(color: Colors.red)),
-          ),
-
-          const SizedBox(height: 16),
-          
-          // Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                onPressed: () {
-                  _showAddAppDialog(context, ref);
-                },
-                child: const Text('+ Add Manually', style: TextStyle(color: Colors.amber)),
-              ),
-              TextButton(
-                onPressed: () {
-                  ref.read(appBlockerProvider.notifier).restoreDefaults();
-                },
-                child: const Text('Reset Defaults', style: TextStyle(color: Colors.white54)),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddAppDialog(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2C2C),
-        title: const Text('Add Package Name', style: TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: 'e.g., com.twitter.android',
-            hintStyle: TextStyle(color: Colors.white38),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
-          ),
-          TextButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                ref.read(appBlockerProvider.notifier).addBlockedApp(controller.text.trim());
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Add', style: TextStyle(color: Colors.amber)),
+            error: (e, _) =>
+                Text('Error: $e', style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 }
-
