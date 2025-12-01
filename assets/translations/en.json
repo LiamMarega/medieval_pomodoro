@@ -178,5 +178,12 @@
     "permissions_message": "To defend your focus, we need permission to block distractions and notify you of your victories.",
     "grant_permissions": "GRANT PERMISSIONS",
     "permissions_granted": "PERMISSIONS GRANTED"
+  },
+  "shield": {
+    "focus_title": "Focus Knight",
+    "focus_subtitle": "You have sworn to protect your focus.\nClose {{appName}} and return to your battle.",
+    "break_title": "Sacred Rest",
+    "break_subtitle": "Wait for your rest to end.",
+    "close_button": "Close"
   }
 }

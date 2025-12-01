@@ -133,9 +133,34 @@ func startHelloWorldLiveActivity() {
         self.unblockApps(result: result)
       case "checkAppsSelected":
         self.checkAppsSelected(result: result)
+      case "updateShieldStatus":
+        self.updateShieldStatus(call: call, result: result)
       default:
         result(FlutterMethodNotImplemented)
       }
+    }
+  }
+
+  @available(iOS 16.0, *)
+  private func updateShieldStatus(call: FlutterMethodCall, result: @escaping FlutterResult) {
+    guard let args = call.arguments as? [String: Any],
+          let title = args["title"] as? String,
+          let subtitle = args["subtitle"] as? String,
+          let buttonLabel = args["buttonLabel"] as? String else {
+      result(FlutterError(code: "INVALID_ARGUMENTS", message: "Missing arguments", details: nil))
+      return
+    }
+
+    if let userDefaults = UserDefaults(suiteName: "group.com.focusknight.app") {
+        userDefaults.set(title, forKey: "shield_title")
+        userDefaults.set(subtitle, forKey: "shield_subtitle")
+        userDefaults.set(buttonLabel, forKey: "shield_button_label")
+        userDefaults.synchronize()
+        print("🛡️ Shield status updated: \(title)")
+        result(nil)
+    } else {
+        print("❌ Failed to access App Group UserDefaults")
+        result(FlutterError(code: "USER_DEFAULTS_ERROR", message: "Failed to access App Group", details: nil))
     }
   }
   

@@ -177,5 +177,11 @@ abstract class  LocaleKeys {
   static const onboarding_grant_permissions = 'onboarding.grant_permissions';
   static const onboarding_permissions_granted = 'onboarding.permissions_granted';
   static const onboarding = 'onboarding';
+  static const shield_focus_title = 'shield.focus_title';
+  static const shield_focus_subtitle = 'shield.focus_subtitle';
+  static const shield_break_title = 'shield.break_title';
+  static const shield_break_subtitle = 'shield.break_subtitle';
+  static const shield_close_button = 'shield.close_button';
+  static const shield = 'shield';
 
 }

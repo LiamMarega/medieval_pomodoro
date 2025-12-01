@@ -80,7 +80,7 @@ class NativeScreenTimeService {
       // Update status based on result (true = apps selected, false = no apps or cancelled)
       // The native code now always saves the selection, even if empty
       await _saveAppsSelectedStatus(result == true);
-      
+
       // Also check actual state from native side to ensure sync
       final actualState = await hasAppsSelected();
       debugPrint('📱 Actual apps selected state: $actualState');
@@ -130,6 +130,26 @@ class NativeScreenTimeService {
     }
   }
 
+  /// Update the shield status with localized text
+  Future<void> updateShieldStatus({
+    required String title,
+    required String subtitle,
+    required String buttonLabel,
+  }) async {
+    if (!Platform.isIOS) return;
+
+    try {
+      debugPrint('🛡️ Updating shield status: $title');
+      await _channel.invokeMethod('updateShieldStatus', {
+        'title': title,
+        'subtitle': subtitle,
+        'buttonLabel': buttonLabel,
+      });
+    } catch (e) {
+      debugPrint('❌ Error updating shield status: $e');
+    }
+  }
+
   /// Check if user has selected apps to block
   /// First checks native code for actual state, then falls back to SharedPreferences
   Future<bool> hasAppsSelected() async {
@@ -137,14 +157,15 @@ class NativeScreenTimeService {
 
     try {
       // First check native code for the actual state
-      final nativeResult = await _channel.invokeMethod<bool>('checkAppsSelected');
+      final nativeResult =
+          await _channel.invokeMethod<bool>('checkAppsSelected');
       if (nativeResult != null) {
         // Sync with SharedPreferences
         await _saveAppsSelectedStatus(nativeResult);
         debugPrint('📱 Apps selected state from native: $nativeResult');
         return nativeResult;
       }
-      
+
       // Fallback to SharedPreferences if native check fails
       final prefs = await SharedPreferences.getInstance();
       final prefsResult = prefs.getBool(_prefsKeyAppsSelected) ?? false;

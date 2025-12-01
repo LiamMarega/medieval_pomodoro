@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'native_screen_time_service.dart';
 
 /// Service for blocking distracting apps during focus sessions
@@ -101,5 +102,21 @@ class AppBlockerService {
       debugPrint('❌ Error unblocking apps: $e');
       // Don't rethrow - let app continue even if unblocking fails
     }
+  }
+
+  /// Update the shield status (e.g., Focus vs Break)
+  Future<void> updateShieldStatus({required bool isBreakTime}) async {
+    if (!Platform.isIOS) return;
+
+    final String titleKey =
+        isBreakTime ? 'shield.break_title' : 'shield.focus_title';
+    final String subtitleKey =
+        isBreakTime ? 'shield.break_subtitle' : 'shield.focus_subtitle';
+
+    await _nativeService.updateShieldStatus(
+      title: tr(titleKey),
+      subtitle: tr(subtitleKey),
+      buttonLabel: tr('shield.close_button'),
+    );
   }
 }

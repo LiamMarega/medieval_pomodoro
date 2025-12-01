@@ -178,5 +178,12 @@
     "permissions_message": "Para defender tu enfoque, necesitamos permiso para bloquear distracciones y notificarte de tus victorias.",
     "grant_permissions": "CONCEDER PERMISOS",
     "permissions_granted": "PERMISOS CONCEDIDOS"
+  },
+  "shield": {
+    "focus_title": "Focus Knight",
+    "focus_subtitle": "Has jurado proteger tu enfoque.\nCierra {{appName}} y vuelve a tu batalla.",
+    "break_title": "Descanso Sagrado",
+    "break_subtitle": "Espera a que termine tu descanso.",
+    "close_button": "Cerrar"
   }
 }
