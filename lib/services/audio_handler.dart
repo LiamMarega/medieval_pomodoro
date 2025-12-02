@@ -12,6 +12,7 @@ class MedievalAudioHandler extends BaseAudioHandler
   static const double _maxVolume = 1.0;
   static const double _volumeStep = 0.05;
   static const int _volumeStepDuration = 500;
+  Timer? _fadeTimer;
 
   MedievalAudioHandler() {
     debugPrint('MedievalAudioHandler constructor called');
@@ -162,19 +163,26 @@ class MedievalAudioHandler extends BaseAudioHandler
     if (!_isMusicEnabled || !_isInitialized) return;
 
     try {
-      // Set volume to max and start playing
+      // Cancel any active fade out
+      _fadeTimer?.cancel();
+      _fadeTimer = null;
+
+      // Set volume to max and start playing immediately
       await _player.setVolume(_maxVolume);
-      await _player.play();
       _currentVolume = _maxVolume;
+
+      if (!_player.playing) {
+        await _player.play();
+      }
 
       playbackState.add(playbackState.value.copyWith(
         playing: true,
         processingState: AudioProcessingState.ready,
       ));
 
-      debugPrint('Music started with fade in');
+      debugPrint('Music started (fade cancelled if any)');
     } catch (e) {
-      debugPrint('Error starting music with fade in: $e');
+      debugPrint('Error starting music: $e');
     }
   }
 
@@ -182,9 +190,12 @@ class MedievalAudioHandler extends BaseAudioHandler
     if (!_isInitialized) return;
 
     try {
+      // Cancel any existing fade timer
+      _fadeTimer?.cancel();
+
       // Gradual fade out
-      Timer.periodic(
-        Duration(milliseconds: _volumeStepDuration),
+      _fadeTimer = Timer.periodic(
+        const Duration(milliseconds: _volumeStepDuration),
         (timer) async {
           if (_currentVolume > 0.0) {
             _currentVolume =
@@ -192,6 +203,7 @@ class MedievalAudioHandler extends BaseAudioHandler
             await _player.setVolume(_currentVolume);
           } else {
             timer.cancel();
+            _fadeTimer = null;
             await _player.pause();
             playbackState.add(playbackState.value.copyWith(
               playing: false,
@@ -219,6 +231,7 @@ class MedievalAudioHandler extends BaseAudioHandler
   bool get isInitialized => _isInitialized;
 
   Future<void> dispose() async {
+    _fadeTimer?.cancel();
     await _player.dispose();
   }
 }

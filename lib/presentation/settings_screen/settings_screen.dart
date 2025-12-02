@@ -24,6 +24,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late int _workDurationMinutes = 25;
   late int _shortBreakMinutes = 5;
   late int _longBreakMinutes = 30;
+  late bool _strictMode = false;
 
   @override
   void initState() {
@@ -87,6 +88,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       shortBreakMinutes: _shortBreakMinutes,
       longBreakMinutes: _longBreakMinutes,
       isMusicEnabled: true, // Always true
+      strictMode: _strictMode,
     );
 
     // The timer provider will automatically pick up the new settings
@@ -135,12 +137,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     // Update local state when settings are loaded
                     if (_workDurationMinutes != settings.workDurationMinutes ||
                         _shortBreakMinutes != settings.shortBreakMinutes ||
-                        _longBreakMinutes != settings.longBreakMinutes) {
+                        _longBreakMinutes != settings.longBreakMinutes ||
+                        _strictMode != settings.strictMode) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         setState(() {
                           _workDurationMinutes = settings.workDurationMinutes;
                           _shortBreakMinutes = settings.shortBreakMinutes;
                           _longBreakMinutes = settings.longBreakMinutes;
+                          _strictMode = settings.strictMode;
                         });
                       });
                     }
@@ -227,6 +231,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   _autoSaveSettings();
                                 },
                               ),
+                              SizedBox(height: 1.5.h),
+                              _buildSwitchSetting(
+                                title: "Strict Mode",
+                                subtitle: "Prevent unblocking apps when paused",
+                                value: _strictMode,
+                                onChanged: (value) {
+                                  setState(() => _strictMode = value);
+                                  _autoSaveSettings();
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -277,18 +291,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         color: AppColors.primaryGold,
                                         onTap: () async {
                                           HapticFeedback.mediumImpact();
-                                          
+
                                           // Check permission first
                                           final hasPermission = await ref
                                               .read(appBlockerProvider.notifier)
                                               .hasPermission();
-                                          
+
                                           if (!hasPermission) {
                                             // Request permission first
                                             final authResult = await ref
-                                                .read(appBlockerProvider.notifier)
+                                                .read(
+                                                    appBlockerProvider.notifier)
                                                 .requestPermission();
-                                            
+
                                             if (!authResult) {
                                               if (mounted) {
                                                 ScaffoldMessenger.of(context)
@@ -296,8 +311,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                                   SnackBar(
                                                     content: Text(
                                                       '⚠️ Permission denied. Please grant Screen Time permission in Settings.',
-                                                      style: GoogleFonts.pressStart2p(
-                                                          fontSize: 10.sp),
+                                                      style: GoogleFonts
+                                                          .pressStart2p(
+                                                              fontSize: 10.sp),
                                                     ),
                                                     backgroundColor:
                                                         AppColors.error,
@@ -309,12 +325,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                               return;
                                             }
                                           }
-                                          
+
                                           // Open app selection UI
                                           final result = await ref
                                               .read(appBlockerProvider.notifier)
                                               .selectAppsToBlock();
-                                          
+
                                           if (mounted) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
@@ -327,8 +343,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                                       : LocaleKeys
                                                           .settings_screen_app_selection_cancelled
                                                           .tr(),
-                                                  style: GoogleFonts.pressStart2p(
-                                                      fontSize: 10.sp),
+                                                  style:
+                                                      GoogleFonts.pressStart2p(
+                                                          fontSize: 10.sp),
                                                 ),
                                                 backgroundColor: result
                                                     ? AppColors.success
@@ -706,6 +723,85 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ],
         ),
         textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildSwitchSetting({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
+      padding: EdgeInsets.all(3.w),
+      decoration: BoxDecoration(
+        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(0),
+        border: Border.all(
+          color: Colors.black,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 10.sp,
+                        color: AppColors.primaryGold,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.8),
+                            offset: const Offset(1, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 0.5.h),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 8.sp,
+                        color: AppColors.textSecondary,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: value,
+                onChanged: (newValue) {
+                  HapticFeedback.lightImpact();
+                  onChanged(newValue);
+                },
+                activeColor: AppColors.primaryGold,
+                activeTrackColor: AppColors.secondaryBackground,
+                inactiveThumbColor: AppColors.textSecondary,
+                inactiveTrackColor: AppColors.containerBackground,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

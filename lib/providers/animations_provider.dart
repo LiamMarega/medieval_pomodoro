@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:medieval_pomodoro/models/timer_state.dart';
 import 'package:medieval_pomodoro/providers/timer_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'rewards_provider.dart';
@@ -54,6 +55,15 @@ class AnimationsController extends _$AnimationsController {
         pickForSession(isBreak: isBreak);
       }
     });
+
+    // Listen to timer mode changes
+    ref.listen<TimerState>(timerControllerProvider, (prev, next) {
+      if (prev?.currentMode != next.currentMode) {
+        final isBreak = !next.currentMode.isWork;
+        pickForSession(isBreak: isBreak);
+      }
+    });
+
     return const AnimationsState();
   }
 
