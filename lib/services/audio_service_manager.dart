@@ -11,11 +11,15 @@ class PlaylistAudioService {
   PlaylistAudioService._();
 
   AudioPlayer? _player;
+  AudioPlayer? _soundEffectsPlayer; // Separate player for sound effects
   bool _isInitialized = false;
   bool _isMusicEnabled = true;
   final List<AudioSource> _audioSources = [];
   Timer? _fadeTimer;
   final Random _random = Random();
+  double _originalVolume = 0.7; // Store original volume before ducking
+  StreamSubscription?
+      _soundEffectSubscription; // Subscription for sound effect completion
   List<String> _shuffledSongNames =
       []; // Lista mezclada de nombres de canciones
 
@@ -65,6 +69,9 @@ class PlaylistAudioService {
       }
 
       _player = AudioPlayer();
+
+      // Initialize sound effects player
+      _soundEffectsPlayer = AudioPlayer();
 
       // Crear playlist con todas las canciones disponibles
       await _createPlaylist();
@@ -329,14 +336,78 @@ class PlaylistAudioService {
     }
   }
 
+  /// Duck the background music volume to make room for sound effects
+  Future<void> duckVolume() async {
+    if (_player != null && _player!.playing) {
+      _originalVolume = _player!.volume;
+      await _player!.setVolume(0.5);
+      debugPrint('🔉 Music volume ducked to 0.5 (from $_originalVolume)');
+    }
+  }
+
+  /// Restore the background music volume after sound effect finishes
+  Future<void> restoreVolume() async {
+    if (_player != null) {
+      await _player!.setVolume(_originalVolume);
+      debugPrint('🔊 Music volume restored to $_originalVolume');
+    }
+  }
+
+  /// Play mode change sound effect (sound_boungle.mp3) with volume ducking
+  Future<void> playModeChangeSound() async {
+    try {
+      if (_soundEffectsPlayer == null) {
+        debugPrint('⚠️ Sound effects player not initialized');
+        return;
+      }
+
+      // Duck background music volume
+      await duckVolume();
+
+      // Cancel any existing subscription
+      _soundEffectSubscription?.cancel();
+
+      // Stop any currently playing sound effect
+      await _soundEffectsPlayer!.stop();
+
+      // Load and play the mode change sound effect
+      await _soundEffectsPlayer!
+          .setAsset('assets/sounds_effects/sound_boungle.mp3');
+      await _soundEffectsPlayer!
+          .setVolume(1.0); // Full volume for sound effects
+      await _soundEffectsPlayer!.play();
+
+      // Listen for sound effect completion to restore volume
+      _soundEffectSubscription =
+          _soundEffectsPlayer!.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          debugPrint('✅ Sound effect completed, restoring volume');
+          restoreVolume();
+          _soundEffectSubscription?.cancel();
+        }
+      });
+
+      debugPrint('🔔 Mode change sound effect played with volume ducking');
+    } catch (e) {
+      // Restore volume even on error
+      await restoreVolume();
+      debugPrint('❌ Error playing mode change sound: $e');
+    }
+  }
+
   Future<void> dispose() async {
     debugPrint('🗑️ Disposing PlaylistAudioService...');
 
     try {
       _fadeTimer?.cancel();
+      _soundEffectSubscription?.cancel();
       if (_player != null) {
         await _player!.dispose();
         _player = null;
+      }
+      if (_soundEffectsPlayer != null) {
+        await _soundEffectsPlayer!.dispose();
+        _soundEffectsPlayer = null;
       }
       _audioSources.clear();
       _isInitialized = false;

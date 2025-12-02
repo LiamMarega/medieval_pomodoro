@@ -733,20 +733,31 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   }
 
   void _playSessionChangeFeedback(TimerMode newMode) {
-    // Play session change sound
-    SystemSound.play(SystemSoundType.click);
+    // Play mode change sound effect (sound_boungle.mp3)
+    _audioService?.playModeChangeSound().catchError((e) {
+      debugPrint('⚠️ Error playing mode change sound: $e');
+    });
 
-    // Haptic feedback based on new session type
-    if (newMode.isWork) {
-      // Changing to work - 2 vibrations
+    // Vibration sequence to indicate mode change
+    // Using a 3-pulse vibration pattern for mode changes
+    _playModeChangeVibration();
+  }
+
+  void _playModeChangeVibration() {
+    // First vibration
+    HapticFeedback.heavyImpact();
+
+    // Second vibration after 150ms
+    Future.delayed(const Duration(milliseconds: 150), () {
       HapticFeedback.heavyImpact();
-      Future.delayed(const Duration(milliseconds: 200), () {
-        HapticFeedback.heavyImpact();
-      });
-    } else {
-      // Changing to break - 1 vibration
-      HapticFeedback.mediumImpact();
-    }
+    });
+
+    // Third vibration after 300ms
+    Future.delayed(const Duration(milliseconds: 300), () {
+      HapticFeedback.heavyImpact();
+    });
+
+    debugPrint('📳 Mode change vibration sequence executed');
   }
 
   void _updateMotivationalMessage() {
