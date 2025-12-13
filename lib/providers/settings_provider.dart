@@ -25,6 +25,7 @@ class SettingsController extends _$SettingsController {
       shortBreakMinutes: savedSettings['shortBreakMinutes'],
       longBreakMinutes: savedSettings['longBreakMinutes'],
       isMusicEnabled: savedSettings['isMusicEnabled'],
+      strictMode: savedSettings['strictMode'] ?? false,
     );
   }
 
@@ -33,6 +34,7 @@ class SettingsController extends _$SettingsController {
     required int shortBreakMinutes,
     required int longBreakMinutes,
     required bool isMusicEnabled,
+    required bool strictMode,
   }) async {
     // Update state immediately for UI responsiveness
     final currentState = state.value;
@@ -42,6 +44,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: shortBreakMinutes,
         longBreakMinutes: longBreakMinutes,
         isMusicEnabled: isMusicEnabled,
+        strictMode: strictMode,
       ));
     }
 
@@ -53,12 +56,15 @@ class SettingsController extends _$SettingsController {
       isMusicEnabled: isMusicEnabled,
     );
 
+    // Save strict mode separately
+    await _storage.saveStrictMode(strictMode);
+
     if (!saved) {
       debugPrint('⚠️ Warning: Failed to save settings to local storage');
     }
 
     debugPrint(
-        'Settings updated: Work=$workDurationMinutes, Short=$shortBreakMinutes, Long=$longBreakMinutes, Music=$isMusicEnabled');
+        'Settings updated: Work=$workDurationMinutes, Short=$shortBreakMinutes, Long=$longBreakMinutes, Music=$isMusicEnabled, Strict=$strictMode');
   }
 
   Future<void> setLoading(bool isLoading) async {
@@ -84,6 +90,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: currentState.shortBreakMinutes,
         longBreakMinutes: currentState.longBreakMinutes,
         isMusicEnabled: currentState.isMusicEnabled,
+        strictMode: currentState.strictMode,
       );
     }
   }
@@ -96,6 +103,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: minutes,
         longBreakMinutes: currentState.longBreakMinutes,
         isMusicEnabled: currentState.isMusicEnabled,
+        strictMode: currentState.strictMode,
       );
     }
   }
@@ -108,6 +116,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: currentState.shortBreakMinutes,
         longBreakMinutes: minutes,
         isMusicEnabled: currentState.isMusicEnabled,
+        strictMode: currentState.strictMode,
       );
     }
   }
@@ -120,6 +129,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: currentState.shortBreakMinutes,
         longBreakMinutes: currentState.longBreakMinutes,
         isMusicEnabled: enabled,
+        strictMode: currentState.strictMode,
       );
     }
   }
@@ -131,6 +141,7 @@ class SettingsController extends _$SettingsController {
       shortBreakMinutes: 5,
       longBreakMinutes: 30,
       isMusicEnabled: true,
+      strictMode: false,
     );
     debugPrint('🔄 Settings reset to normal defaults (25/5/30 minutes)');
   }
@@ -142,6 +153,7 @@ class SettingsController extends _$SettingsController {
       shortBreakMinutes: 0, // 10 seconds
       longBreakMinutes: 0, // 20 seconds
       isMusicEnabled: true,
+      strictMode: false,
     );
     debugPrint('🧪 Test durations set: 10s work/break, 20s long break');
   }
@@ -166,6 +178,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: 5,
         longBreakMinutes: 30,
         isMusicEnabled: true,
+        strictMode: false,
       ));
     } catch (e) {
       debugPrint('❌ Error resetting everything: $e');

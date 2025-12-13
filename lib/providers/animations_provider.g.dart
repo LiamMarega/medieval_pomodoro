@@ -42,7 +42,7 @@ final class AnimationsControllerProvider
 }
 
 String _$animationsControllerHash() =>
-    r'8b007c867d5ba8627e04bd2d11aaf29168f30bd3';
+    r'80dbb9f210de4ec8b8943f055cd16a1872426193';
 
 abstract class _$AnimationsController extends $Notifier<AnimationsState> {
   AnimationsState build();

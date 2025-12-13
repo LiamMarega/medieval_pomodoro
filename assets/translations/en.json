@@ -129,7 +129,10 @@
     "error_resetting": "❌ Error resetting: {error}",
     "error_loading_settings": "Error loading settings: {error}",
     "language": "LANGUAGE",
-    "language_changed": "🌍 Language changed successfully"
+    "language_changed": "🌍 Language changed successfully",
+    "manage_blocked_apps": "🛡️ MANAGE BLOCKED APPS",
+    "apps_selected_successfully": "✅ Apps selected successfully",
+    "app_selection_cancelled": "⚠️ App selection cancelled"
   },
   "stats_screen": {
     "knights_progress": "Knight's Progress",
@@ -170,6 +173,17 @@
     "your_mission_begins_message": "With your new time sword, you are ready to conquer your tasks and defeat procrastination...",
     "what_is_your_name_knight": "What is your name, brave knight?",
     "write_your_name": "Write your name...",
-    "confirm": "CONFIRM"
+    "confirm": "CONFIRM",
+    "permissions_title": "Shield Up!",
+    "permissions_message": "To defend your focus, we need permission to block distractions and notify you of your victories.",
+    "grant_permissions": "GRANT PERMISSIONS",
+    "permissions_granted": "PERMISSIONS GRANTED"
+  },
+  "shield": {
+    "focus_title": "Focus Knight",
+    "focus_subtitle": "You have sworn to protect your focus.\nClose {{appName}} and return to your battle.",
+    "break_title": "Sacred Rest",
+    "break_subtitle": "Wait for your rest to end.",
+    "close_button": "Close"
   }
 }

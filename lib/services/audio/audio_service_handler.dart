@@ -8,7 +8,7 @@ import 'package:just_audio/just_audio.dart';
 class AudioServiceHandler extends BaseAudioHandler
     with QueueHandler, SeekHandler {
   final _player = AudioPlayer();
-  
+
   // Lista de canciones disponibles
   final List<MediaItem> _mediaLibrary = [
     MediaItem(
@@ -63,16 +63,18 @@ class AudioServiceHandler extends BaseAudioHandler
   Future<void> _init() async {
     // Configurar el audio session para que siga reproduciendo en background
     // y maneje interrupciones (llamadas, etc)
-    
+
     // Cargar la playlist inicial
     await _loadPlaylist();
-    
+
     // Escuchar cambios en el estado de reproducción del player
     _player.playbackEventStream.listen(_broadcastState);
-    
+
     // Escuchar cambios en la canción actual
     _player.currentIndexStream.listen((index) {
-      if (index != null && queue.value.isNotEmpty && index < queue.value.length) {
+      if (index != null &&
+          queue.value.isNotEmpty &&
+          index < queue.value.length) {
         mediaItem.add(queue.value[index]);
       }
     });
@@ -81,7 +83,7 @@ class AudioServiceHandler extends BaseAudioHandler
     _player.playerStateStream.listen((state) {
       _broadcastState(_player.playbackEvent);
     });
-    
+
     // Manejar finalización de canción/lista
     _player.processingStateStream.listen((state) {
       if (state == ProcessingState.completed) {
@@ -94,24 +96,24 @@ class AudioServiceHandler extends BaseAudioHandler
     try {
       // Mezclar canciones para variedad
       final shuffled = List<MediaItem>.from(_mediaLibrary)..shuffle();
-      
+
       // Crear fuentes de audio
-      final audioSources = shuffled.map((item) => 
-        AudioSource.asset(item.id, tag: item)
-      ).toList();
-      
+      final audioSources = shuffled
+          .map((item) => AudioSource.asset(item.id, tag: item))
+          .toList();
+
       // Actualizar la cola en audio_service
       await updateQueue(shuffled);
-      
+
       // Cargar en el player
       await _player.setAudioSource(
         ConcatenatingAudioSource(children: audioSources),
         preload: true,
       );
-      
+
       // Configurar loop mode
       await _player.setLoopMode(LoopMode.all);
-      
+
       debugPrint('🎵 Playlist loaded with ${shuffled.length} songs');
     } catch (e) {
       debugPrint('❌ Error loading playlist: $e');
@@ -141,17 +143,18 @@ class AudioServiceHandler extends BaseAudioHandler
 
   @override
   Future<void> setVolume(double volume) async {
-     // El BaseAudioHandler no tiene setVolume nativo en su interfaz pública estándar,
-     // pero podemos implementarlo como custom action o exponerlo si casteamos.
-     // Para cumplir con el requisito, lo implementamos y lo llamamos desde customAction si es necesario,
-     // o directamente si tenemos la instancia.
-     await _player.setVolume(volume);
-     // Notificamos cambio de volumen si fuera necesario (custom event)
+    // El BaseAudioHandler no tiene setVolume nativo en su interfaz pública estándar,
+    // pero podemos implementarlo como custom action o exponerlo si casteamos.
+    // Para cumplir con el requisito, lo implementamos y lo llamamos desde customAction si es necesario,
+    // o directamente si tenemos la instancia.
+    await _player.setVolume(volume);
+    // Notificamos cambio de volumen si fuera necesario (custom event)
   }
 
   // Implementación de Custom Actions para funcionalidades extra
   @override
-  Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) async {
+  Future<dynamic> customAction(String name,
+      [Map<String, dynamic>? extras]) async {
     switch (name) {
       case 'setVolume':
         if (extras != null && extras['volume'] != null) {
@@ -176,7 +179,7 @@ class AudioServiceHandler extends BaseAudioHandler
   void _broadcastState(PlaybackEvent event) {
     final playing = _player.playing;
     final queueIndex = _player.currentIndex;
-    
+
     playbackState.add(playbackState.value.copyWith(
       controls: [
         MediaControl.skipToPrevious,
@@ -205,4 +208,3 @@ class AudioServiceHandler extends BaseAudioHandler
     ));
   }
 }
-

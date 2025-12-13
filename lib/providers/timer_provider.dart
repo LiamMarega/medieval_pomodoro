@@ -7,6 +7,8 @@ import '../models/timer_state.dart';
 import '../models/timer_mode.dart';
 // Importa el nuevo servicio de audio
 import 'audio_provider.dart';
+import '../services/audio_service_manager.dart';
+import '../services/local_storage_service.dart';
 import '../core/services/user_stats_service.dart';
 import '../core/services/live_activity_manager.dart';
 import 'settings_provider.dart';
@@ -19,6 +21,11 @@ part 'timer_provider.g.dart';
 class TimerController extends _$TimerController with WidgetsBindingObserver {
   Timer? _ticker;
   // PlaylistAudioService? _audioService; // Removed in favor of AudioController
+  // Keeping _audioService def for compatibility if needed, or we might need to fully switch to AudioController
+  // But conflict resolution asked to not break anything.
+  // Let's use the new AudioController if possible but define this to avoid errors in legacy code blocks if any.
+  PlaylistAudioService? _audioService;
+  LocalStorageService? _localStorage;
   TimerMode? _previousSessionMode; // Store previous session for gap time logic
   final UserStatsService _userStatsService = UserStatsService();
   LiveActivityManager? _liveActivityManager;
@@ -36,6 +43,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
     _initializeAudio();
     _initializeLiveActivity();
+    _initializeLocalStorage();
     _setupSettingsListener();
     _loadInitialSettings();
 
@@ -81,6 +89,112 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       debugPrint('✅ Live Activity Manager initialized successfully');
     } catch (e) {
       debugPrint('❌ Error initializing Live Activity Manager: $e');
+    }
+  }
+
+  void _initializeLocalStorage() async {
+    try {
+      _localStorage = await LocalStorageService.getInstance();
+      _restoreTimerState();
+    } catch (e) {
+      debugPrint('❌ Error initializing LocalStorage: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugPrint('🔄 App Lifecycle Changed: $state');
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _saveTimerState();
+    } else if (state == AppLifecycleState.resumed) {
+      _restoreTimerState();
+    }
+  }
+
+  Future<void> _saveTimerState() async {
+    if (_localStorage == null) return;
+
+    debugPrint('💾 Saving timer state...');
+    await _localStorage!.saveTimerState(
+      endsAt: state.endsAt?.toIso8601String(),
+      remainingSeconds: state.remaining.inSeconds,
+      mode: state.currentMode.toString(),
+      isActive: state.isActive,
+      sessionNumber: state.sessionNumber,
+    );
+  }
+
+  Future<void> _restoreTimerState() async {
+    if (_localStorage == null) return;
+
+    debugPrint('♻️ Restoring timer state...');
+    final savedState = _localStorage!.loadTimerState();
+    if (savedState == null) {
+      debugPrint('⚠️ No saved timer state found');
+      return;
+    }
+
+    try {
+      final modeStr = savedState['mode'] as String;
+      // Parse mode string to enum (TimerMode.work, etc.)
+      TimerMode mode = TimerMode.values.firstWhere(
+        (e) => e.toString() == modeStr,
+        orElse: () => TimerMode.work,
+      );
+
+      final isActive = savedState['isActive'] as bool;
+      final sessionNumber = savedState['sessionNumber'] as int;
+      final endsAtStr = savedState['endsAt'] as String?;
+
+      DateTime? endsAt;
+      Duration remaining;
+
+      if (endsAtStr != null) {
+        endsAt = DateTime.parse(endsAtStr);
+        final now = DateTime.now();
+
+        if (isActive) {
+          // If it was active, calculate remaining time based on endsAt
+          if (now.isAfter(endsAt)) {
+            // Timer finished while in background
+            remaining = Duration.zero;
+            // We could auto-complete here, but safer to let user see 00:00
+          } else {
+            remaining = endsAt.difference(now);
+          }
+        } else {
+          // If paused, use the saved remaining seconds
+          remaining = Duration(seconds: savedState['remainingSeconds'] as int);
+          // endsAt should be null if paused, but if it was saved, we might need to adjust
+          endsAt = null;
+        }
+      } else {
+        // No endsAt, just use remaining
+        remaining = Duration(seconds: savedState['remainingSeconds'] as int);
+      }
+
+      // Restore state
+      state = state.copyWith(
+        currentMode: mode,
+        isActive: isActive,
+        sessionNumber: sessionNumber,
+        remaining: remaining,
+        endsAt: isActive ? (endsAt ?? DateTime.now().add(remaining)) : null,
+      );
+
+      // If it was active and we have time left, restart the ticker
+      if (isActive && remaining > Duration.zero) {
+        _startTicker();
+      } else if (isActive && remaining == Duration.zero) {
+        // Timer finished in background
+        _completeSession();
+      }
+
+      debugPrint(
+          '✅ Timer state restored: Mode=$mode, Active=$isActive, Rem=${remaining.inSeconds}s');
+    } catch (e) {
+      debugPrint('❌ Error restoring timer state: $e');
     }
   }
 
@@ -226,7 +340,13 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Activar bloqueo de apps si es una sesión de trabajo
     if (state.currentMode.isWork) {
       debugPrint('🛡️ Activating App Blocker for Focus Session');
-      ref.read(appBlockerProvider.notifier).blockDistractingApps();
+      // Fire and forget - don't await, don't block timer
+      ref
+          .read(appBlockerProvider.notifier)
+          .blockDistractingApps()
+          .catchError((e) {
+        debugPrint('⚠️ App blocker failed to activate: $e');
+      });
     }
 
     // Configurar modo inmersivo
@@ -297,6 +417,8 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       remaining: rem,
     );
 
+    _saveTimerState(); // Save state on pause
+
     // Update Live Activity with pause state
     _updateLiveActivity();
 
@@ -306,6 +428,22 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       _stopMusic();
     } else {
       debugPrint('🔇 Music is not playing or is disabled, skipping stop');
+    }
+
+    // Desactivar bloqueo de apps al pausar
+    if (state.currentMode.isWork) {
+      // Check strict mode
+      final strictMode =
+          ref.read(settingsControllerProvider).value?.strictMode ?? false;
+
+      if (strictMode) {
+        debugPrint('🛡️ Strict Mode enabled: Apps remain blocked during pause');
+      } else {
+        debugPrint('🛡️ Deactivating App Blocker (Timer Paused)');
+        ref.read(appBlockerProvider.notifier).unblockAll().catchError((e) {
+          debugPrint('⚠️ App blocker failed to deactivate on pause: $e');
+        });
+      }
     }
 
     // Salir del modo inmersivo
@@ -377,7 +515,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
 
     // Desactivar bloqueo de apps al reiniciar
     debugPrint('🛡️ Deactivating App Blocker (Restart)');
-    ref.read(appBlockerProvider.notifier).unblockAll();
+    ref.read(appBlockerProvider.notifier).unblockAll().catchError((e) {
+      debugPrint('⚠️ App blocker failed to deactivate: $e');
+    });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _updateMotivationalMessage();
@@ -411,6 +551,8 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       sessionNumber: newSessionNumber,
     );
 
+    _saveTimerState(); // Save state on completion
+
     // End Live Activity when session completes
     _endLiveActivity();
 
@@ -426,7 +568,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Asumimos que el "Fin del Pomodoro" (Work) desbloquea.
     // Si el usuario quiere que en el break se desbloquee, lo hacemos aquí.
     debugPrint('🛡️ Deactivating App Blocker (Session Completed)');
-    ref.read(appBlockerProvider.notifier).unblockAll();
+    ref.read(appBlockerProvider.notifier).unblockAll().catchError((e) {
+      debugPrint('⚠️ App blocker failed to deactivate: $e');
+    });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -591,20 +735,31 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   }
 
   void _playSessionChangeFeedback(TimerMode newMode) {
-    // Play session change sound
-    SystemSound.play(SystemSoundType.click);
+    // Play mode change sound effect (sound_boungle.mp3)
+    _audioService?.playModeChangeSound().catchError((e) {
+      debugPrint('⚠️ Error playing mode change sound: $e');
+    });
 
-    // Haptic feedback based on new session type
-    if (newMode.isWork) {
-      // Changing to work - 2 vibrations
+    // Vibration sequence to indicate mode change
+    // Using a 3-pulse vibration pattern for mode changes
+    _playModeChangeVibration();
+  }
+
+  void _playModeChangeVibration() {
+    // First vibration
+    HapticFeedback.heavyImpact();
+
+    // Second vibration after 150ms
+    Future.delayed(const Duration(milliseconds: 150), () {
       HapticFeedback.heavyImpact();
-      Future.delayed(const Duration(milliseconds: 200), () {
-        HapticFeedback.heavyImpact();
-      });
-    } else {
-      // Changing to break - 1 vibration
-      HapticFeedback.mediumImpact();
-    }
+    });
+
+    // Third vibration after 300ms
+    Future.delayed(const Duration(milliseconds: 300), () {
+      HapticFeedback.heavyImpact();
+    });
+
+    debugPrint('📳 Mode change vibration sequence executed');
   }
 
   void _updateMotivationalMessage() {
@@ -691,6 +846,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     required int shortBreakMinutes,
     required int longBreakMinutes,
     required bool isMusicEnabled,
+    required bool strictMode,
   }) {
     debugPrint('⚙️ Updating settings...');
 
@@ -701,6 +857,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
           shortBreakMinutes: shortBreakMinutes,
           longBreakMinutes: longBreakMinutes,
           isMusicEnabled: isMusicEnabled,
+          strictMode: strictMode,
         );
 
     debugPrint(
@@ -845,17 +1002,6 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       });
     } catch (e) {
       debugPrint('❌ Error recording work session stats: $e');
-    }
-  }
-
-  // ======= Lifecycle: retomar cálculo exacto (principio clave: manejo de lifecycle) =======
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
-    if (lifecycleState == AppLifecycleState.resumed && state.isActive) {
-      // Recalcular remaining cuando la app vuelve al foreground
-      state = state.copyWith(remaining: _remainingFromEnds());
-      debugPrint(
-          '📱 App resumed, recalculated remaining time: ${state.remaining}');
     }
   }
 }

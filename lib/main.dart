@@ -10,7 +10,7 @@ import 'core/app_export.dart';
 import 'core/services/notification_service.dart';
 import 'providers/audio_provider.dart';
 import 'providers/app_blocker_provider.dart';
-
+import 'services/audio/audio_service_handler.dart';
 import 'widgets/custom_error_widget.dart';
 import 'presentation/settings_screen/settings_screen.dart';
 import 'presentation/stats_screen/stats_screen.dart';
@@ -57,7 +57,7 @@ void main() async {
           overrides: [
             audioHandlerProvider.overrideWithValue(_audioHandler),
           ],
-          child: const AppBlockerInitializer(child: MyApp()),
+          child: const MyApp(),
         ),
       ),
     );

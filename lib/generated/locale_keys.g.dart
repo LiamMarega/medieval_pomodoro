@@ -130,6 +130,9 @@ abstract class  LocaleKeys {
   static const settings_screen_error_loading_settings = 'settings_screen.error_loading_settings';
   static const settings_screen_language = 'settings_screen.language';
   static const settings_screen_language_changed = 'settings_screen.language_changed';
+  static const settings_screen_manage_blocked_apps = 'settings_screen.manage_blocked_apps';
+  static const settings_screen_apps_selected_successfully = 'settings_screen.apps_selected_successfully';
+  static const settings_screen_app_selection_cancelled = 'settings_screen.app_selection_cancelled';
   static const settings_screen = 'settings_screen';
   static const stats_screen_knights_progress = 'stats_screen.knights_progress';
   static const stats_screen_knights_achievements = 'stats_screen.knights_achievements';
@@ -169,6 +172,16 @@ abstract class  LocaleKeys {
   static const onboarding_what_is_your_name_knight = 'onboarding.what_is_your_name_knight';
   static const onboarding_write_your_name = 'onboarding.write_your_name';
   static const onboarding_confirm = 'onboarding.confirm';
+  static const onboarding_permissions_title = 'onboarding.permissions_title';
+  static const onboarding_permissions_message = 'onboarding.permissions_message';
+  static const onboarding_grant_permissions = 'onboarding.grant_permissions';
+  static const onboarding_permissions_granted = 'onboarding.permissions_granted';
   static const onboarding = 'onboarding';
+  static const shield_focus_title = 'shield.focus_title';
+  static const shield_focus_subtitle = 'shield.focus_subtitle';
+  static const shield_break_title = 'shield.break_title';
+  static const shield_break_subtitle = 'shield.break_subtitle';
+  static const shield_close_button = 'shield.close_button';
+  static const shield = 'shield';
 
 }

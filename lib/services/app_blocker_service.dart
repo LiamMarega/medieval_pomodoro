@@ -1,99 +1,122 @@
 import 'dart:io';
-import 'package:app_limiter/app_limiter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'native_screen_time_service.dart';
 
+/// Service for blocking distracting apps during focus sessions
+/// iOS: Uses native Screen Time API via NativeScreenTimeService
+/// Android: Not currently supported (removed)
 class AppBlockerService {
   static final AppBlockerService _instance = AppBlockerService._internal();
   factory AppBlockerService() => _instance;
   AppBlockerService._internal();
 
-  final AppLimiter _appLimiter = AppLimiter();
+  final NativeScreenTimeService _nativeService = NativeScreenTimeService();
 
-  /// Solicita permisos necesarios en Android
-  Future<void> requestAndroidPermission() async {
-    if (!Platform.isAndroid) return;
-    try {
-      debugPrint('🔒 Requesting Android permissions for AppBlocker...');
-      await _appLimiter.requestAndroidPermission();
-    } catch (e) {
-      debugPrint('❌ Error requesting Android permissions: $e');
+  /// Request Family Controls authorization (iOS only)
+  /// This should be called during onboarding, only once
+  Future<bool> requestPermission() async {
+    if (!Platform.isIOS) {
+      debugPrint('⚠️ App blocking only supported on iOS');
+      return false;
     }
-  }
 
-  /// Solicita permisos necesarios en iOS (Family Controls)
-  Future<bool> requestIosPermission() async {
-    if (!Platform.isIOS) return false;
     try {
-      debugPrint('🔒 Requesting iOS permissions for AppBlocker...');
-      final result = await _appLimiter.requestIosPermission();
-      debugPrint('🔒 iOS Permission result: $result');
+      debugPrint('🔒 Requesting Screen Time permissions...');
+      final result = await _nativeService.requestAuthorization();
+      debugPrint('🔒 Screen Time permission result: $result');
       return result;
     } catch (e) {
-      debugPrint('❌ Error requesting iOS permissions: $e');
+      debugPrint('❌ Error requesting Screen Time permissions: $e');
       return false;
     }
   }
 
-  /// Bloquea las apps especificadas en Android
-  /// Nota: En la versión actual del plugin, se activa el bloqueo general configurado
-  Future<void> blockAndroid(List<String> apps) async {
-    if (!Platform.isAndroid) return;
-    try {
-      debugPrint('🚫 Blocking Android apps: $apps');
-      await _appLimiter.blocAndroidApp();
-    } catch (e) {
-      debugPrint('❌ Error blocking Android apps: $e');
-      rethrow;
-    }
-  }
+  /// Check if Family Controls authorization has been granted
+  Future<bool> hasPermission() async {
+    if (!Platform.isIOS) return false;
 
-  /// Desbloquea las apps en Android
-  Future<void> unblockAndroid(List<String> apps) async {
-    if (!Platform.isAndroid) return;
     try {
-      debugPrint('🔓 Unblocking Android apps');
-      await _appLimiter.unblocAndroidApp();
+      return await _nativeService.isAuthorized();
     } catch (e) {
-      debugPrint('❌ Error unblocking Android apps: $e');
-      rethrow;
-    }
-  }
-
-  /// Bloquea apps en iOS
-  Future<void> blockIos(List<String> apps) async {
-    if (!Platform.isIOS) return;
-    try {
-      debugPrint('🚫 Blocking iOS apps');
-      await _appLimiter.blockAndUnblockIOSApp();
-    } catch (e) {
-      debugPrint('❌ Error blocking iOS apps: $e');
-      rethrow;
-    }
-  }
-
-  /// Desbloquea apps en iOS
-  Future<void> unblockIos(List<String> apps) async {
-    if (!Platform.isIOS) return;
-    try {
-      debugPrint('🔓 Unblocking iOS apps');
-      // En iOS con app_limiter, el toggle suele manejar ambos estados,
-      // pero para asegurarnos intentamos llamar al método de desbloqueo si existe o re-togglaer
-      // Nota: Revisar comportamiento específico del plugin en iOS
-      await _appLimiter.blockAndUnblockIOSApp();
-    } catch (e) {
-      debugPrint('❌ Error unblocking iOS apps: $e');
-      rethrow;
-    }
-  }
-
-  /// Verifica si los permisos de Android están concedidos
-  Future<bool> checkAndroidPermission() async {
-    if (!Platform.isAndroid) return false;
-    try {
-      return await _appLimiter.isAndroidPermissionAllowed();
-    } catch (e) {
-      debugPrint('❌ Error checking Android permissions: $e');
+      debugPrint('❌ Error checking Screen Time authorization: $e');
       return false;
     }
+  }
+
+  /// Show app selection UI (FamilyActivityPicker)
+  /// Should only be called once - selected apps are persisted
+  Future<bool> selectAppsToBlock() async {
+    if (!Platform.isIOS) {
+      debugPrint('⚠️ App selection only supported on iOS');
+      return false;
+    }
+
+    try {
+      debugPrint('📱 Showing app selection UI...');
+      final result = await _nativeService.selectAppsToBlock();
+      debugPrint('📱 App selection result: $result');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error showing app selection UI: $e');
+      return false;
+    }
+  }
+
+  /// Check if user has selected apps to block
+  Future<bool> hasAppsSelected() async {
+    if (!Platform.isIOS) return false;
+
+    try {
+      return await _nativeService.hasAppsSelected();
+    } catch (e) {
+      debugPrint('❌ Error checking apps selected: $e');
+      return false;
+    }
+  }
+
+  /// Block the selected apps
+  /// Apps must be selected first via selectAppsToBlock()
+  Future<void> blockApps() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      debugPrint('🚫 Blocking apps...');
+      await _nativeService.blockApps();
+      debugPrint('✅ Apps blocked successfully');
+    } catch (e) {
+      debugPrint('❌ Error blocking apps: $e');
+      // Don't rethrow - let app continue even if blocking fails
+    }
+  }
+
+  /// Unblock all apps
+  Future<void> unblockApps() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      debugPrint('🔓 Unblocking apps...');
+      await _nativeService.unblockApps();
+      debugPrint('✅ Apps unblocked successfully');
+    } catch (e) {
+      debugPrint('❌ Error unblocking apps: $e');
+      // Don't rethrow - let app continue even if unblocking fails
+    }
+  }
+
+  /// Update the shield status (e.g., Focus vs Break)
+  Future<void> updateShieldStatus({required bool isBreakTime}) async {
+    if (!Platform.isIOS) return;
+
+    final String titleKey =
+        isBreakTime ? 'shield.break_title' : 'shield.focus_title';
+    final String subtitleKey =
+        isBreakTime ? 'shield.break_subtitle' : 'shield.focus_subtitle';
+
+    await _nativeService.updateShieldStatus(
+      title: tr(titleKey),
+      subtitle: tr(subtitleKey),
+      buttonLabel: tr('shield.close_button'),
+    );
   }
 }

@@ -3,6 +3,7 @@ class SettingsState {
   final int shortBreakMinutes;
   final int longBreakMinutes;
   final bool isMusicEnabled;
+  final bool strictMode;
   final bool isLoading;
   final String? error;
 
@@ -11,6 +12,7 @@ class SettingsState {
     this.shortBreakMinutes = 5,
     this.longBreakMinutes = 30,
     this.isMusicEnabled = true,
+    this.strictMode = false,
     this.isLoading = false,
     this.error,
   });
@@ -20,6 +22,7 @@ class SettingsState {
     int? shortBreakMinutes,
     int? longBreakMinutes,
     bool? isMusicEnabled,
+    bool? strictMode,
     bool? isLoading,
     String? error,
   }) {
@@ -28,6 +31,7 @@ class SettingsState {
       shortBreakMinutes: shortBreakMinutes ?? this.shortBreakMinutes,
       longBreakMinutes: longBreakMinutes ?? this.longBreakMinutes,
       isMusicEnabled: isMusicEnabled ?? this.isMusicEnabled,
+      strictMode: strictMode ?? this.strictMode,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
@@ -41,6 +45,7 @@ class SettingsState {
         other.shortBreakMinutes == shortBreakMinutes &&
         other.longBreakMinutes == longBreakMinutes &&
         other.isMusicEnabled == isMusicEnabled &&
+        other.strictMode == strictMode &&
         other.isLoading == isLoading &&
         other.error == error;
   }
@@ -52,6 +57,7 @@ class SettingsState {
       shortBreakMinutes,
       longBreakMinutes,
       isMusicEnabled,
+      strictMode,
       isLoading,
       error,
     );
@@ -59,6 +65,6 @@ class SettingsState {
 
   @override
   String toString() {
-    return 'SettingsState(workDurationMinutes: $workDurationMinutes, shortBreakMinutes: $shortBreakMinutes, longBreakMinutes: $longBreakMinutes, isMusicEnabled: $isMusicEnabled, isLoading: $isLoading, error: $error)';
+    return 'SettingsState(workDurationMinutes: $workDurationMinutes, shortBreakMinutes: $shortBreakMinutes, longBreakMinutes: $longBreakMinutes, isMusicEnabled: $isMusicEnabled, strictMode: $strictMode, isLoading: $isLoading, error: $error)';
   }
 }

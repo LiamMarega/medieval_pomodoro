@@ -129,7 +129,10 @@
     "error_resetting": "❌ Error al reiniciar: {error}",
     "error_loading_settings": "Error al cargar configuraciones: {error}",
     "language": "IDIOMA",
-    "language_changed": "🌍 Idioma cambiado exitosamente"
+    "language_changed": "🌍 Idioma cambiado exitosamente",
+    "manage_blocked_apps": "🛡️ GESTIONAR APPS BLOQUEADAS",
+    "apps_selected_successfully": "✅ Apps seleccionadas exitosamente",
+    "app_selection_cancelled": "⚠️ Selección de apps cancelada"
   },
   "stats_screen": {
     "knights_progress": "Progreso del Caballero",
@@ -170,6 +173,17 @@
     "your_mission_begins_message": "Con tu nueva espada del tiempo, estás listo para conquistar tus tareas y vencer la procrastinación...",
     "what_is_your_name_knight": "¿Cómo te llamas, valiente caballero?",
     "write_your_name": "Escribe tu nombre...",
-    "confirm": "CONFIRMAR"
+    "confirm": "CONFIRMAR",
+    "permissions_title": "¡Escudo Arriba!",
+    "permissions_message": "Para defender tu enfoque, necesitamos permiso para bloquear distracciones y notificarte de tus victorias.",
+    "grant_permissions": "CONCEDER PERMISOS",
+    "permissions_granted": "PERMISOS CONCEDIDOS"
+  },
+  "shield": {
+    "focus_title": "Focus Knight",
+    "focus_subtitle": "Has jurado proteger tu enfoque.\nCierra {{appName}} y vuelve a tu batalla.",
+    "break_title": "Descanso Sagrado",
+    "break_subtitle": "Espera a que termine tu descanso.",
+    "close_button": "Cerrar"
   }
 }

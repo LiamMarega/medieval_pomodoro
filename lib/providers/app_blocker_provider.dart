@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/app_blocker_service.dart';
 
 part 'app_blocker_provider.g.dart';
@@ -9,114 +8,133 @@ part 'app_blocker_provider.g.dart';
 @Riverpod(keepAlive: true)
 class AppBlocker extends _$AppBlocker {
   final AppBlockerService _service = AppBlockerService();
-  static const String _prefsKey = 'blocked_apps_list';
-
-  static const List<String> _defaultBlockedApps = [
-    "com.facebook.katana",
-    "com.instagram.android",
-    "com.zhiliaoapp.musically", // TikTok
-    "com.reddit.frontpage",
-    "com.google.android.youtube",
-    "com.snapchat.android",
-    "com.twitter.android",
-    "tv.twitch.android.app",
-    "com.discord",
-    "com.netflix.mediaclient"
-  ];
 
   @override
-  Future<List<String>> build() async {
-    return _loadBlockedApps();
+  Future<bool> build() async {
+    // Return whether apps have been selected
+    return await _service.hasAppsSelected();
   }
 
-  Future<List<String>> _loadBlockedApps() async {
+  /// Request Family Controls permission (one-time, during onboarding)
+  Future<bool> requestPermission() async {
+    if (!Platform.isIOS) {
+      debugPrint('⚠️ App blocking only supported on iOS');
+      return false;
+    }
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedList = prefs.getStringList(_prefsKey);
-      if (savedList != null && savedList.isNotEmpty) {
-        return savedList;
+      debugPrint('🔒 Requesting Screen Time permission...');
+      final result = await _service.requestPermission();
+      debugPrint('🔒 Permission result: $result');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error requesting permission: $e');
+      return false;
+    }
+  }
+
+  /// Check if user has authorized Family Controls
+  Future<bool> hasPermission() async {
+    try {
+      return await _service.hasPermission();
+    } catch (e) {
+      debugPrint('❌ Error checking permission: $e');
+      return false;
+    }
+  }
+
+  /// Show app selection UI (loads previous selection, allows modification)
+  /// Updates state in real-time based on selection result
+  Future<bool> selectAppsToBlock() async {
+    if (!Platform.isIOS) {
+      debugPrint('⚠️ App selection only supported on iOS');
+      return false;
+    }
+
+    try {
+      // Check permission first
+      final hasAuth = await hasPermission();
+      if (!hasAuth) {
+        debugPrint('⚠️ Cannot select apps - permission not granted');
+        return false;
       }
-      return _defaultBlockedApps;
+
+      debugPrint('📱 Showing app selection UI...');
+      final result = await _service.selectAppsToBlock();
+
+      // Always update state based on result (true = apps selected, false = no apps)
+      // This ensures the UI reflects the current selection state
+      state = AsyncValue.data(result);
+      
+      // Also refresh from service to ensure we have the latest state
+      final actualState = await _service.hasAppsSelected();
+      state = AsyncValue.data(actualState);
+      
+      debugPrint('📱 App selection completed. State updated: $actualState');
+
+      return result;
     } catch (e) {
-      debugPrint('❌ Error loading blocked apps: $e');
-      return _defaultBlockedApps;
+      debugPrint('❌ Error selecting apps: $e');
+      return false;
     }
   }
 
-  Future<void> _saveBlockedApps(List<String> apps) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(_prefsKey, apps);
-    } catch (e) {
-      debugPrint('❌ Error saving blocked apps: $e');
-    }
-  }
-
-  /// Solicita permisos iniciales
-  Future<void> requestPermissions() async {
-    if (Platform.isAndroid) {
-      await _service.requestAndroidPermission();
-    } else if (Platform.isIOS) {
-      await _service.requestIosPermission();
-    }
-  }
-
-  /// Bloquea todas las apps configuradas
+  /// Block the selected apps (called when timer starts)
   Future<void> blockDistractingApps() async {
-    final apps = state.value ?? _defaultBlockedApps;
-    debugPrint('🛡️ AppBlocker: Activating Shield for ${apps.length} apps');
-    
+    if (!Platform.isIOS) return;
+
     try {
-      if (Platform.isAndroid) {
-        await _service.blockAndroid(apps);
-      } else if (Platform.isIOS) {
-        await _service.blockIos(apps);
+      debugPrint('🚫 blockDistractingApps called');
+
+      // Check if apps have been selected
+      final appsSelected = state.value ?? false;
+      if (!appsSelected) {
+        debugPrint('⚠️ Cannot block apps - no apps selected yet');
+        debugPrint('📱 Automatically opening app selection UI...');
+        
+        // Check authorization first
+        final hasAuth = await hasPermission();
+        if (!hasAuth) {
+          debugPrint('🔒 Authorization not granted, requesting...');
+          final authResult = await requestPermission();
+          if (!authResult) {
+            debugPrint('❌ Authorization denied, cannot select apps');
+            return;
+          }
+        }
+        
+        // Automatically open app selection UI
+        final selectionResult = await selectAppsToBlock();
+        if (selectionResult) {
+          debugPrint('✅ Apps selected, now blocking...');
+          // After selection, try to block again
+          await _service.blockApps();
+          debugPrint('✅ Apps blocked successfully');
+        } else {
+          debugPrint('⚠️ App selection cancelled or failed');
+        }
+        return;
       }
+
+      await _service.blockApps();
+      debugPrint('✅ Apps blocked successfully');
     } catch (e) {
-      debugPrint('❌ Failed to block apps: $e');
+      debugPrint('❌ Provider error in blockDistractingApps: $e');
+      // Don't propagate error - app should continue
     }
   }
 
-  /// Desbloquea todas las apps
+  /// Unblock all apps (called when timer pauses/completes)
   Future<void> unblockAll() async {
-    final apps = state.value ?? _defaultBlockedApps;
-    debugPrint('🛡️ AppBlocker: Deactivating Shield');
-    
+    if (!Platform.isIOS) return;
+
     try {
-      if (Platform.isAndroid) {
-        await _service.unblockAndroid(apps);
-      } else if (Platform.isIOS) {
-        await _service.unblockIos(apps);
-      }
+      debugPrint('🔓 unblockAll called');
+      await _service.unblockApps();
+      debugPrint('✅ Apps unblocked successfully');
     } catch (e) {
-      debugPrint('❌ Failed to unblock apps: $e');
+      debugPrint('❌ Provider error in unblockAll: $e');
+      // Don't propagate error - app should continue
     }
-  }
-
-  /// Agrega una app a la lista de bloqueo
-  Future<void> addBlockedApp(String package) async {
-    final current = state.value ?? _defaultBlockedApps;
-    if (!current.contains(package)) {
-      final newList = [...current, package];
-      state = AsyncValue.data(newList);
-      await _saveBlockedApps(newList);
-    }
-  }
-
-  /// Remueve una app de la lista de bloqueo
-  Future<void> removeBlockedApp(String package) async {
-    final current = state.value ?? _defaultBlockedApps;
-    if (current.contains(package)) {
-      final newList = current.where((p) => p != package).toList();
-      state = AsyncValue.data(newList);
-      await _saveBlockedApps(newList);
-    }
-  }
-
-  /// Restaura la lista por defecto
-  Future<void> restoreDefaults() async {
-    state = const AsyncValue.data(_defaultBlockedApps);
-    await _saveBlockedApps(_defaultBlockedApps);
   }
 }
-

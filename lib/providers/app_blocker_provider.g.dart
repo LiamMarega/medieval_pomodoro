@@ -13,7 +13,7 @@ part of 'app_blocker_provider.dart';
 const appBlockerProvider = AppBlockerProvider._();
 
 final class AppBlockerProvider
-    extends $AsyncNotifierProvider<AppBlocker, List<String>> {
+    extends $AsyncNotifierProvider<AppBlocker, bool> {
   const AppBlockerProvider._()
       : super(
           from: null,
@@ -33,18 +33,18 @@ final class AppBlockerProvider
   AppBlocker create() => AppBlocker();
 }
 
-String _$appBlockerHash() => r'886a26c21aacdfa91d69192009699d53cc8dc7fb';
+String _$appBlockerHash() => r'9133183422f7434409c8db0f0a39a469fd41bbac';
 
-abstract class _$AppBlocker extends $AsyncNotifier<List<String>> {
-  FutureOr<List<String>> build();
+abstract class _$AppBlocker extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<AsyncValue<List<String>>, List<String>>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<List<String>>, List<String>>,
-        AsyncValue<List<String>>,
+        AnyNotifier<AsyncValue<bool>, bool>,
+        AsyncValue<bool>,
         Object?,
         Object?>;
     element.handleValue(ref, created);
