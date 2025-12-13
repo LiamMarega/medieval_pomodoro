@@ -41,7 +41,7 @@ final class AudioControllerProvider
   }
 }
 
-String _$audioControllerHash() => r'029f97ba2df423a97a0f31f959394a02e9d326bd';
+String _$audioControllerHash() => r'0b86678fc882671e22742757436bdf86059dd1db';
 
 abstract class _$AudioController extends $Notifier<AudioState> {
   AudioState build();
