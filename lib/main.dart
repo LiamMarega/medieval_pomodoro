@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:medieval_pomodoro/presentation/onboarding/onboarding_integration.dart';
 import 'package:medieval_pomodoro/presentation/timer_screen/timer_screen.dart';
 import 'package:sizer/sizer.dart';
 
@@ -11,10 +10,11 @@ import 'core/app_export.dart';
 import 'core/services/notification_service.dart';
 import 'providers/audio_provider.dart';
 import 'providers/app_blocker_provider.dart';
-import 'services/audio/audio_service_handler.dart';
+
 import 'widgets/custom_error_widget.dart';
 import 'presentation/settings_screen/settings_screen.dart';
 import 'presentation/stats_screen/stats_screen.dart';
+import 'presentation/initial_loading_screen.dart';
 
 late AudioHandler _audioHandler;
 
@@ -22,13 +22,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await EasyLocalization.ensureInitialized();
-  
+
   // Initialize Notification Service
   await NotificationService().initialize();
 
   // Initialize Audio Service
   _audioHandler = await AudioService.init(
-    builder: () => AudioServiceHandler(),
+    builder: () => UnifiedAudioHandler(),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.medieval_pomodoro.channel.audio',
       androidNotificationChannelName: 'Medieval Pomodoro Audio',
@@ -69,7 +69,8 @@ class AppBlockerInitializer extends ConsumerStatefulWidget {
   const AppBlockerInitializer({super.key, required this.child});
 
   @override
-  ConsumerState<AppBlockerInitializer> createState() => _AppBlockerInitializerState();
+  ConsumerState<AppBlockerInitializer> createState() =>
+      _AppBlockerInitializerState();
 }
 
 class _AppBlockerInitializerState extends ConsumerState<AppBlockerInitializer> {
@@ -87,10 +88,10 @@ class _AppBlockerInitializerState extends ConsumerState<AppBlockerInitializer> {
       debugPrint('🛡️ Initializing App Blocker...');
       // 1. Desbloquear todo al inicio por seguridad (si la app crasheó antes)
       await ref.read(appBlockerProvider.notifier).unblockAll();
-      
+
       // 2. Solicitar permisos si es necesario (opcional, mejor hacerlo en settings)
       // await ref.read(appBlockerProvider.notifier).requestPermissions();
-      
+
       debugPrint('✅ App Blocker initialized');
     } catch (e) {
       debugPrint('❌ Error initializing App Blocker: $e');
@@ -129,8 +130,7 @@ class MyApp extends StatelessWidget {
         // 🚨 END CRITICAL SECTION
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) =>
-              OnboardingIntegration.buildInitialScreen(const TimerScreen()),
+          '/': (context) => const InitialLoadingScreen(),
           '/timer-screen': (context) => const TimerScreen(),
           '/settings-screen': (context) => const SettingsScreen(),
           '/stats-screen': (context) => const StatsScreen(),

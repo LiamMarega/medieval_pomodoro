@@ -151,13 +151,13 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage(
+                              image: const AssetImage(
                                   'assets/sprites/dirt_sprite_2.png'),
                               fit: BoxFit.none,
                               repeat: ImageRepeat.repeat,
                               scale: 2,
                               filterQuality: FilterQuality.low,
-                              colorFilter: ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                 AppColors.filterBrownRed,
                                 BlendMode.color,
                               ),

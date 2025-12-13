@@ -6,7 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/timer_state.dart';
 import '../models/timer_mode.dart';
 // Importa el nuevo servicio de audio
-import '../services/audio_service_manager.dart';
+import 'audio_provider.dart';
 import '../core/services/user_stats_service.dart';
 import '../core/services/live_activity_manager.dart';
 import 'settings_provider.dart';
@@ -18,7 +18,7 @@ part 'timer_provider.g.dart';
 @Riverpod(keepAlive: true)
 class TimerController extends _$TimerController with WidgetsBindingObserver {
   Timer? _ticker;
-  PlaylistAudioService? _audioService;
+  // PlaylistAudioService? _audioService; // Removed in favor of AudioController
   TimerMode? _previousSessionMode; // Store previous session for gap time logic
   final UserStatsService _userStatsService = UserStatsService();
   LiveActivityManager? _liveActivityManager;
@@ -153,7 +153,9 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
           );
 
           // Update audio service music enabled state without stopping playback
-          _audioService?.setMusicEnabled(settings.isMusicEnabled);
+          ref
+              .read(audioControllerProvider.notifier)
+              .setMusicEnabled(settings.isMusicEnabled);
 
           // If we're in a work session and not running, update the remaining time
           if (state.currentMode.isWork && !state.isActive) {
@@ -177,15 +179,10 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   void _initializeAudio() async {
     try {
       debugPrint('🚀 Initializing audio in timer provider...');
-      _audioService = PlaylistAudioService.instance;
-      await _audioService!.initialize();
+      // Initialize AudioController via provider
+      // Ensure it's ready
+      await ref.read(audioControllerProvider.notifier).initialize();
       debugPrint('✅ Audio initialized successfully in timer provider');
-
-      // Validar playlist después de inicializar
-      final isValid = await _audioService!.validatePlaylist();
-      if (!isValid) {
-        debugPrint('⚠️ Warning: Some songs in playlist may not be available');
-      }
     } catch (e) {
       debugPrint('❌ Error initializing audio in timer provider: $e');
     }
@@ -280,7 +277,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   void pauseTimer() {
     debugPrint('⏸️ Pausing timer...');
     debugPrint(
-        'Current music state - isPlaying: ${_audioService?.isPlaying ?? false}, isEnabled: ${state.isMusicEnabled}');
+        'Current music state - isPlaying: ${ref.read(audioControllerProvider).isPlaying}, isEnabled: ${state.isMusicEnabled}');
 
     // Prevent pausing during gap time
     if (state.currentMode.isGapTime) {
@@ -304,7 +301,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     _updateLiveActivity();
 
     // Detener música si está reproduciéndose
-    if (state.isMusicEnabled && (_audioService?.isPlaying ?? false)) {
+    if (state.isMusicEnabled && (ref.read(audioControllerProvider).isPlaying)) {
       debugPrint('🔇 Stopping music...');
       _stopMusic();
     } else {
@@ -373,7 +370,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     _updateLiveActivity();
 
     // Detener música si está reproduciéndose
-    if (_audioService?.isPlaying ?? false) {
+    if (ref.read(audioControllerProvider).isPlaying) {
       debugPrint('🔇 Stopping music for restart...');
       _stopMusic();
     }
@@ -418,7 +415,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     _endLiveActivity();
 
     // Detener música
-    if (_audioService?.isPlaying ?? false) {
+    if (ref.read(audioControllerProvider).isPlaying) {
       debugPrint('🔇 Stopping music for session completion...');
       _stopMusic();
     }
@@ -638,10 +635,10 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     state = state.copyWith(isMusicEnabled: newMusicEnabled);
 
     // Actualizar el servicio de audio
-    _audioService?.setMusicEnabled(newMusicEnabled);
+    ref.read(audioControllerProvider.notifier).setMusicEnabled(newMusicEnabled);
 
     // Si se deshabilitó la música y está reproduciéndose, detenerla
-    if (!newMusicEnabled && (_audioService?.isPlaying ?? false)) {
+    if (!newMusicEnabled && (ref.read(audioControllerProvider).isPlaying)) {
       debugPrint('🔇 Music disabled, stopping playback...');
       _stopMusic();
     }
@@ -658,13 +655,13 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
       return;
     }
 
-    if (_audioService == null || !_audioService!.isInitialized) {
+    if (!ref.read(audioControllerProvider).isInitialized) {
       debugPrint('❌ Audio service not initialized in _startMusic()');
       return;
     }
 
     try {
-      await _audioService!.play();
+      await ref.read(audioControllerProvider.notifier).play();
       state = state.copyWith(isMusicPlaying: true);
       debugPrint('✅ Music started successfully - isMusicPlaying set to true');
     } catch (e) {
@@ -675,13 +672,13 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   void _stopMusic() async {
     debugPrint('🔇 _stopMusic() called');
 
-    if (_audioService == null || !_audioService!.isInitialized) {
+    if (!ref.read(audioControllerProvider).isInitialized) {
       debugPrint('❌ Audio service not initialized in _stopMusic()');
       return;
     }
 
     try {
-      await _audioService!.pause();
+      await ref.read(audioControllerProvider.notifier).pause();
       state = state.copyWith(isMusicPlaying: false);
       debugPrint('✅ Music stopped successfully - isMusicPlaying set to false');
     } catch (e) {
@@ -713,29 +710,29 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
   // Métodos adicionales para controlar la playlist
   void nextSong() {
     debugPrint('⏭️ Skipping to next song...');
-    _audioService?.nextSong();
+    ref.read(audioControllerProvider.notifier).nextSong();
     HapticFeedback.lightImpact();
   }
 
   void previousSong() {
     debugPrint('⏮️ Skipping to previous song...');
-    _audioService?.previousSong();
+    ref.read(audioControllerProvider.notifier).previousSong();
     HapticFeedback.lightImpact();
   }
 
   void setMusicVolume(double volume) {
     debugPrint('🔊 Setting music volume to: ${(volume * 100).round()}%');
-    _audioService?.setVolume(volume);
+    ref.read(audioControllerProvider.notifier).setVolume(volume);
   }
 
   // Getters para información de la playlist
   String get currentSongTitle =>
-      _audioService?.currentSongTitle ?? 'Medieval Lofi Music';
-  List<String> get playlistInfo => _audioService?.getPlaylistInfo() ?? [];
-  int get currentSongIndex => _audioService?.currentIndex ?? 0;
-  Duration get currentPosition =>
-      _audioService?.currentPosition ?? Duration.zero;
-  Duration get totalDuration => _audioService?.totalDuration ?? Duration.zero;
+      ref.read(audioControllerProvider).currentSongTitle;
+  // Playlist info not directly available in AudioState, skipping for now as it might not be used
+  List<String> get playlistInfo => [];
+  int get currentSongIndex => 0; // Not exposed in AudioState
+  Duration get currentPosition => Duration.zero; // Not exposed
+  Duration get totalDuration => Duration.zero; // Not exposed
 
   // Live Activity integration methods
   /// Sincroniza el estado actual con Live Activity

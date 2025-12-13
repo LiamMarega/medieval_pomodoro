@@ -22,6 +22,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late int _workDurationMinutes = 25;
   late int _shortBreakMinutes = 5;
   late int _longBreakMinutes = 30;
+  late bool _isMusicEnabled = true;
 
   @override
   void initState() {
@@ -84,7 +85,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       workDurationMinutes: _workDurationMinutes,
       shortBreakMinutes: _shortBreakMinutes,
       longBreakMinutes: _longBreakMinutes,
-      isMusicEnabled: true, // Always true
+      isMusicEnabled: _isMusicEnabled,
     );
 
     // The timer provider will automatically pick up the new settings
@@ -139,6 +140,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           _workDurationMinutes = settings.workDurationMinutes;
                           _shortBreakMinutes = settings.shortBreakMinutes;
                           _longBreakMinutes = settings.longBreakMinutes;
+                          _isMusicEnabled = settings.isMusicEnabled;
                         });
                       });
                     }
@@ -222,6 +224,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 increment: 5,
                                 onChanged: (value) {
                                   setState(() => _longBreakMinutes = value);
+                                  _autoSaveSettings();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        PaperWidget(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: 1.h,
+                            children: [
+                              _buildSectionTitle('AUDIO'),
+                              SizedBox(height: 1.h),
+                              _buildSwitchSetting(
+                                title: 'MÚSICA MEDIEVAL',
+                                value: _isMusicEnabled,
+                                onChanged: (value) {
+                                  setState(() => _isMusicEnabled = value);
                                   _autoSaveSettings();
                                 },
                               ),
@@ -610,6 +633,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     }
+  }
+
+  Widget _buildSwitchSetting({
+    required String title,
+    required bool value,
+    required Function(bool) onChanged,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Text(
+                title,
+                style: GoogleFonts.pressStart2p(
+                  fontSize: 12.sp,
+                  color: AppColors.primaryGold.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.primaryGold,
+              activeTrackColor: AppColors.primaryGold.withValues(alpha: 0.5),
+              inactiveThumbColor: AppColors.textSecondary,
+              inactiveTrackColor: AppColors.containerBackground,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget _buildSectionTitle(String title) {
