@@ -11,6 +11,8 @@ import '../../providers/settings_provider.dart';
 import '../../providers/audio_provider.dart';
 import '../../providers/app_blocker_provider.dart';
 import '../../widgets/pixel_frame.dart';
+import '../../core/widgets/small_wood_button.dart';
+import '../../core/widgets/large_wood_button.dart';
 import '../../constants/colors.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -162,7 +164,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             spacing: 1.h,
                             children: [
                               // Battle Rhythm Section
-                              _buildSectionTitle('RITMO DE BATALLA'),
+                              _buildSectionTitle(LocaleKeys
+                                  .settings_screen_battle_rhythm
+                                  .tr()),
                               SizedBox(height: 1.h),
 
                               _buildDurationSetting(
@@ -234,15 +238,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 },
                               ),
                               SizedBox(height: 1.5.h),
-                              _buildSwitchSetting(
-                                title: "Strict Mode",
-                                subtitle: "Prevent unblocking apps when paused",
-                                value: _strictMode,
-                                onChanged: (value) {
-                                  setState(() => _strictMode = value);
-                                  _autoSaveSettings();
-                                },
-                              ),
                             ],
                           ),
                         ),
@@ -299,7 +294,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(height: 2.h),
                                     // Language selector
                                     _buildLanguageSelector(context),
 
@@ -311,7 +305,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         label: LocaleKeys
                                             .settings_screen_manage_blocked_apps
                                             .tr(),
-                                        icon: '🛡️',
                                         color: AppColors.primaryGold,
                                         onTap: () async {
                                           HapticFeedback.mediumImpact();
@@ -388,7 +381,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       label: LocaleKeys
                                           .settings_screen_set_test_durations
                                           .tr(),
-                                      icon: '⚡',
                                       color: AppColors.primaryGold,
                                       onTap: () {
                                         final settingsController = ref.read(
@@ -427,7 +419,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     // Reset to normal durations button
                                     _buildActionButton(
                                       label: 'RESET TO NORMAL',
-                                      icon: '🔄',
                                       color: AppColors.success,
                                       onTap: () {
                                         final settingsController = ref.read(
@@ -467,7 +458,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       label: LocaleKeys
                                           .settings_screen_view_statistics
                                           .tr(),
-                                      icon: '📊',
                                       color: AppColors.info,
                                       onTap: () {
                                         Navigator.pushNamed(
@@ -481,7 +471,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       label: LocaleKeys
                                           .settings_screen_reset_everything_restart
                                           .tr(),
-                                      icon: '💀',
                                       color: AppColors.error,
                                       onTap: () =>
                                           _showResetConfirmationDialog(context),
@@ -507,58 +496,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildActionButton({
     required String label,
-    required String icon,
     required Color color,
     required VoidCallback onTap,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Center(
-        child: GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            onTap();
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
-            decoration: BoxDecoration(
-              color: AppColors.containerBackground,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: Colors.black,
-                width: 3,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  icon,
-                  style: TextStyle(fontSize: 16.sp),
-                ),
-                SizedBox(width: 2.w),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 9.sp,
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        child: LargeWoodButton(
+          label: label,
+          textColor: color,
+          onTap: onTap,
+          width: 90.w, // Ensure it typically fills the padded area
+          height: 10.h,
         ),
       ),
     );
@@ -834,118 +783,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final currentLocale = context.locale;
     final supportedLocales = context.supportedLocales;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-      padding: EdgeInsets.all(3.w),
-      decoration: BoxDecoration(
-        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(0),
-        border: Border.all(
-          color: Colors.black,
-          width: 4,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Title
-          Text(
-            '🏰 ${LocaleKeys.settings_screen_language.tr()} 🏰',
-            style: GoogleFonts.pressStart2p(
-              fontSize: 12.sp,
-              color: AppColors.primaryGold,
-              fontWeight: FontWeight.bold,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.8),
-                  offset: const Offset(1, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 2.h),
-          // Language buttons
-          Row(
+    return Column(
+      children: [
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
+          padding: EdgeInsets.fromLTRB(3.w, 0, 3.w, 3.w), // Remove top padding
+
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: supportedLocales.map((locale) {
               final isSelected =
                   currentLocale.languageCode == locale.languageCode;
+              // Removed flags and kept only text as requested
               final languageName =
-                  locale.languageCode == 'en' ? '🇬🇧 English' : '🇪🇸 Español';
+                  locale.languageCode == 'en' ? 'English' : 'Español';
 
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  context.setLocale(locale);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        LocaleKeys.settings_screen_language_changed.tr(),
-                        style: GoogleFonts.pressStart2p(fontSize: 12.sp),
+              return Transform.translate(
+                offset: const Offset(
+                    0, 0), // Shift up to overlap border more for hanging effect
+                child: SmallWoodButton(
+                  label: languageName,
+                  isSelected: isSelected,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.setLocale(locale);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          LocaleKeys.settings_screen_language_changed.tr(),
+                          style: GoogleFonts.pressStart2p(fontSize: 12.sp),
+                        ),
+                        backgroundColor: AppColors.success,
+                        duration: const Duration(seconds: 2),
                       ),
-                      backgroundColor: AppColors.success,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.5.h),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.containerBackground
-                        : AppColors.secondaryBackground,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primaryGold
-                          : AppColors.borderBlack,
-                      width: 3,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Text(
-                    languageName,
-                    style: GoogleFonts.pressStart2p(
-                      fontSize: 10.sp,
-                      color: isSelected
-                          ? AppColors.primaryGold
-                          : AppColors.textSecondary,
-                      fontWeight: FontWeight.bold,
-                      shadows: isSelected
-                          ? [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.8),
-                                offset: const Offset(1, 1),
-                                blurRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
-                  ),
+                    );
+                  },
                 ),
               );
             }).toList(),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
