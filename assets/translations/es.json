@@ -100,6 +100,16 @@
     "97": "Cada misión la ganan quienes nunca se rinden.",
     "98": "Un caballero enfocado es un caballero victorioso."
   },
+  "knight_break_quotes": {
+    "0": "Incluso los guerreros más poderosos necesitan descanso.",
+    "1": "Tómate este momento para recargar tu espíritu.",
+    "2": "Un caballero descansado es un caballero victorioso.",
+    "3": "Haz una pausa y reflexiona sobre tus logros.",
+    "4": "Este descanso es tu merecida recompensa.",
+    "5": "Descansa ahora, conquista después.",
+    "6": "Tu mente y cuerpo merecen este respiro.",
+    "7": "Prepárate para la próxima batalla."
+  },
   "timer_screen": {
     "ok_button": "¡Ok!",
     "break_time": "TIEMPO DE DESCANSO",

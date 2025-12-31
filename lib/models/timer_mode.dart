@@ -91,32 +91,14 @@ class TimerModeConfig {
   }
 
   static String _getRandomWorkMessage() {
-    final messages = [
-      "A knight's focus is their greatest weapon!",
-      "Every quest begins with a single step forward.",
-      "The castle of success is built one stone at a time.",
-      "Honor your commitment to excellence, brave warrior!",
-      "In the realm of productivity, consistency reigns supreme.",
-      "Your dedication today forges tomorrow's victories.",
-      "Like a steadfast knight, persist through challenges.",
-      "The path to mastery requires unwavering discipline.",
-    ];
-    final random = DateTime.now().millisecondsSinceEpoch % messages.length;
-    return messages[random];
+    const int totalMessages = 99;
+    final random = DateTime.now().millisecondsSinceEpoch % totalMessages;
+    return "knight_quotes.$random";
   }
 
   static String _getRandomBreakMessage() {
-    final messages = [
-      "Even the mightiest warriors need rest.",
-      "Take this moment to recharge your spirit.",
-      "A well-rested knight is a victorious knight.",
-      "Pause and reflect on your achievements.",
-      "This break is your well-deserved reward.",
-      "Rest now, conquer later.",
-      "Your mind and body deserve this respite.",
-      "Prepare for the next battle ahead.",
-    ];
-    final random = DateTime.now().millisecondsSinceEpoch % messages.length;
-    return messages[random];
+    const int totalMessages = 8;
+    final random = DateTime.now().millisecondsSinceEpoch % totalMessages;
+    return "knight_break_quotes.$random";
   }
 }

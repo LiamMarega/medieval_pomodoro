@@ -56,7 +56,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     // Crear configuración inicial del modo de trabajo
     final initialConfig = TimerModeConfig.getWorkConfig(
       durationMinutes: workDuration,
-      motivationalMessage: "A knight's focus is their greatest weapon!",
+      motivationalMessage: "knight_quotes.0",
     );
 
     final initialDuration = Duration(seconds: _minutesToSeconds(workDuration));

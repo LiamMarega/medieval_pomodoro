@@ -100,6 +100,16 @@
     "97": "Every quest is won by those who never give up.",
     "98": "A focused knight is a victorious knight."
   },
+  "knight_break_quotes": {
+    "0": "Even the mightiest warriors need rest.",
+    "1": "Take this moment to recharge your spirit.",
+    "2": "A well-rested knight is a victorious knight.",
+    "3": "Pause and reflect on your achievements.",
+    "4": "This break is your well-deserved reward.",
+    "5": "Rest now, conquer later.",
+    "6": "Your mind and body deserve this respite.",
+    "7": "Prepare for the next battle ahead."
+  },
   "timer_screen": {
     "ok_button": "Ok!",
     "break_time": "BREAK TIME",
