@@ -13,7 +13,10 @@ import '../../providers/app_blocker_provider.dart';
 import '../../widgets/pixel_frame.dart';
 import '../../core/widgets/small_wood_button.dart';
 import '../../core/widgets/large_wood_button.dart';
+import '../../core/widgets/medieval_signboard.dart';
 import '../../constants/colors.dart';
+
+import '../../core/widgets/medieval_back_button.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -108,362 +111,363 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: 10,
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: const AssetImage(
-                  'assets/sprites/backgrounds/pixel-art-bg-2.png'),
-              fit: BoxFit.none,
-              repeat: ImageRepeat.noRepeat,
-              scale: 1.5,
-              filterQuality: FilterQuality.low,
-              colorFilter: ColorFilter.mode(
-                AppColors.primaryBackground,
-                BlendMode.dstOver,
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: const AssetImage(
+                      'assets/sprites/backgrounds/pixel-art-bg-2.png'),
+                  fit: BoxFit.none,
+                  repeat: ImageRepeat.noRepeat,
+                  scale: 1.5,
+                  filterQuality: FilterQuality.low,
+                  colorFilter: ColorFilter.mode(
+                    AppColors.primaryBackground,
+                    BlendMode.dstOver,
+                  ),
+                  opacity: 0.2,
+                ),
               ),
-              opacity: 0.2,
-            ),
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: settingsAsync.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (error, stack) => Center(
-                    child: Text(LocaleKeys
-                        .settings_screen_error_loading_settings
-                        .tr(namedArgs: {'error': error.toString()})),
-                  ),
-                  data: (settings) {
-                    // Update local state when settings are loaded
-                    if (_workDurationMinutes != settings.workDurationMinutes ||
-                        _shortBreakMinutes != settings.shortBreakMinutes ||
-                        _longBreakMinutes != settings.longBreakMinutes ||
-                        _strictMode != settings.strictMode) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
-                          _workDurationMinutes = settings.workDurationMinutes;
-                          _shortBreakMinutes = settings.shortBreakMinutes;
-                          _longBreakMinutes = settings.longBreakMinutes;
-                          _isMusicEnabled = settings.isMusicEnabled;
-                          _strictMode = settings.strictMode;
-                        });
-                      });
-                    }
+              child: Column(
+                children: [
+                  Expanded(
+                    child: settingsAsync.when(
+                      loading: () => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      error: (error, stack) => Center(
+                        child: Text(LocaleKeys
+                            .settings_screen_error_loading_settings
+                            .tr(namedArgs: {'error': error.toString()})),
+                      ),
+                      data: (settings) {
+                        // Update local state when settings are loaded
+                        if (_workDurationMinutes !=
+                                settings.workDurationMinutes ||
+                            _shortBreakMinutes != settings.shortBreakMinutes ||
+                            _longBreakMinutes != settings.longBreakMinutes ||
+                            _strictMode != settings.strictMode) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              _workDurationMinutes =
+                                  settings.workDurationMinutes;
+                              _shortBreakMinutes = settings.shortBreakMinutes;
+                              _longBreakMinutes = settings.longBreakMinutes;
+                              _isMusicEnabled = settings.isMusicEnabled;
+                              _strictMode = settings.strictMode;
+                            });
+                          });
+                        }
 
-                    return Column(
-                      children: [
-                        SizedBox(height: 6.h),
-                        PaperWidget(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: 1.h,
-                            children: [
-                              // Battle Rhythm Section
-                              _buildSectionTitle(LocaleKeys
-                                  .settings_screen_battle_rhythm
-                                  .tr()),
-                              SizedBox(height: 1.h),
+                        return Column(
+                          children: [
+                            SizedBox(height: 12.h),
+                            PaperWidget(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 1.h,
+                                children: [
+                                  // Battle Rhythm Section
+                                  _buildSectionTitle(LocaleKeys
+                                      .settings_screen_battle_rhythm
+                                      .tr()),
+                                  SizedBox(height: 1.h),
 
-                              _buildDurationSetting(
-                                title: LocaleKeys.settings_screen_work_duration
-                                    .tr(),
-                                currentValue: _workDurationMinutes,
-                                minValue:
-                                    0, // Allow 0 minutes (10 seconds for testing)
-                                maxValue: 60,
-                                increment: 5,
-                                onChanged: (value) {
-                                  setState(() => _workDurationMinutes = value);
-                                  _autoSaveSettings();
-                                },
-                                customIncrementLogic:
-                                    (currentValue, isIncrement) {
-                                  if (isIncrement) {
-                                    // When incrementing, use smart logic
-                                    if (currentValue < 5) {
-                                      // If below 5, add 1
-                                      return currentValue + 1;
-                                    } else {
-                                      // If 5 or above, add 5
-                                      return currentValue + 5;
-                                    }
-                                  } else {
-                                    // When decrementing, use smart logic
-                                    if (currentValue > 5) {
-                                      // If above 5, subtract 5
-                                      return currentValue - 5;
-                                    } else if (currentValue > 0) {
-                                      // If between 0 and 5, subtract 1
-                                      return currentValue - 1;
-                                    } else {
-                                      // If at 0, can't go lower
-                                      return currentValue;
-                                    }
-                                  }
-                                },
-                              ),
-                              SizedBox(height: 1.5.h),
-                              _buildDurationSetting(
-                                title: LocaleKeys
-                                    .settings_screen_short_break_time
-                                    .tr(),
-                                currentValue: _shortBreakMinutes,
-                                minValue:
-                                    0, // Allow 0 minutes (10 seconds for testing)
-                                maxValue: 15,
-                                increment: 1,
-                                onChanged: (value) {
-                                  setState(() => _shortBreakMinutes = value);
-                                  _autoSaveSettings();
-                                },
-                              ),
-                              SizedBox(height: 1.5.h),
-                              _buildDurationSetting(
-                                title: LocaleKeys
-                                    .settings_screen_long_break_time
-                                    .tr(),
-                                currentValue: _longBreakMinutes,
-                                minValue:
-                                    0, // Allow 0 minutes (20 seconds for testing)
-                                maxValue: 60,
-                                increment: 5,
-                                onChanged: (value) {
-                                  setState(() => _longBreakMinutes = value);
-                                  _autoSaveSettings();
-                                },
-                              ),
-                              SizedBox(height: 1.5.h),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                top: BorderSide(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  width: 5,
-                                ),
+                                  _buildDurationSetting(
+                                    title: LocaleKeys
+                                        .settings_screen_work_duration
+                                        .tr(),
+                                    currentValue: _workDurationMinutes,
+                                    minValue:
+                                        0, // Allow 0 minutes (10 seconds for testing)
+                                    maxValue: 60,
+                                    increment: 5,
+                                    onChanged: (value) {
+                                      setState(
+                                          () => _workDurationMinutes = value);
+                                      _autoSaveSettings();
+                                    },
+                                    customIncrementLogic:
+                                        (currentValue, isIncrement) {
+                                      if (isIncrement) {
+                                        // When incrementing, use smart logic
+                                        if (currentValue < 5) {
+                                          // If below 5, add 1
+                                          return currentValue + 1;
+                                        } else {
+                                          // If 5 or above, add 5
+                                          return currentValue + 5;
+                                        }
+                                      } else {
+                                        // When decrementing, use smart logic
+                                        if (currentValue > 5) {
+                                          // If above 5, subtract 5
+                                          return currentValue - 5;
+                                        } else if (currentValue > 0) {
+                                          // If between 0 and 5, subtract 1
+                                          return currentValue - 1;
+                                        } else {
+                                          // If at 0, can't go lower
+                                          return currentValue;
+                                        }
+                                      }
+                                    },
+                                  ),
+                                  SizedBox(height: 1.5.h),
+                                  _buildDurationSetting(
+                                    title: LocaleKeys
+                                        .settings_screen_short_break_time
+                                        .tr(),
+                                    currentValue: _shortBreakMinutes,
+                                    minValue:
+                                        0, // Allow 0 minutes (10 seconds for testing)
+                                    maxValue: 15,
+                                    increment: 1,
+                                    onChanged: (value) {
+                                      setState(
+                                          () => _shortBreakMinutes = value);
+                                      _autoSaveSettings();
+                                    },
+                                  ),
+                                  SizedBox(height: 1.5.h),
+                                  _buildDurationSetting(
+                                    title: LocaleKeys
+                                        .settings_screen_long_break_time
+                                        .tr(),
+                                    currentValue: _longBreakMinutes,
+                                    minValue:
+                                        0, // Allow 0 minutes (20 seconds for testing)
+                                    maxValue: 60,
+                                    increment: 5,
+                                    onChanged: (value) {
+                                      setState(() => _longBreakMinutes = value);
+                                      _autoSaveSettings();
+                                    },
+                                  ),
+                                  SizedBox(height: 1.5.h),
+                                ],
                               ),
                             ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/sprites/bricks_background_mobile.png'),
-                                  fit: BoxFit.none,
-                                  repeat: ImageRepeat.repeat,
-                                  scale: 2,
-                                  filterQuality: FilterQuality.low,
-                                  colorFilter: ColorFilter.mode(
-                                    AppColors.filterBrownRed,
-                                    BlendMode.color,
-                                  ),
-                                  opacity: 0.5,
-                                ),
-                              ),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Language selector
-                                    _buildLanguageSelector(context),
-
-                                    // View Stats button
-                                    _buildActionButton(
-                                      label: LocaleKeys
-                                          .settings_screen_view_statistics
-                                          .tr(),
-                                      color: AppColors.info,
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                            context, '/stats-screen');
-                                      },
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.5),
+                                      width: 5,
                                     ),
-                                    SizedBox(height: 1.h),
+                                  ),
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage(
+                                          'assets/sprites/bricks_background_mobile.png'),
+                                      fit: BoxFit.none,
+                                      repeat: ImageRepeat.repeat,
+                                      scale: 2,
+                                      filterQuality: FilterQuality.low,
+                                      colorFilter: ColorFilter.mode(
+                                        AppColors.filterBrownRed,
+                                        BlendMode.color,
+                                      ),
+                                      opacity: 0.5,
+                                    ),
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Language selector
+                                        _buildLanguageSelector(context),
 
-                                    // Manage Blocked Apps button (iOS only)
-                                    if (Platform.isIOS)
-                                      _buildActionButton(
-                                        label: LocaleKeys
-                                            .settings_screen_manage_blocked_apps
-                                            .tr(),
-                                        color: AppColors.primaryGold,
-                                        onTap: () async {
-                                          HapticFeedback.mediumImpact();
+                                        // View Stats button
+                                        _buildActionButton(
+                                          label: LocaleKeys
+                                              .settings_screen_view_statistics
+                                              .tr(),
+                                          color: AppColors.info,
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context, '/stats-screen');
+                                          },
+                                        ),
+                                        SizedBox(height: 1.h),
 
-                                          // Check permission first
-                                          final hasPermission = await ref
-                                              .read(appBlockerProvider.notifier)
-                                              .hasPermission();
+                                        // Manage Blocked Apps button (iOS only)
+                                        if (Platform.isIOS)
+                                          _buildActionButton(
+                                            label: LocaleKeys
+                                                .settings_screen_manage_blocked_apps
+                                                .tr(),
+                                            color: AppColors.primaryGold,
+                                            onTap: () async {
+                                              HapticFeedback.mediumImpact();
 
-                                          if (!hasPermission) {
-                                            // Request permission first
-                                            final authResult = await ref
-                                                .read(
-                                                    appBlockerProvider.notifier)
-                                                .requestPermission();
+                                              // Check permission first
+                                              final hasPermission = await ref
+                                                  .read(appBlockerProvider
+                                                      .notifier)
+                                                  .hasPermission();
 
-                                            if (!authResult) {
-                                              if (mounted) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      '⚠️ Permission denied. Please grant Screen Time permission in Settings.',
-                                                      style: GoogleFonts
-                                                          .pressStart2p(
-                                                              fontSize: 10.sp),
-                                                    ),
-                                                    backgroundColor:
-                                                        AppColors.error,
-                                                    duration: const Duration(
-                                                        seconds: 3),
-                                                  ),
-                                                );
+                                              if (!hasPermission) {
+                                                // Request permission first
+                                                final authResult = await ref
+                                                    .read(appBlockerProvider
+                                                        .notifier)
+                                                    .requestPermission();
+
+                                                if (!authResult) {
+                                                  if (mounted) {
+                                                    MedievalSignboard.show(
+                                                      context,
+                                                      title:
+                                                          'Permission Denied',
+                                                      message:
+                                                          'Please grant Screen Time permission via Settings.',
+                                                    );
+                                                  }
+                                                  return;
+                                                }
                                               }
-                                              return;
-                                            }
-                                          }
 
-                                          // Open app selection UI
-                                          final result = await ref
-                                              .read(appBlockerProvider.notifier)
-                                              .selectAppsToBlock();
+                                              // Open app selection UI
+                                              final result = await ref
+                                                  .read(appBlockerProvider
+                                                      .notifier)
+                                                  .selectAppsToBlock();
 
-                                          if (mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  result
+                                              if (mounted) {
+                                                MedievalSignboard.show(
+                                                  context,
+                                                  title: result
+                                                      ? 'Success'
+                                                      : 'Cancelled',
+                                                  message: result
                                                       ? LocaleKeys
                                                           .settings_screen_apps_selected_successfully
                                                           .tr()
                                                       : LocaleKeys
                                                           .settings_screen_app_selection_cancelled
                                                           .tr(),
-                                                  style:
-                                                      GoogleFonts.pressStart2p(
-                                                          fontSize: 10.sp),
-                                                ),
-                                                backgroundColor: result
-                                                    ? AppColors.success
-                                                    : AppColors.primaryGold,
-                                                duration:
-                                                    const Duration(seconds: 2),
-                                              ),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    // if (Platform.isIOS) SizedBox(height: 2.h),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        // if (Platform.isIOS) SizedBox(height: 2.h),
 
-                                    // // Test durations button
-                                    // _buildActionButton(
-                                    //   label: LocaleKeys
-                                    //       .settings_screen_set_test_durations
-                                    //       .tr(),
-                                    //   color: AppColors.primaryGold,
-                                    //   onTap: () {
-                                    //     final settingsController = ref.read(
-                                    //         settingsControllerProvider
-                                    //             .notifier);
-                                    //     settingsController.setTestDurations();
+                                        // // Test durations button
+                                        // _buildActionButton(
+                                        //   label: LocaleKeys
+                                        //       .settings_screen_set_test_durations
+                                        //       .tr(),
+                                        //   color: AppColors.primaryGold,
+                                        //   onTap: () {
+                                        //     final settingsController = ref.read(
+                                        //         settingsControllerProvider
+                                        //             .notifier);
+                                        //     settingsController.setTestDurations();
 
-                                    //     // Update local state
-                                    //     setState(() {
-                                    //       _workDurationMinutes = 0;
-                                    //       _shortBreakMinutes = 0;
-                                    //       _longBreakMinutes = 0;
-                                    //     });
+                                        //     // Update local state
+                                        //     setState(() {
+                                        //       _workDurationMinutes = 0;
+                                        //       _shortBreakMinutes = 0;
+                                        //       _longBreakMinutes = 0;
+                                        //     });
 
-                                    //     // Show feedback
-                                    //     ScaffoldMessenger.of(context)
-                                    //         .showSnackBar(
-                                    //       SnackBar(
-                                    //         content: Text(
-                                    //           LocaleKeys
-                                    //               .settings_screen_test_mode_activated
-                                    //               .tr(),
-                                    //           style: GoogleFonts.pressStart2p(
-                                    //               fontSize: 12.sp),
-                                    //         ),
-                                    //         backgroundColor:
-                                    //             AppColors.primaryGold,
-                                    //         duration:
-                                    //             const Duration(seconds: 3),
-                                    //       ),
-                                    //     );
-                                    //   },
-                                    // ),
-                                    // SizedBox(height: 2.h),
+                                        //     // Show feedback
+                                        //     ScaffoldMessenger.of(context)
+                                        //         .showSnackBar(
+                                        //       SnackBar(
+                                        //         content: Text(
+                                        //           LocaleKeys
+                                        //               .settings_screen_test_mode_activated
+                                        //               .tr(),
+                                        //           style: GoogleFonts.pressStart2p(
+                                        //               fontSize: 12.sp),
+                                        //         ),
+                                        //         backgroundColor:
+                                        //             AppColors.primaryGold,
+                                        //         duration:
+                                        //             const Duration(seconds: 3),
+                                        //       ),
+                                        //     );
+                                        //   },
+                                        // ),
+                                        // SizedBox(height: 2.h),
 
-                                    // // Reset to normal durations button
-                                    // _buildActionButton(
-                                    //   label: 'RESET TO NORMAL',
-                                    //   color: AppColors.success,
-                                    //   onTap: () {
-                                    //     final settingsController = ref.read(
-                                    //         settingsControllerProvider
-                                    //             .notifier);
-                                    //     settingsController.resetToDefaults();
+                                        // // Reset to normal durations button
+                                        // _buildActionButton(
+                                        //   label: 'RESET TO NORMAL',
+                                        //   color: AppColors.success,
+                                        //   onTap: () {
+                                        //     final settingsController = ref.read(
+                                        //         settingsControllerProvider
+                                        //             .notifier);
+                                        //     settingsController.resetToDefaults();
 
-                                    //     // Update local state
-                                    //     setState(() {
-                                    //       _workDurationMinutes = 25;
-                                    //       _shortBreakMinutes = 5;
-                                    //       _longBreakMinutes = 30;
-                                    //     });
+                                        //     // Update local state
+                                        //     setState(() {
+                                        //       _workDurationMinutes = 25;
+                                        //       _shortBreakMinutes = 5;
+                                        //       _longBreakMinutes = 30;
+                                        //     });
 
-                                    //     // Show feedback
-                                    //     ScaffoldMessenger.of(context)
-                                    //         .showSnackBar(
-                                    //       SnackBar(
-                                    //         content: Text(
-                                    //           LocaleKeys
-                                    //               .settings_screen_normal_mode_activated
-                                    //               .tr(),
-                                    //           style: GoogleFonts.pressStart2p(
-                                    //               fontSize: 12.sp),
-                                    //         ),
-                                    //         backgroundColor: AppColors.success,
-                                    //         duration:
-                                    //             const Duration(seconds: 3),
-                                    //       ),
-                                    //     );
-                                    //   },
-                                    // ),
-                                    // SizedBox(height: 2.h),
+                                        //     // Show feedback
+                                        //     ScaffoldMessenger.of(context)
+                                        //         .showSnackBar(
+                                        //       SnackBar(
+                                        //         content: Text(
+                                        //           LocaleKeys
+                                        //               .settings_screen_normal_mode_activated
+                                        //               .tr(),
+                                        //           style: GoogleFonts.pressStart2p(
+                                        //               fontSize: 12.sp),
+                                        //         ),
+                                        //         backgroundColor: AppColors.success,
+                                        //         duration:
+                                        //             const Duration(seconds: 3),
+                                        //       ),
+                                        //     );
+                                        //   },
+                                        // ),
+                                        // SizedBox(height: 2.h),
 
-                                    // // Reset everything button
-                                    // _buildActionButton(
-                                    //   label: LocaleKeys
-                                    //       .settings_screen_reset_everything_restart
-                                    //       .tr(),
-                                    //   color: AppColors.error,
-                                    //   onTap: () =>
-                                    //       _showResetConfirmationDialog(context),
-                                    // ),
-                                    // SizedBox(height: 2.h),
-                                  ],
+                                        // // Reset everything button
+                                        // _buildActionButton(
+                                        //   label: LocaleKeys
+                                        //       .settings_screen_reset_everything_restart
+                                        //       .tr(),
+                                        //   color: AppColors.error,
+                                        //   onTap: () =>
+                                        //       _showResetConfirmationDialog(context),
+                                        // ),
+                                        // SizedBox(height: 2.h),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 2.h,
+              left: 2.w,
+              child: const MedievalBackButton(),
+            ),
+          ],
         ),
       ),
     );
@@ -782,15 +786,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onTap: () {
                     HapticFeedback.lightImpact();
                     context.setLocale(locale);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          LocaleKeys.settings_screen_language_changed.tr(),
-                          style: GoogleFonts.pressStart2p(fontSize: 12.sp),
-                        ),
-                        backgroundColor: AppColors.success,
-                        duration: const Duration(seconds: 2),
-                      ),
+                    MedievalSignboard.show(
+                      context,
+                      title: 'Success',
+                      message: LocaleKeys.settings_screen_language_changed.tr(),
                     );
                   },
                 ),

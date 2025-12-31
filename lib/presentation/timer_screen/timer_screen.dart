@@ -70,41 +70,82 @@ class _TimerScreenRefactoredState extends ConsumerState<TimerScreen> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            backgroundColor: AppColors.primaryBackground,
-            title: Text(
-              ev.title,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Text(
-              ev.description,
-              style: TextStyle(
-                color: AppColors.textPrimary.withValues(alpha: 0.7),
-                fontSize: 16,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  ref
-                      .read(rewardsControllerProvider.notifier)
-                      .consumeLastEvent();
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  LocaleKeys.timer_screen_ok_button.tr(),
-                  style: const TextStyle(
-                    color: AppColors.primaryGold,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+          builder: (_) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: PixelFrame(
+              cornerSize: 16,
+              edgeThickness: 4,
+              padding: 20,
+              borderStyle: MedievalBorderStyle.stone, // Use wood or stone
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBackground,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ev.title,
+                      style: GoogleFonts.pressStart2p(
+                        fontSize: 14.sp,
+                        color: AppColors.primaryGold,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            offset: const Offset(2, 2),
+                            blurRadius: 0,
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      ev.description,
+                      style: GoogleFonts.vt323(
+                        fontSize: 16.sp,
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 3.h),
+                    GestureDetector(
+                      onTap: () {
+                        ref
+                            .read(rewardsControllerProvider.notifier)
+                            .consumeLastEvent();
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            vertical: 1.5.h, horizontal: 6.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGold,
+                          border: Border.all(color: Colors.black, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              offset: const Offset(0, 4),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          LocaleKeys.timer_screen_ok_button.tr(),
+                          style: GoogleFonts.pressStart2p(
+                            fontSize: 10.sp,
+                            color: Colors.black, // Dark text on gold button
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       }

@@ -5,8 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import '../../generated/locale_keys.g.dart';
 import '../../providers/stats_provider.dart';
+import '../../providers/rewards_provider.dart';
 import '../../widgets/pixel_frame.dart';
 import '../../constants/colors.dart';
+
+import '../../core/widgets/medieval_back_button.dart';
 
 class StatsScreen extends ConsumerWidget {
   const StatsScreen({super.key});
@@ -14,122 +17,133 @@ class StatsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(statsControllerProvider);
+    final rewards = ref.watch(rewardsControllerProvider);
 
     return PixelFrame(
       cornerSize: 32,
       edgeThickness: 8,
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: const AssetImage(
-                  'assets/sprites/backgrounds/pixel-art-bg-2.png'),
-              fit: BoxFit.none,
-              repeat: ImageRepeat.noRepeat,
-              scale: 1.5,
-              filterQuality: FilterQuality.low,
-              colorFilter: ColorFilter.mode(
-                AppColors.primaryBackground,
-                BlendMode.dstOver,
-              ),
-              opacity: 0.2,
-            ),
-          ),
-          child: Column(
-            children: [
-              SizedBox(height: 6.h),
-              _buildHeader(stats),
-              SizedBox(height: 4.h),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        width: 5,
-                      ),
-                    ),
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: const AssetImage(
+                      'assets/sprites/backgrounds/pixel-art-bg-2.png'),
+                  fit: BoxFit.none,
+                  repeat: ImageRepeat.noRepeat,
+                  scale: 1.5,
+                  filterQuality: FilterQuality.low,
+                  colorFilter: ColorFilter.mode(
+                    AppColors.primaryBackground,
+                    BlendMode.dstOver,
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                            'assets/sprites/bricks_background_mobile.png'),
-                        fit: BoxFit.none,
-                        repeat: ImageRepeat.repeat,
-                        scale: 2,
-                        filterQuality: FilterQuality.low,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.filterBrownRed,
-                          BlendMode.color,
-                        ),
-                        opacity: 0.5,
-                      ),
-                    ),
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(horizontal: 4.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PixelFrame(
-                            cornerSize: 0,
-                            edgeThickness: 100,
-                            showBorder: false,
-                            showLeftBorder: false,
-                            showRightBorder: false,
-                            padding: 10,
-                            showLeftShadow: false,
-                            showRightShadow: false,
-                            child: Container(
-                              color: AppColors.containerBackground,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
-                              ),
-                              child: Column(
-                                children: [
-                                  SizedBox(height: 2.h),
-                                  Center(
-                                    child: Text(
-                                      LocaleKeys.stats_screen_weekly_performance
-                                          .tr(),
-                                      style: GoogleFonts.pressStart2p(
-                                        fontSize: 14.sp,
-                                        color: AppColors.primaryGold,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  SizedBox(height: 2.h),
-                                  _buildWeeklyPerformanceSection(stats),
-                                  SizedBox(height: 2.h),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 3.h),
-                          _buildWeeklyChart(stats),
-                          SizedBox(height: 3.h),
-                          _buildTimeMetrics(stats),
-                          SizedBox(height: 3.h),
-                        ],
-                      ),
-                    ),
-                  ),
+                  opacity: 0.2,
                 ),
               ),
-            ],
-          ),
+              child: Column(
+                children: [
+                  SizedBox(height: 12.h),
+                  _buildHeader(stats, rewards),
+                  SizedBox(height: 4.h),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            width: 5,
+                          ),
+                        ),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'assets/sprites/bricks_background_mobile.png'),
+                            fit: BoxFit.none,
+                            repeat: ImageRepeat.repeat,
+                            scale: 2,
+                            filterQuality: FilterQuality.low,
+                            colorFilter: ColorFilter.mode(
+                              AppColors.filterBrownRed,
+                              BlendMode.color,
+                            ),
+                            opacity: 0.5,
+                          ),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              PixelFrame(
+                                cornerSize: 0,
+                                edgeThickness: 100,
+                                showBorder: false,
+                                showLeftBorder: false,
+                                showRightBorder: false,
+                                padding: 10,
+                                showLeftShadow: false,
+                                showRightShadow: false,
+                                child: Container(
+                                  color: AppColors.containerBackground,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 10,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      SizedBox(height: 2.h),
+                                      Center(
+                                        child: Text(
+                                          LocaleKeys
+                                              .stats_screen_weekly_performance
+                                              .tr(),
+                                          style: GoogleFonts.pressStart2p(
+                                            fontSize: 14.sp,
+                                            color: AppColors.primaryGold,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2.h),
+                                      _buildWeeklyPerformanceSection(stats),
+                                      SizedBox(height: 2.h),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 3.h),
+                              _buildWeeklyChart(stats),
+                              SizedBox(height: 3.h),
+                              _buildTimeMetrics(stats),
+                              SizedBox(height: 3.h),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ), // Container
+            Positioned(
+              top: 2.h,
+              left: 2.w,
+              child: const MedievalBackButton(),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(StatsState stats) {
-    final totalHours = stats.totalFocusSeconds ~/ 3600;
-    final totalMinutes = (stats.totalFocusSeconds % 3600) ~/ 60;
+  Widget _buildHeader(StatsState stats, RewardsState rewards) {
+    // final totalHours = stats.totalFocusSeconds ~/ 3600;
+    // final totalMinutes = (stats.totalFocusSeconds % 3600) ~/ 60;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
@@ -147,11 +161,11 @@ class StatsScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          // Tiempo total enfocado
+          // Monedas de oro
           _buildHeaderStat(
             '💰',
-            '${totalHours}h ${totalMinutes}m',
-            LocaleKeys.stats_screen_total_focused_time.tr(),
+            '${rewards.goldCoins}',
+            'Gold Coins', // LocaleKeys.stats_screen_gold_coins.tr(),
           ),
           // Espadas cruzadas (sesiones totales)
           _buildHeaderStat(
