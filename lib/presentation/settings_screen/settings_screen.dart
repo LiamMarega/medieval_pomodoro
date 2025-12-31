@@ -241,29 +241,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ],
                           ),
                         ),
-                        SizedBox(height: 6.h),
-                        PaperWidget(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: 1.h,
-                            children: [
-                              _buildSectionTitle('AUDIO'),
-                              SizedBox(height: 1.h),
-                              _buildSwitchSetting(
-                                title: 'MÚSICA MEDIEVAL',
-                                subtitle: 'Prevent unblocking apps when paused',
-                                value: _isMusicEnabled,
-                                onChanged: (value) {
-                                  setState(() => _isMusicEnabled = value);
-                                  _autoSaveSettings();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 6.h),
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
@@ -297,7 +274,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     // Language selector
                                     _buildLanguageSelector(context),
 
-                                    SizedBox(height: 3.h),
+                                    // View Stats button
+                                    _buildActionButton(
+                                      label: LocaleKeys
+                                          .settings_screen_view_statistics
+                                          .tr(),
+                                      color: AppColors.info,
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                            context, '/stats-screen');
+                                      },
+                                    ),
+                                    SizedBox(height: 1.h),
 
                                     // Manage Blocked Apps button (iOS only)
                                     if (Platform.isIOS)
@@ -374,108 +362,95 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           }
                                         },
                                       ),
-                                    if (Platform.isIOS) SizedBox(height: 2.h),
+                                    // if (Platform.isIOS) SizedBox(height: 2.h),
 
-                                    // Test durations button
-                                    _buildActionButton(
-                                      label: LocaleKeys
-                                          .settings_screen_set_test_durations
-                                          .tr(),
-                                      color: AppColors.primaryGold,
-                                      onTap: () {
-                                        final settingsController = ref.read(
-                                            settingsControllerProvider
-                                                .notifier);
-                                        settingsController.setTestDurations();
+                                    // // Test durations button
+                                    // _buildActionButton(
+                                    //   label: LocaleKeys
+                                    //       .settings_screen_set_test_durations
+                                    //       .tr(),
+                                    //   color: AppColors.primaryGold,
+                                    //   onTap: () {
+                                    //     final settingsController = ref.read(
+                                    //         settingsControllerProvider
+                                    //             .notifier);
+                                    //     settingsController.setTestDurations();
 
-                                        // Update local state
-                                        setState(() {
-                                          _workDurationMinutes = 0;
-                                          _shortBreakMinutes = 0;
-                                          _longBreakMinutes = 0;
-                                        });
+                                    //     // Update local state
+                                    //     setState(() {
+                                    //       _workDurationMinutes = 0;
+                                    //       _shortBreakMinutes = 0;
+                                    //       _longBreakMinutes = 0;
+                                    //     });
 
-                                        // Show feedback
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              LocaleKeys
-                                                  .settings_screen_test_mode_activated
-                                                  .tr(),
-                                              style: GoogleFonts.pressStart2p(
-                                                  fontSize: 12.sp),
-                                            ),
-                                            backgroundColor:
-                                                AppColors.primaryGold,
-                                            duration:
-                                                const Duration(seconds: 3),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SizedBox(height: 2.h),
+                                    //     // Show feedback
+                                    //     ScaffoldMessenger.of(context)
+                                    //         .showSnackBar(
+                                    //       SnackBar(
+                                    //         content: Text(
+                                    //           LocaleKeys
+                                    //               .settings_screen_test_mode_activated
+                                    //               .tr(),
+                                    //           style: GoogleFonts.pressStart2p(
+                                    //               fontSize: 12.sp),
+                                    //         ),
+                                    //         backgroundColor:
+                                    //             AppColors.primaryGold,
+                                    //         duration:
+                                    //             const Duration(seconds: 3),
+                                    //       ),
+                                    //     );
+                                    //   },
+                                    // ),
+                                    // SizedBox(height: 2.h),
 
-                                    // Reset to normal durations button
-                                    _buildActionButton(
-                                      label: 'RESET TO NORMAL',
-                                      color: AppColors.success,
-                                      onTap: () {
-                                        final settingsController = ref.read(
-                                            settingsControllerProvider
-                                                .notifier);
-                                        settingsController.resetToDefaults();
+                                    // // Reset to normal durations button
+                                    // _buildActionButton(
+                                    //   label: 'RESET TO NORMAL',
+                                    //   color: AppColors.success,
+                                    //   onTap: () {
+                                    //     final settingsController = ref.read(
+                                    //         settingsControllerProvider
+                                    //             .notifier);
+                                    //     settingsController.resetToDefaults();
 
-                                        // Update local state
-                                        setState(() {
-                                          _workDurationMinutes = 25;
-                                          _shortBreakMinutes = 5;
-                                          _longBreakMinutes = 30;
-                                        });
+                                    //     // Update local state
+                                    //     setState(() {
+                                    //       _workDurationMinutes = 25;
+                                    //       _shortBreakMinutes = 5;
+                                    //       _longBreakMinutes = 30;
+                                    //     });
 
-                                        // Show feedback
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              LocaleKeys
-                                                  .settings_screen_normal_mode_activated
-                                                  .tr(),
-                                              style: GoogleFonts.pressStart2p(
-                                                  fontSize: 12.sp),
-                                            ),
-                                            backgroundColor: AppColors.success,
-                                            duration:
-                                                const Duration(seconds: 3),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    SizedBox(height: 2.h),
+                                    //     // Show feedback
+                                    //     ScaffoldMessenger.of(context)
+                                    //         .showSnackBar(
+                                    //       SnackBar(
+                                    //         content: Text(
+                                    //           LocaleKeys
+                                    //               .settings_screen_normal_mode_activated
+                                    //               .tr(),
+                                    //           style: GoogleFonts.pressStart2p(
+                                    //               fontSize: 12.sp),
+                                    //         ),
+                                    //         backgroundColor: AppColors.success,
+                                    //         duration:
+                                    //             const Duration(seconds: 3),
+                                    //       ),
+                                    //     );
+                                    //   },
+                                    // ),
+                                    // SizedBox(height: 2.h),
 
-                                    // View Stats button
-                                    _buildActionButton(
-                                      label: LocaleKeys
-                                          .settings_screen_view_statistics
-                                          .tr(),
-                                      color: AppColors.info,
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                            context, '/stats-screen');
-                                      },
-                                    ),
-                                    SizedBox(height: 2.h),
-
-                                    // Reset everything button
-                                    _buildActionButton(
-                                      label: LocaleKeys
-                                          .settings_screen_reset_everything_restart
-                                          .tr(),
-                                      color: AppColors.error,
-                                      onTap: () =>
-                                          _showResetConfirmationDialog(context),
-                                    ),
-                                    SizedBox(height: 2.h),
+                                    // // Reset everything button
+                                    // _buildActionButton(
+                                    //   label: LocaleKeys
+                                    //       .settings_screen_reset_everything_restart
+                                    //       .tr(),
+                                    //   color: AppColors.error,
+                                    //   onTap: () =>
+                                    //       _showResetConfirmationDialog(context),
+                                    // ),
+                                    // SizedBox(height: 2.h),
                                   ],
                                 ),
                               ),
