@@ -476,9 +476,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               top: 2.h,
               right: 2.w,
               child: SmallWoodButton(
-                label: (_isMusicEnabled || _isSoundEnabled)
-                    ? LocaleKeys.settings_screen_mute.tr()
-                    : LocaleKeys.settings_screen_unmute.tr(),
+                iconPath: 'assets/sprites/bell.png',
+                isMuted: !(_isMusicEnabled || _isSoundEnabled),
                 onTap: () {
                   HapticFeedback.mediumImpact();
                   final newState = !(_isMusicEnabled || _isSoundEnabled);
@@ -488,7 +487,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   });
                   _autoSaveSettings();
                 },
-                width: 30.w,
+                width: 20.w,
               ),
             ),
           ],

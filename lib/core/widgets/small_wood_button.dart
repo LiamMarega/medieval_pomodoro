@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 import '../../constants/colors.dart';
 
 class SmallWoodButton extends StatefulWidget {
-  final String label;
+  final String? label;
+  final String? iconPath;
+  final bool isMuted;
   final VoidCallback onTap;
   final bool isSelected;
   final double? width;
@@ -13,12 +16,15 @@ class SmallWoodButton extends StatefulWidget {
 
   const SmallWoodButton({
     super.key,
-    required this.label,
+    this.label,
+    this.iconPath,
+    this.isMuted = false,
     required this.onTap,
     this.isSelected = false,
     this.width,
     this.height,
-  });
+  }) : assert(label != null || iconPath != null,
+            'Either label or iconPath must be provided');
 
   @override
   State<SmallWoodButton> createState() => _SmallWoodButtonState();
@@ -71,28 +77,29 @@ class _SmallWoodButtonState extends State<SmallWoodButton> {
                 filterQuality: FilterQuality.none,
               ),
 
-              // Text Content
-              // Adjusted padding to center text visually on the signboard
+              // Content - Icon or Text
               Padding(
                 padding: EdgeInsets.only(top: 1.0.h),
-                child: Text(
-                  widget.label,
-                  style: GoogleFonts.pressStart2p(
-                    fontSize: 14.sp, // Increased font size
-                    color: widget.isSelected
-                        ? AppColors.primaryGold
-                        : AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.8),
-                        offset: const Offset(1, 1),
-                        blurRadius: 2,
+                child: widget.iconPath != null
+                    ? _buildIconContent()
+                    : Text(
+                        widget.label!,
+                        style: GoogleFonts.pressStart2p(
+                          fontSize: 14.sp,
+                          color: widget.isSelected
+                              ? AppColors.primaryGold
+                              : AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.8),
+                              offset: const Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
               ),
             ],
           ),
@@ -100,4 +107,79 @@ class _SmallWoodButtonState extends State<SmallWoodButton> {
       ),
     );
   }
+
+  Widget _buildIconContent() {
+    final iconSize = 5.h;
+    final isSvg = widget.iconPath!.toLowerCase().endsWith('.svg');
+
+    Widget iconWidget;
+    if (isSvg) {
+      iconWidget = SvgPicture.asset(
+        widget.iconPath!,
+        width: iconSize,
+        height: iconSize,
+        colorFilter: ColorFilter.mode(
+          widget.isMuted
+              ? AppColors.textSecondary.withValues(alpha: 0.6)
+              : (widget.isSelected ? AppColors.primaryGold : AppColors.textPrimary),
+          BlendMode.srcIn,
+        ),
+      );
+    } else {
+      iconWidget = Image.asset(
+        widget.iconPath!,
+        width: iconSize,
+        height: iconSize,
+        filterQuality: FilterQuality.none,
+      );
+      
+      // Apply grayscale + reduced opacity when muted (preserves transparency)
+      if (widget.isMuted) {
+        iconWidget = ColorFiltered(
+          colorFilter: const ColorFilter.matrix(<double>[
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0,      0,      0,      0.6, 0,
+          ]),
+          child: iconWidget,
+        );
+      }
+    }
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        iconWidget,
+        // Diagonal line when muted
+        if (widget.isMuted)
+          CustomPaint(
+            size: Size(iconSize, iconSize),
+            painter: _MutedLinePainter(),
+          ),
+      ],
+    );
+  }
+}
+
+/// Custom painter to draw a diagonal line across the icon when muted
+class _MutedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.error
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    // Draw diagonal line from top-right to bottom-left
+    canvas.drawLine(
+      Offset(size.width * 0.85, size.height * 0.15),
+      Offset(size.width * 0.15, size.height * 0.85),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
