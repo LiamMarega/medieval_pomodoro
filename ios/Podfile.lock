@@ -1,4 +1,6 @@
 PODS:
+  - app_limiter (0.0.1):
+    - Flutter
   - audio_service (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -16,6 +18,13 @@ PODS:
     - Flutter
   - flutter_fgbg (0.0.1):
     - Flutter
+  - flutter_inappwebview_ios (0.0.1):
+    - Flutter
+    - flutter_inappwebview_ios/Core (= 0.0.1)
+    - OrderedSet (~> 6.0.3)
+  - flutter_inappwebview_ios/Core (0.0.1):
+    - Flutter
+    - OrderedSet (~> 6.0.3)
   - fluttertoast (0.0.2):
     - Flutter
   - IosAwnCore (0.10.0)
@@ -26,6 +35,7 @@ PODS:
     - Flutter
   - objective_c (0.0.1):
     - Flutter
+  - OrderedSet (6.0.3)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -34,6 +44,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - app_limiter (from `.symlinks/plugins/app_limiter/ios`)
   - audio_service (from `.symlinks/plugins/audio_service/darwin`)
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
   - awesome_notifications (from `.symlinks/plugins/awesome_notifications/ios`)
@@ -42,6 +53,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_app_group_directory (from `.symlinks/plugins/flutter_app_group_directory/ios`)
   - flutter_fgbg (from `.symlinks/plugins/flutter_fgbg/ios`)
+  - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - live_activities (from `.symlinks/plugins/live_activities/ios`)
@@ -52,8 +64,11 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - IosAwnCore
+    - OrderedSet
 
 EXTERNAL SOURCES:
+  app_limiter:
+    :path: ".symlinks/plugins/app_limiter/ios"
   audio_service:
     :path: ".symlinks/plugins/audio_service/darwin"
   audio_session:
@@ -70,6 +85,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_app_group_directory/ios"
   flutter_fgbg:
     :path: ".symlinks/plugins/flutter_fgbg/ios"
+  flutter_inappwebview_ios:
+    :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   just_audio:
@@ -84,6 +101,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
 
 SPEC CHECKSUMS:
+  app_limiter: 213834ab3b325bda78fe4d1b375b5942b239738a
   audio_service: cab6c1a0eaf01b5a35b567e11fa67d3cc1956910
   audio_session: 19e9480dbdd4e5f6c4543826b2e8b0e4ab6145fe
   awesome_notifications: dd5518ff1c80be03d4f1c40f04da9d9cc2a37af5
@@ -92,11 +110,13 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_app_group_directory: d2c3337f424828558953172f9378d00df9b7756d
   flutter_fgbg: 31c0d1140a131daea2d342121808f6aa0dcd879d
+  flutter_inappwebview_ios: 6f63631e2c62a7c350263b13fa5427aedefe81d4
   fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
   IosAwnCore: 653786a911089012092ce831f2945cd339855a89
   just_audio: a42c63806f16995daf5b219ae1d679deb76e6a79
   live_activities: 5a5313d5bf801bbbbe80d51eab80aed6d6df376b
   objective_c: 77e887b5ba1827970907e10e832eec1683f3431d
+  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
 
