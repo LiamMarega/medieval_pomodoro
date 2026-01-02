@@ -624,6 +624,11 @@ class AudioController extends _$AudioController {
     }
   }
 
+  void setSoundEnabled(bool enabled) {
+    state = state.copyWith(isSoundEnabled: enabled);
+    // Note: SFX are handled by PlaylistAudioService which is updated in TimerController
+  }
+
   void _setError(String error) {
     state = state.copyWith(error: error);
     debugPrint('❌ AudioController Error: $error');
@@ -655,6 +660,7 @@ class AudioState {
   final bool isLoading;
   final bool isPlaying;
   final bool isMusicEnabled;
+  final bool isSoundEnabled;
   final double currentVolume;
   final bool hasNext;
   final bool hasPrevious;
@@ -667,6 +673,7 @@ class AudioState {
     this.isLoading = false,
     this.isPlaying = false,
     this.isMusicEnabled = true,
+    this.isSoundEnabled = true,
     this.currentVolume = 0.7,
     this.hasNext = true,
     this.hasPrevious = true,
@@ -680,6 +687,7 @@ class AudioState {
     bool? isLoading,
     bool? isPlaying,
     bool? isMusicEnabled,
+    bool? isSoundEnabled,
     double? currentVolume,
     bool? hasNext,
     bool? hasPrevious,
@@ -692,6 +700,7 @@ class AudioState {
       isLoading: isLoading ?? this.isLoading,
       isPlaying: isPlaying ?? this.isPlaying,
       isMusicEnabled: isMusicEnabled ?? this.isMusicEnabled,
+      isSoundEnabled: isSoundEnabled ?? this.isSoundEnabled,
       currentVolume: currentVolume ?? this.currentVolume,
       hasNext: hasNext ?? this.hasNext,
       hasPrevious: hasPrevious ?? this.hasPrevious,

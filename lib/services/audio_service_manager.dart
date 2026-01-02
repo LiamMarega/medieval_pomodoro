@@ -14,6 +14,7 @@ class PlaylistAudioService {
   AudioPlayer? _soundEffectsPlayer; // Separate player for sound effects
   bool _isInitialized = false;
   bool _isMusicEnabled = true;
+  bool _isSoundEnabled = true;
   final List<AudioSource> _audioSources = [];
   Timer? _fadeTimer;
   final Random _random = Random();
@@ -47,6 +48,7 @@ class PlaylistAudioService {
   bool get isInitialized => _isInitialized;
   bool get isPlaying => _player?.playing ?? false;
   bool get isMusicEnabled => _isMusicEnabled;
+  bool get isSoundEnabled => _isSoundEnabled;
   Duration get currentPosition => _player?.position ?? Duration.zero;
   Duration get totalDuration => _player?.duration ?? Duration.zero;
   int get currentIndex => _player?.currentIndex ?? 0;
@@ -336,9 +338,14 @@ class PlaylistAudioService {
     }
   }
 
+  void setSoundEnabled(bool enabled) {
+    _isSoundEnabled = enabled;
+    debugPrint('🔊 Sound effects enabled: $enabled');
+  }
+
   /// Duck the background music volume to make room for sound effects
   Future<void> duckVolume() async {
-    if (_player != null && _player!.playing) {
+    if (_player != null && _player!.playing && _isSoundEnabled) {
       _originalVolume = _player!.volume;
       await _player!.setVolume(0.5);
       debugPrint('🔉 Music volume ducked to 0.5 (from $_originalVolume)');
@@ -355,6 +362,11 @@ class PlaylistAudioService {
 
   /// Play mode change sound effect (sound_boungle.mp3) with volume ducking
   Future<void> playModeChangeSound() async {
+    if (!_isSoundEnabled) {
+      debugPrint('🔇 Sound effects disabled, skipping mode change sound');
+      return;
+    }
+
     try {
       if (_soundEffectsPlayer == null) {
         debugPrint('⚠️ Sound effects player not initialized');

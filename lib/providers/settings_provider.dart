@@ -25,6 +25,7 @@ class SettingsController extends _$SettingsController {
       shortBreakMinutes: savedSettings['shortBreakMinutes'],
       longBreakMinutes: savedSettings['longBreakMinutes'],
       isMusicEnabled: savedSettings['isMusicEnabled'],
+      isSoundEnabled: savedSettings['isSoundEnabled'],
       strictMode: savedSettings['strictMode'] ?? false,
     );
   }
@@ -35,15 +36,19 @@ class SettingsController extends _$SettingsController {
     required int longBreakMinutes,
     required bool isMusicEnabled,
     required bool strictMode,
+    bool? isSoundEnabled,
   }) async {
     // Update state immediately for UI responsiveness
     final currentState = state.value;
+    final newIsSoundEnabled = isSoundEnabled ?? currentState?.isSoundEnabled ?? true;
+    
     if (currentState != null) {
       state = AsyncValue.data(currentState.copyWith(
         workDurationMinutes: workDurationMinutes,
         shortBreakMinutes: shortBreakMinutes,
         longBreakMinutes: longBreakMinutes,
         isMusicEnabled: isMusicEnabled,
+        isSoundEnabled: newIsSoundEnabled,
         strictMode: strictMode,
       ));
     }
@@ -54,6 +59,7 @@ class SettingsController extends _$SettingsController {
       shortBreakMinutes: shortBreakMinutes,
       longBreakMinutes: longBreakMinutes,
       isMusicEnabled: isMusicEnabled,
+      isSoundEnabled: newIsSoundEnabled,
     );
 
     // Save strict mode separately
@@ -129,6 +135,21 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: currentState.shortBreakMinutes,
         longBreakMinutes: currentState.longBreakMinutes,
         isMusicEnabled: enabled,
+        isSoundEnabled: currentState.isSoundEnabled,
+        strictMode: currentState.strictMode,
+      );
+    }
+  }
+
+  Future<void> updateSoundEnabled(bool enabled) async {
+    final currentState = state.value;
+    if (currentState != null) {
+      await updateSettings(
+        workDurationMinutes: currentState.workDurationMinutes,
+        shortBreakMinutes: currentState.shortBreakMinutes,
+        longBreakMinutes: currentState.longBreakMinutes,
+        isMusicEnabled: currentState.isMusicEnabled,
+        isSoundEnabled: enabled,
         strictMode: currentState.strictMode,
       );
     }
@@ -141,6 +162,7 @@ class SettingsController extends _$SettingsController {
       shortBreakMinutes: 5,
       longBreakMinutes: 30,
       isMusicEnabled: true,
+      isSoundEnabled: true,
       strictMode: false,
     );
     debugPrint('🔄 Settings reset to normal defaults (25/5/30 minutes)');
@@ -178,6 +200,7 @@ class SettingsController extends _$SettingsController {
         shortBreakMinutes: 5,
         longBreakMinutes: 30,
         isMusicEnabled: true,
+        isSoundEnabled: true,
         strictMode: false,
       ));
     } catch (e) {

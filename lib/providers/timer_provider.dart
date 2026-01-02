@@ -52,6 +52,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     const shortBreakDuration = 0; // 10 seconds for testing
     const longBreakDuration = 0; // 20 seconds for testing
     const isMusicEnabled = true;
+    const isSoundEnabled = true;
 
     // Crear configuración inicial del modo de trabajo
     final initialConfig = TimerModeConfig.getWorkConfig(
@@ -64,6 +65,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     return TimerState(
       currentMotivationalMessage: initialConfig.motivationalMessage,
       isMusicEnabled: isMusicEnabled,
+      isSoundEnabled: isSoundEnabled,
       currentMode: initialConfig.mode,
       currentAnimation: initialConfig.animationType,
       workDurationMinutes: workDuration,
@@ -228,6 +230,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
             shortBreakMinutes: data.shortBreakMinutes,
             longBreakMinutes: data.longBreakMinutes,
             isMusicEnabled: data.isMusicEnabled,
+            isSoundEnabled: data.isSoundEnabled,
           );
 
           // Update remaining time if in work session and not running
@@ -263,6 +266,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
             shortBreakMinutes: settings.shortBreakMinutes,
             longBreakMinutes: settings.longBreakMinutes,
             isMusicEnabled: settings.isMusicEnabled,
+            isSoundEnabled: settings.isSoundEnabled,
             isMusicPlaying: currentMusicPlaying, // Preserve music playing state
           );
 
@@ -270,6 +274,12 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
           ref
               .read(audioControllerProvider.notifier)
               .setMusicEnabled(settings.isMusicEnabled);
+
+          // Update sound effects enabled state
+          _audioService?.setSoundEnabled(settings.isSoundEnabled);
+          ref
+              .read(audioControllerProvider.notifier)
+              .setSoundEnabled(settings.isSoundEnabled);
 
           // If we're in a work session and not running, update the remaining time
           if (state.currentMode.isWork && !state.isActive) {
@@ -846,6 +856,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
     required int shortBreakMinutes,
     required int longBreakMinutes,
     required bool isMusicEnabled,
+    required bool isSoundEnabled,
     required bool strictMode,
   }) {
     debugPrint('⚙️ Updating settings...');
@@ -857,6 +868,7 @@ class TimerController extends _$TimerController with WidgetsBindingObserver {
           shortBreakMinutes: shortBreakMinutes,
           longBreakMinutes: longBreakMinutes,
           isMusicEnabled: isMusicEnabled,
+          isSoundEnabled: isSoundEnabled,
           strictMode: strictMode,
         );
 

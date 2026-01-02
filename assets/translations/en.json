@@ -143,7 +143,9 @@
     "language_changed": "🌍 Language changed successfully",
     "manage_blocked_apps": "MANAGE BLOCKED APPS",
     "apps_selected_successfully": "✅ Apps selected successfully",
-    "app_selection_cancelled": "⚠️ App selection cancelled"
+    "app_selection_cancelled": "⚠️ App selection cancelled",
+    "mute": "Mute",
+    "unmute": "Unmute"
   },
   "stats_screen": {
     "knights_progress": "Knight's Progress",

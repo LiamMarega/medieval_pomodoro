@@ -16,63 +16,82 @@ class MedievalSignboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Background Image
-              Image.asset(
-                'assets/sprites/wall-signboard.png',
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.none, // Pixel perfect
-              ),
+    final screenWidth = MediaQuery.of(context).size.width;
 
-              // Text Content
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      28, 48, 28, 28), // Tuned padding for visual alignment
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.pressStart2p(
-                          fontSize: 14,
-                          color: AppColors.primaryGold,
-                          shadows: [
-                            const Shadow(
-                              color: Colors.black,
-                              offset: Offset(2, 2),
-                              blurRadius: 0,
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      behavior: HitTestBehavior.opaque,
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {}, // Evita que el tap en el signboard cierre el dialog
+            child: SizedBox(
+              width: screenWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Background Image - Full width
+                    Image.asset(
+                      'assets/sprites/wall-signboard.png',
+                      width: screenWidth - 32,
+                      fit: BoxFit.fitWidth,
+                      filterQuality: FilterQuality.none,
+                    ),
+
+                    // Text Content - Centered within the signboard
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 48,
+                        vertical: 32,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Title
+                          Text(
+                            title,
+                            style: GoogleFonts.pressStart2p(
+                              fontSize: 16,
+                              color: AppColors.primaryGold,
+                              shadows: [
+                                const Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(2, 2),
+                                  blurRadius: 0,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          // Message
+                          Text(
+                            message,
+                            style: GoogleFonts.pressStart2p(
+                              fontSize: 11,
+                              color: Colors.white,
+                              height: 1.8,
+                              shadows: [
+                                const Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(1, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        message,
-                        style: GoogleFonts.pressStart2p(
-                          fontSize: 10,
-                          color: Colors.white,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-
-              // Close functionality (tap anywhere on board to dismiss if needed, or external)
-              // But usually this is an overlay.
-            ],
+            ),
           ),
         ),
       ),
@@ -85,7 +104,7 @@ class MedievalSignboard extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.black.withValues(alpha: 0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.7),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, anim1, anim2) => MedievalSignboard(
         title: title,

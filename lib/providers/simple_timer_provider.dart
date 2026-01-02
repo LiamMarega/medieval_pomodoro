@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'settings_provider.dart';
 import '../models/timer_state.dart';
 import '../models/timer_mode.dart';
 import '../core/services/notification_service.dart';
@@ -25,9 +26,30 @@ class SimpleTimerController extends _$SimpleTimerController {
   @override
   TimerState build() {
     _initializeAudio();
-    return const TimerState(
+    
+    // Listen to settings changes
+    ref.listen(settingsControllerProvider, (previous, next) {
+      if (next.hasValue) {
+        final settings = next.value!;
+        updateSettings(
+          workDurationMinutes: settings.workDurationMinutes,
+          shortBreakMinutes: settings.shortBreakMinutes,
+          longBreakMinutes: settings.longBreakMinutes,
+          isMusicEnabled: settings.isMusicEnabled,
+          isSoundEnabled: settings.isSoundEnabled,
+        );
+      }
+    });
+
+    final settings = ref.read(settingsControllerProvider).value;
+
+    return TimerState(
       currentMotivationalMessage: "knight_quotes.0",
-      isMusicEnabled: true, // Music always ON by default
+      isMusicEnabled: settings?.isMusicEnabled ?? true,
+      isSoundEnabled: settings?.isSoundEnabled ?? true,
+      workDurationMinutes: settings?.workDurationMinutes ?? 25,
+      shortBreakMinutes: settings?.shortBreakMinutes ?? 5,
+      longBreakMinutes: settings?.longBreakMinutes ?? 30,
     );
   }
 
@@ -300,12 +322,14 @@ class SimpleTimerController extends _$SimpleTimerController {
     required int shortBreakMinutes,
     required int longBreakMinutes,
     required bool isMusicEnabled,
+    bool? isSoundEnabled,
   }) {
     state = state.copyWith(
       workDurationMinutes: workDurationMinutes,
       shortBreakMinutes: shortBreakMinutes,
       longBreakMinutes: longBreakMinutes,
       isMusicEnabled: isMusicEnabled,
+      isSoundEnabled: isSoundEnabled ?? state.isSoundEnabled,
     );
 
     debugPrint('Music enabled set to: $isMusicEnabled');

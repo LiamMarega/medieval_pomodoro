@@ -6,6 +6,7 @@ class LocalStorageService {
   static const String _shortBreakDurationKey = 'short_break_minutes';
   static const String _longBreakDurationKey = 'long_break_minutes';
   static const String _musicEnabledKey = 'music_enabled';
+  static const String _soundEnabledKey = 'sound_enabled';
   static const String _onboardingCompletedKey = 'onboarding_completed';
   static const String _userNameKey = 'user_name';
   static const String _strictModeKey = 'strict_mode';
@@ -133,12 +134,30 @@ class LocalStorageService {
     return _preferences?.getBool(_musicEnabledKey) ?? true; // Default to true
   }
 
+  // Save sound enabled state
+  Future<bool> saveSoundEnabled(bool enabled) async {
+    try {
+      final result = await _preferences!.setBool(_soundEnabledKey, enabled);
+      debugPrint('💾 Sound enabled saved: $enabled');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error saving sound enabled: $e');
+      return false;
+    }
+  }
+
+  // Get sound enabled state
+  bool getSoundEnabled() {
+    return _preferences?.getBool(_soundEnabledKey) ?? true; // Default to true
+  }
+
   // Save all settings at once
   Future<bool> saveAllSettings({
     required int workDurationMinutes,
     required int shortBreakMinutes,
     required int longBreakMinutes,
     required bool isMusicEnabled,
+    bool isSoundEnabled = true,
   }) async {
     try {
       final results = await Future.wait([
@@ -146,8 +165,7 @@ class LocalStorageService {
         saveShortBreakDuration(shortBreakMinutes),
         saveLongBreakDuration(longBreakMinutes),
         saveMusicEnabled(isMusicEnabled),
-        // Strict mode is saved separately or we can add it here if needed,
-        // but for now let's keep it separate or add a new method for all settings including strict mode
+        saveSoundEnabled(isSoundEnabled),
       ]);
 
       final allSaved = results.every((result) => result);
@@ -166,6 +184,7 @@ class LocalStorageService {
       'shortBreakMinutes': getShortBreakDuration(),
       'longBreakMinutes': getLongBreakDuration(),
       'isMusicEnabled': getMusicEnabled(),
+      'isSoundEnabled': getSoundEnabled(),
       'strictMode': getStrictMode(),
     };
   }

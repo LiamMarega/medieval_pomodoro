@@ -30,6 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late int _shortBreakMinutes = 5;
   late int _longBreakMinutes = 30;
   late bool _isMusicEnabled = true;
+  late bool _isSoundEnabled = true;
   late bool _strictMode = false;
 
   @override
@@ -94,6 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       shortBreakMinutes: _shortBreakMinutes,
       longBreakMinutes: _longBreakMinutes,
       isMusicEnabled: _isMusicEnabled,
+      isSoundEnabled: _isSoundEnabled,
       strictMode: _strictMode,
     );
 
@@ -147,6 +149,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 settings.workDurationMinutes ||
                             _shortBreakMinutes != settings.shortBreakMinutes ||
                             _longBreakMinutes != settings.longBreakMinutes ||
+                            _isMusicEnabled != settings.isMusicEnabled ||
+                            _isSoundEnabled != settings.isSoundEnabled ||
                             _strictMode != settings.strictMode) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             setState(() {
@@ -155,6 +159,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               _shortBreakMinutes = settings.shortBreakMinutes;
                               _longBreakMinutes = settings.longBreakMinutes;
                               _isMusicEnabled = settings.isMusicEnabled;
+                              _isSoundEnabled = settings.isSoundEnabled;
                               _strictMode = settings.strictMode;
                             });
                           });
@@ -466,6 +471,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               top: 2.h,
               left: 2.w,
               child: const MedievalBackButton(),
+            ),
+            Positioned(
+              top: 2.h,
+              right: 2.w,
+              child: SmallWoodButton(
+                label: (_isMusicEnabled || _isSoundEnabled)
+                    ? LocaleKeys.settings_screen_mute.tr()
+                    : LocaleKeys.settings_screen_unmute.tr(),
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  final newState = !(_isMusicEnabled || _isSoundEnabled);
+                  setState(() {
+                    _isMusicEnabled = newState;
+                    _isSoundEnabled = newState;
+                  });
+                  _autoSaveSettings();
+                },
+                width: 30.w,
+              ),
             ),
           ],
         ),
