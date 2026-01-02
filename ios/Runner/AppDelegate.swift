@@ -111,7 +111,11 @@ func startHelloWorldLiveActivity() {
   
   @available(iOS 16.0, *)
   private func setupScreenTimeChannel() {
-    let controller = window?.rootViewController as! FlutterViewController
+    guard let window = window,
+          let controller = window.rootViewController as? FlutterViewController else {
+      print("❌ Failed to get FlutterViewController for Screen Time channel")
+      return
+    }
     let channel = FlutterMethodChannel(
       name: "com.focusknight.app/screen_time",
       binaryMessenger: controller.binaryMessenger
@@ -203,7 +207,12 @@ func startHelloWorldLiveActivity() {
       return
     }
     
-    let controller = window?.rootViewController as! FlutterViewController
+    guard let window = window,
+          let controller = window.rootViewController as? FlutterViewController else {
+      print("❌ Failed to get FlutterViewController for app selection")
+      result(false)
+      return
+    }
     
     Task {
       await MainActor.run {

@@ -134,7 +134,6 @@ class NotificationService {
     required bool isActive,
     required int currentSeconds,
     required String sessionType,
-    required String motivationalMessage,
   }) {
     _isTimerActive = isActive;
     _currentSeconds = currentSeconds;

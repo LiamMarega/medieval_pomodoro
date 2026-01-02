@@ -84,8 +84,7 @@ class SimpleTimerController extends _$SimpleTimerController {
     NotificationService().updateTimerState(
         isActive: true,
         currentSeconds: state.remaining.inSeconds,
-        sessionType: state.currentMode.name, // or a better readable name
-        motivationalMessage: state.currentMotivationalMessage);
+        sessionType: state.currentMode.name);
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
@@ -114,8 +113,7 @@ class SimpleTimerController extends _$SimpleTimerController {
         NotificationService().updateTimerState(
             isActive: true,
             currentSeconds: newSeconds,
-            sessionType: _getReadableSessionType(state.currentMode),
-            motivationalMessage: state.currentMotivationalMessage);
+            sessionType: _getReadableSessionType(state.currentMode));
       } else {
         _completeSession();
       }
@@ -138,8 +136,7 @@ class SimpleTimerController extends _$SimpleTimerController {
     NotificationService().updateTimerState(
         isActive: false,
         currentSeconds: state.currentSeconds,
-        sessionType: _getReadableSessionType(state.currentMode),
-        motivationalMessage: state.currentMotivationalMessage);
+        sessionType: _getReadableSessionType(state.currentMode));
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
@@ -166,8 +163,7 @@ class SimpleTimerController extends _$SimpleTimerController {
     NotificationService().updateTimerState(
         isActive: false,
         currentSeconds: state.remaining.inSeconds,
-        sessionType: _getReadableSessionType(state.currentMode),
-        motivationalMessage: state.currentMotivationalMessage);
+        sessionType: _getReadableSessionType(state.currentMode));
 
     HapticFeedback.mediumImpact();
   }

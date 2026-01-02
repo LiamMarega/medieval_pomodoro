@@ -34,18 +34,21 @@ class MedievalSignboard extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     // Background Image - Full width
-                    Image.asset(
-                      'assets/sprites/wall-signboard.png',
-                      width: screenWidth - 32,
-                      fit: BoxFit.fitWidth,
-                      filterQuality: FilterQuality.none,
+                    Transform.scale(
+                      scale: 1.2,
+                      child: Image.asset(
+                        'assets/sprites/wall-signboard.png',
+                        width: screenWidth + 200,
+                        fit: BoxFit.cover,
+                        filterQuality: FilterQuality.none,
+                      ),
                     ),
 
                     // Text Content - Centered within the signboard
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 48,
-                        vertical: 32,
+                        vertical: 80,
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
