@@ -40,7 +40,17 @@ extension LiveActivitiesAppAttributes {
 }
 
 // MARK: - Shared UserDefaults
-let sharedDefault = UserDefaults(suiteName: "group.com.focusknight.app")!
+// Safely unwrap UserDefaults with fallback to standard UserDefaults
+// This prevents crashes if app groups aren't properly configured
+let sharedDefault: UserDefaults = {
+    if let shared = UserDefaults(suiteName: "group.com.focusknight.app") {
+        return shared
+    } else {
+        // Fallback to standard UserDefaults if app group isn't available
+        // This ensures the widget extension doesn't crash
+        return UserDefaults.standard
+    }
+}()
 
 // MARK: - Medieval Live Activity Widget
 @available(iOS 16.1, *)

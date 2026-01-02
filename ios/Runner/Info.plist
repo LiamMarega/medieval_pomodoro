@@ -41,6 +41,14 @@
 				<string>medievalpomodoro</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>focusknight</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>focusknight</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>

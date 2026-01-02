@@ -88,7 +88,6 @@ class StatsScreen extends ConsumerWidget {
                                 showLeftShadow: false,
                                 showRightShadow: false,
                                 child: Container(
-                                  color: AppColors.containerBackground,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 20,
                                     vertical: 10,
@@ -308,11 +307,9 @@ class StatsScreen extends ConsumerWidget {
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.containerBackgroundAlt.withValues(alpha: 0.8),
-        border: Border.all(color: Colors.black, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
